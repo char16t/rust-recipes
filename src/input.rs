@@ -42,6 +42,11 @@ pub fn take_vector<T>() -> Vec<T> where T: FromStr, <T as FromStr>::Err: std::fm
     _take_vector_from_reader(std::io::stdin())
 }
 
+#[allow(dead_code)]
+pub fn take_string<T>() -> Vec<char> {
+    _take_string_from_reader(std::io::stdin())
+}
+
 fn _take_num_from_reader<T, R>(reader: R) -> T where T: FromStr, <T as FromStr>::Err: std::fmt::Debug, R: Read {
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
@@ -63,14 +68,6 @@ where
     let ax: T1 = values.next().unwrap().parse().unwrap();
     let ay: T2 = values.next().unwrap().parse().unwrap();
     (ax, ay)
-}
-
-fn _take_vector_from_reader<T, R>(reader: R) -> Vec<T> where T: FromStr, <T as FromStr>::Err: std::fmt::Debug, R: Read {
-    let mut input: String = String::new();
-    let mut reader: io::BufReader<R> = io::BufReader::new(reader);
-    reader.read_line(&mut input).unwrap();
-    let arr: Vec<T> = input.trim().split_whitespace().map(|x| x.parse().unwrap()).collect();
-    return arr;
 }
 
 fn _take_3nums_from_reader<T1, T2, T3, R>(reader: R) -> (T1, T2, T3)  
@@ -109,6 +106,22 @@ where
     let c: T3 = values.next().unwrap().parse().unwrap();
     let d: T4 = values.next().unwrap().parse().unwrap();
     (a, b, c, d)
+}
+
+fn _take_vector_from_reader<T, R>(reader: R) -> Vec<T> where T: FromStr, <T as FromStr>::Err: std::fmt::Debug, R: Read {
+    let mut input: String = String::new();
+    let mut reader: io::BufReader<R> = io::BufReader::new(reader);
+    reader.read_line(&mut input).unwrap();
+    let arr: Vec<T> = input.trim().split_whitespace().map(|x| x.parse().unwrap()).collect();
+    return arr;
+}
+
+fn _take_string_from_reader<R>(reader: R) -> Vec<char> where R: Read {
+    let mut input: String = String::new();
+    let mut reader: io::BufReader<R> = io::BufReader::new(reader);
+    reader.read_line(&mut input).unwrap();
+    let vec:Vec<char> = input.trim().chars().collect();
+    return vec;
 }
 
 #[cfg(test)]
@@ -159,6 +172,19 @@ mod tests {
         assert_eq!(vec[1], 100);
         assert_eq!(vec[2], 15);
         assert_eq!(vec[3], 3454564643);
+    }
+
+    #[test]
+    fn test_take_string() {
+        let input: &str = "abcdef\n";
+        let vec: Vec<char> = _take_string_from_reader(input.as_bytes());
+        assert_eq!(vec.len(), 6);
+        assert_eq!(vec[0], 'a');
+        assert_eq!(vec[1], 'b');
+        assert_eq!(vec[2], 'c');
+        assert_eq!(vec[3], 'd');
+        assert_eq!(vec[4], 'e');
+        assert_eq!(vec[5], 'f');
     }
 
     #[test]
