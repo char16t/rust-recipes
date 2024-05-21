@@ -52,6 +52,12 @@ pub fn range_sum_2d<T>(arr: &[T], rows: usize, cols: usize, top_left: (usize, us
 where 
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy
 {
+    // * +-----------+
+    // * |  D     C  |
+    // * |   +---+   |
+    // * |   |   |   |
+    // * | B +---A   |
+    // * +-----------+
     let xy = coordinates::create_coordinate_function_2d!(rows, cols);
     if top_left.0 == 0 && top_left.1 == 0 {
         let a: usize = xy(bottom_right.0, bottom_right.1);
