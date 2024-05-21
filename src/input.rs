@@ -42,6 +42,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{benchmark, numbers};
 
     #[test]
     fn test_take_num() {
@@ -56,5 +57,12 @@ mod tests {
         let (x, y): (i64, i64) = _take_2nums_from_reader(input.as_bytes());
         assert_eq!(x, -12);
         assert_eq!(y, 100);
+    }
+
+    #[test]
+    fn bench_take_num() {
+        let (_result, runtime_secs): ((), f64) = benchmark::time(test_take_num);
+        println!("Runtime (seconds): {}", runtime_secs);
+        assert!(numbers::approx_equal(runtime_secs, 0.000024115, 0.001));
     }
 }
