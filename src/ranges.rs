@@ -1,3 +1,5 @@
+use crate::coordinates;
+
 pub fn build_prefix_sum_array<T>(arr: &[T]) -> Vec<T> where T: Default + std::ops::Add<Output = T> + Copy {
     let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
     prefix_sum[0] = arr[0];
@@ -13,6 +15,37 @@ pub fn range_sum<T>(prefix_sum: &[T], l: usize, r: usize) -> T where T: Default 
     } else {
         prefix_sum[r] - prefix_sum[l-1]
     }
+}
+
+pub fn build_prefix_sum_array_2d<T>(arr: &[T], rows: usize, cols: usize) -> Vec<T>
+where 
+    T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy 
+{
+    let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
+    let xy = coordinates::create_coordinate_function_2d!(rows, cols);
+    
+    // Fill first row
+    prefix_sum[xy(0, 0)] = arr[xy(0, 0)];
+    for i in 1..cols {
+        prefix_sum[xy(0, i)] = prefix_sum[xy(0, i - 1)] + arr[xy(0, i)];
+    }
+
+    // Fill first column
+    for i in 1..rows {
+        prefix_sum[xy(i, 0)] = prefix_sum[xy(i - 1, 0)] + arr[xy(i ,0)];
+    }
+
+    for i in 1..rows {
+        for j in 1..cols {
+            prefix_sum[xy(i, j)] = 
+                prefix_sum[xy(i-1, j)]
+                + prefix_sum[xy(i, j-1)] 
+                - prefix_sum[xy(i-1, j-1)] 
+                + arr[xy(i, j)]
+        }
+    }
+
+    prefix_sum
 }
 
 #[cfg(test)]
@@ -41,5 +74,45 @@ mod tests {
         assert_eq!(range_sum(&prefix_sum_array, 1, 1), 2);
         assert_eq!(range_sum(&prefix_sum_array, 1, 2), 5);
         assert_eq!(range_sum(&prefix_sum_array, 0, 4), 15);
+    }
+
+    #[test]
+    fn test_build_prefix_sum_array_2d() {
+        let original_array: Vec<i32> = vec![
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+        ];
+        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_2d(&original_array, 4, 5);
+        assert_eq!(prefix_sum_array.len(), 20);
+        
+        // 1, 2,  3,  4,  5, 
+        // 2, 4,  6,  8, 10, 
+        // 3, 6,  9, 12, 15, 
+        // 4, 8, 12, 16, 20
+        assert_eq!(prefix_sum_array[0], 1);
+        assert_eq!(prefix_sum_array[1], 2);
+        assert_eq!(prefix_sum_array[2], 3);
+        assert_eq!(prefix_sum_array[3], 4);
+        assert_eq!(prefix_sum_array[4], 5);
+
+        assert_eq!(prefix_sum_array[5], 2);
+        assert_eq!(prefix_sum_array[6], 4);
+        assert_eq!(prefix_sum_array[7], 6);
+        assert_eq!(prefix_sum_array[8], 8);
+        assert_eq!(prefix_sum_array[9], 10);
+
+        assert_eq!(prefix_sum_array[10], 3);
+        assert_eq!(prefix_sum_array[11], 6);
+        assert_eq!(prefix_sum_array[12], 9);
+        assert_eq!(prefix_sum_array[13], 12);
+        assert_eq!(prefix_sum_array[14], 15);
+
+        assert_eq!(prefix_sum_array[15], 4);
+        assert_eq!(prefix_sum_array[16], 8);
+        assert_eq!(prefix_sum_array[17], 12);
+        assert_eq!(prefix_sum_array[18], 16);
+        assert_eq!(prefix_sum_array[19], 20);
     }
 }
