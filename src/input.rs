@@ -16,6 +16,32 @@ where
     _take_2nums_from_reader(std::io::stdin())
 }
 
+#[allow(dead_code)]
+pub fn take_3nums<T1, T2, T3>() -> (T1, T2, T3) 
+where 
+    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
+    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug
+{
+    _take_3nums_from_reader(std::io::stdin())
+}
+
+#[allow(dead_code)]
+pub fn take_4nums<T1, T2, T3, T4>() -> (T1, T2, T3, T4) 
+where 
+    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
+    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug,
+    T4: FromStr, <T4 as FromStr>::Err: std::fmt::Debug
+{
+    _take_4nums_from_reader(std::io::stdin())
+}
+
+#[allow(dead_code)]
+pub fn take_vector<T>() -> Vec<T> where T: FromStr, <T as FromStr>::Err: std::fmt::Debug {
+    _take_vector_from_reader(std::io::stdin())
+}
+
 fn _take_num_from_reader<T, R>(reader: R) -> T where T: FromStr, <T as FromStr>::Err: std::fmt::Debug, R: Read {
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
@@ -39,6 +65,52 @@ where
     (ax, ay)
 }
 
+fn _take_vector_from_reader<T, R>(reader: R) -> Vec<T> where T: FromStr, <T as FromStr>::Err: std::fmt::Debug, R: Read {
+    let mut input: String = String::new();
+    let mut reader: io::BufReader<R> = io::BufReader::new(reader);
+    reader.read_line(&mut input).unwrap();
+    let arr: Vec<T> = input.trim().split_whitespace().map(|x| x.parse().unwrap()).collect();
+    return arr;
+}
+
+fn _take_3nums_from_reader<T1, T2, T3, R>(reader: R) -> (T1, T2, T3)  
+where 
+    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
+    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug,
+    R: Read
+{
+    let mut input: String = String::new();
+    let mut reader: io::BufReader<R> = io::BufReader::new(reader);
+    reader.read_line(&mut input).expect("Failed to read line");
+
+    let mut values: SplitWhitespace = input.trim().split_whitespace();
+    let a: T1 = values.next().unwrap().parse().unwrap();
+    let b: T2 = values.next().unwrap().parse().unwrap();
+    let c: T3 = values.next().unwrap().parse().unwrap();
+    (a, b, c)
+}
+
+fn _take_4nums_from_reader<T1, T2, T3, T4, R>(reader: R) -> (T1, T2, T3, T4)  
+where 
+    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
+    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug,
+    T4: FromStr, <T4 as FromStr>::Err: std::fmt::Debug, 
+    R: Read
+{
+    let mut input: String = String::new();
+    let mut reader: io::BufReader<R> = io::BufReader::new(reader);
+    reader.read_line(&mut input).expect("Failed to read line");
+
+    let mut values: SplitWhitespace = input.trim().split_whitespace();
+    let a: T1 = values.next().unwrap().parse().unwrap();
+    let b: T2 = values.next().unwrap().parse().unwrap();
+    let c: T3 = values.next().unwrap().parse().unwrap();
+    let d: T4 = values.next().unwrap().parse().unwrap();
+    (a, b, c, d)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -57,6 +129,36 @@ mod tests {
         let (x, y): (i64, i64) = _take_2nums_from_reader(input.as_bytes());
         assert_eq!(x, -12);
         assert_eq!(y, 100);
+    }
+
+    #[test]
+    fn test_take_3nums() {
+        let input: &str = "-12 100 15\n";
+        let (x, y, z): (i64, i64, i64) = _take_3nums_from_reader(input.as_bytes());
+        assert_eq!(x, -12);
+        assert_eq!(y, 100);
+        assert_eq!(z, 15);
+    }
+
+    #[test]
+    fn test_take_4nums() {
+        let input: &str = "-12 100 15 3454564643\n";
+        let (a, b, c, d): (i64, i64, i64, i64) = _take_4nums_from_reader(input.as_bytes());
+        assert_eq!(a, -12);
+        assert_eq!(b, 100);
+        assert_eq!(c, 15);
+        assert_eq!(d, 3454564643);
+    }
+
+    #[test]
+    fn test_take_vector() {
+        let input: &str = "-12 100 15 3454564643\n";
+        let vec: Vec<i64> = _take_vector_from_reader(input.as_bytes());
+        assert_eq!(vec.len(), 4);
+        assert_eq!(vec[0], -12);
+        assert_eq!(vec[1], 100);
+        assert_eq!(vec[2], 15);
+        assert_eq!(vec[3], 3454564643);
     }
 
     #[test]
