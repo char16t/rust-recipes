@@ -1,5 +1,5 @@
 [package]
-name = "rust-common"
+name = "char16t"
 version = "0.1.0"
 edition = "2021"
 
