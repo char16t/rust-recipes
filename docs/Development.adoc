@@ -1,0 +1,16 @@
+= Development
+
+Install dependencies for checking code coverage:
+
+[source,shell]
+----
+cargo install grcov
+rustup component add llvm-tools
+----
+
+Run code coverage:
+
+[source,shell]
+----
+make codecov
+----
