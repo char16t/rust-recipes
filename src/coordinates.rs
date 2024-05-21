@@ -1,32 +1,29 @@
 /// Point (a, b) in (N x M) matrix
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! create_coordinate_function_2d {
     ($n:expr, $m:expr) => {
         |x, y| x * $m + y
     };
 }
-#[allow(unused_imports)]
-pub(crate) use create_coordinate_function_2d;
+pub use create_coordinate_function_2d;
 
 /// Point (x, y, z) in (N x M x K) matrix
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! create_coordinate_function_3d {
     ($n:expr, $m:expr, $k:expr) => {
         |x, y, z| x * ($m * $k) + y * $k + z
     };
 }
-#[allow(unused_imports)]
-pub(crate) use create_coordinate_function_3d;
+pub use create_coordinate_function_3d;
 
 /// Point (a, b, c, d) in (N x M x K x L) matrix
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! create_coordinate_function_4d {
     ($n:expr, $m:expr, $k:expr, $l:expr) => {
         |a, b, c, d| a * ($m * $k * $l) + b * ($k * $l) + c * $l + d
     };
 }
-#[allow(unused_imports)]
-pub(crate) use create_coordinate_function_4d;
+pub use create_coordinate_function_4d;
 
 #[cfg(test)]
 mod tests {
