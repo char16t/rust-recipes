@@ -48,6 +48,31 @@ where
     prefix_sum
 }
 
+pub fn range_sum_2d<T>(arr: &[T], rows: usize, cols: usize, top_left: (usize, usize), bottom_right: (usize, usize)) -> T 
+where 
+    T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy
+{
+    let xy = coordinates::create_coordinate_function_2d!(rows, cols);
+    if top_left.0 == 0 && top_left.1 == 0 {
+        let a: usize = xy(bottom_right.0, bottom_right.1);
+        return arr[a];
+    } else if top_left.0 == 0 {
+        let a: usize = xy(bottom_right.0, bottom_right.1);
+        let b: usize = xy(bottom_right.0, top_left.1 - 1);
+        return arr[a] - arr[b];
+    } else if top_left.1 == 0 {
+        let a: usize = xy(bottom_right.0, bottom_right.1);
+        let c: usize = xy(top_left.0 - 1,  bottom_right.1);
+        return arr[a] - arr[c];
+    } else {
+        let a: usize = xy(bottom_right.0, bottom_right.1);
+        let b: usize = xy(bottom_right.0, top_left.1 - 1);
+        let c: usize = xy(top_left.0 - 1,  bottom_right.1);
+        let d: usize = xy(top_left.0 - 1, top_left.1 - 1);
+        return arr[a] - arr[b] - arr[c] + arr[d]
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -114,5 +139,28 @@ mod tests {
         assert_eq!(prefix_sum_array[17], 12);
         assert_eq!(prefix_sum_array[18], 16);
         assert_eq!(prefix_sum_array[19], 20);
+    }
+
+    #[test]
+    fn test_range_sum_2d() {
+        let original_array: Vec<i32> = vec![
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+        ];
+        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_2d(&original_array, 4, 5);
+
+        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (1, 1), (2, 3));
+        assert_eq!(sum, 6);
+
+        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (0, 0), (2, 3));
+        assert_eq!(sum, 12);
+
+        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (1, 0), (2, 3));
+        assert_eq!(sum, 8);
+
+        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (0, 1), (2, 3));
+        assert_eq!(sum, 9);
     }
 }
