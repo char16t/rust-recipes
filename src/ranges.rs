@@ -48,7 +48,7 @@ where
     prefix_sum
 }
 
-pub fn range_sum_2d<T>(arr: &[T], rows: usize, cols: usize, top_left: (usize, usize), bottom_right: (usize, usize)) -> T 
+pub fn range_sum_2d<T>(arr: &[T], _rows: usize, cols: usize, top_left: (usize, usize), bottom_right: (usize, usize)) -> T 
 where 
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy
 {
@@ -172,7 +172,7 @@ where
 //     |/        |/
 //     +--------+
 //
-pub fn range_sum_3d<T>(arr: &[T], rows: usize, cols: usize, depth: usize, top_left: (usize, usize, usize), bottom_right: (usize, usize, usize)) -> T 
+pub fn range_sum_3d<T>(arr: &[T], _rows: usize, cols: usize, depth: usize, top_left: (usize, usize, usize), bottom_right: (usize, usize, usize)) -> T 
 where 
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy
 {
