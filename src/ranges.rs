@@ -1,3 +1,4 @@
+use std::cmp;
 use crate::coordinates;
 
 pub fn build_prefix_sum_array<T>(arr: &[T]) -> Vec<T> where T: Default + std::ops::Add<Output = T> + Copy {
@@ -234,6 +235,39 @@ where
             + arr[xy(x2, y1-1, z1-1)] 
             - arr[xy(x1-1, y1-1, z1-1)];
     }
+}
+
+pub fn build_sparse_table<T>(arr: &[T]) -> Vec<T>
+where 
+    T: Default + Copy + Ord
+{
+    let n: usize = arr.len();
+    let logn: usize = (n as f64).log2() as usize + 1;
+    let mut table: Vec<T> = vec![T::default(); n * logn];
+    let xy = coordinates::create_coordinate_function_2d!(logn, n);
+
+    for i in 0..n {
+        table[xy(0, i)] = arr[i];
+    }
+
+    let mut j: usize = 1;
+    while (1 << j) <= n {
+        let mut i: usize = 0;
+        while i + (1 << j) <= n {
+            table[xy(j, i)] = cmp::min(table[xy(j-1, i)], table[xy(j-1, i + (1 << (j-1)))]);
+            i += 1;
+        }
+        j += 1;
+    }
+
+    return table;
+}
+
+pub fn range_min<T: Copy + Ord>(sparse_table: &[T], length: usize, left: usize, right: usize) -> T {
+    let _logn: usize = (length as f64).log2() as usize + 1;
+    let k: usize = ((right - left + 1) as f64).log2() as usize;
+    let xy = coordinates::create_coordinate_function_2d!(_logn, length);
+    cmp::min(sparse_table[xy(k ,left)], sparse_table[xy(k, right + 1 - (1 << k))])
 }
 
 #[cfg(test)]
@@ -612,5 +646,60 @@ mod tests {
         let prefix_sum_array: Vec<i32> = build_prefix_sum_array_3d(&original_array, 4, 4, 4);
         
         range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 0, 1), (0, 0, 0));
+    }
+
+    #[test]
+    fn test_build_sparse_table() {
+        let arr: Vec<usize> = vec![1, 3, 4, 8, 6, 1, 4, 2];
+        let table: Vec<usize> = build_sparse_table(&arr);
+        assert_eq!(table.len(), 32);
+
+        assert_eq!(table[0], 1);
+        assert_eq!(table[1], 3);
+        assert_eq!(table[2], 4);
+        assert_eq!(table[3], 8);
+        assert_eq!(table[4], 6);
+        assert_eq!(table[5], 1);
+        assert_eq!(table[6], 4);
+        assert_eq!(table[7], 2);
+        assert_eq!(table[8], 1);
+        assert_eq!(table[9], 3);
+        assert_eq!(table[10], 4);
+        assert_eq!(table[11], 6);
+        assert_eq!(table[12], 1);
+        assert_eq!(table[13], 1);
+        assert_eq!(table[14], 2);
+        assert_eq!(table[15], 0);
+        assert_eq!(table[16], 1);
+        assert_eq!(table[17], 3);
+        assert_eq!(table[18], 1);
+        assert_eq!(table[19], 1);
+        assert_eq!(table[20], 1);
+        assert_eq!(table[21], 0);
+        assert_eq!(table[22], 0);
+        assert_eq!(table[23], 0);
+        assert_eq!(table[24], 1);
+        assert_eq!(table[25], 0);
+        assert_eq!(table[26], 0);
+        assert_eq!(table[27], 0);
+        assert_eq!(table[28], 0);
+        assert_eq!(table[29], 0);
+        assert_eq!(table[30], 0);
+        assert_eq!(table[31], 0);
+    }
+
+    #[test]
+    fn test_range_min() {
+        let arr: Vec<usize> = vec![1, 3, 4, 8, 6, 1, 4, 2];
+        let table: Vec<usize> = build_sparse_table(&arr);
+
+        let min: usize = range_min(&table, arr.len(), 1, 4);
+        assert_eq!(min, 3);
+
+        let min: usize = range_min(&table, arr.len(), 1, 5);
+        assert_eq!(min, 1);
+
+        let min: usize = range_min(&table, arr.len(), 0, 0);
+        assert_eq!(min, 1);
     }
 }
