@@ -275,7 +275,7 @@ where T:  Default + Copy + std::ops::AddAssign + std::ops::Add<T, Output = T>
 {
     let mut tree: Vec<T> = vec![T::default(); arr.len() + 1];
     for i in 0..arr.len() {
-        add_to_fenwick_tree::<T, T>(tree.as_mut_slice(), i+1, arr[i]);
+        add_to_fenwick_tree::<T, T>(&mut tree, i+1, arr[i]);
     }
     tree
 }
@@ -304,6 +304,56 @@ where
         idx = idx - (idx & !idx + 1);
     }
     sum
+}
+
+pub fn build_segment_tree<T>(arr: &[T]) -> Vec<T>
+where T: Default + Copy + std::ops::Add<Output = T>
+{
+    let n: usize = arr.len();
+    let mut tree: Vec<T> = vec![T::default(); 2 * n];
+    for i in 0..n {
+        tree[n + i] = arr[i];
+    }
+    for i in (1..n).rev() {
+        tree[i] = tree[2 * i] + tree[2 * i + 1];
+    }
+    tree
+}
+
+pub fn query_segment_tree<T>(segment_tree: &[T], left: usize, right: usize) -> T
+where
+    T: Default + Copy + std::ops::Add<Output = T>
+{
+    let n: usize = segment_tree.len() / 2;
+    let mut sum: T = T::default();
+    let mut l: usize = left + n;
+    let mut r: usize = right + n;
+    while l <= r {
+        if l % 2 == 1 {
+            sum = sum + segment_tree[l];
+            l += 1;
+        }
+        if r % 2 == 0 {
+            sum = sum + segment_tree[r];
+            r -= 1;
+        }
+        l /= 2;
+        r /= 2;
+    }
+    sum
+}
+
+pub fn update_segment_tree<T>(segment_tree: &mut [T], index: usize, value: T)
+where
+    T: Default + Copy + std::ops::Add<Output = T>
+{
+    let n: usize = segment_tree.len() / 2;
+    let mut idx: usize = index + n;
+    segment_tree[idx] = value;
+    while idx > 1 {
+        idx /= 2;
+        segment_tree[idx] = segment_tree[2 * idx] + segment_tree[2 * idx + 1];
+    }
 }
 
 #[cfg(test)]
@@ -745,5 +795,32 @@ mod tests {
         let fenwick_tree: Vec<i32> = build_fenwick_tree(&arr);
         let sum: i32 = range_sum_fenwick(&fenwick_tree, 5);
         assert_eq!(sum, 15);
+    }
+
+    #[test]
+    fn test_segment_tree() {
+        let arr: Vec<i32> = vec![1, 3, 5, 7, 9];
+        let mut segment_tree: Vec<i32> = build_segment_tree(&arr);
+
+        assert_eq!(segment_tree[0], 0);
+        assert_eq!(segment_tree[1], 25);
+        assert_eq!(segment_tree[2], 17);
+        assert_eq!(segment_tree[3], 8);
+        assert_eq!(segment_tree[4], 16);
+        assert_eq!(segment_tree[5], 1);
+        assert_eq!(segment_tree[6], 3);
+        assert_eq!(segment_tree[7], 5);
+        assert_eq!(segment_tree[8], 7);
+        assert_eq!(segment_tree[9], 9);
+
+        let sum: i32 = query_segment_tree(&segment_tree, 0, 0);
+        assert_eq!(sum, 1);
+
+        let sum: i32 = query_segment_tree(&segment_tree, 1, 3);
+        assert_eq!(sum, 15);
+
+        update_segment_tree(&mut segment_tree, 2, 10);
+        let sum: i32 = query_segment_tree(&segment_tree, 1, 3);
+        assert_eq!(sum, 20);
     }
 }
