@@ -270,6 +270,42 @@ pub fn range_min<T: Copy + Ord>(sparse_table: &[T], length: usize, left: usize, 
     cmp::min(sparse_table[xy(k ,left)], sparse_table[xy(k, right + 1 - (1 << k))])
 }
 
+pub fn build_fenwick_tree<T>(arr: &[T]) -> Vec<T> 
+where T:  Default + Copy + std::ops::AddAssign + std::ops::Add<T, Output = T>
+{
+    let mut tree: Vec<T> = vec![T::default(); arr.len() + 1];
+    for i in 0..arr.len() {
+        add_to_fenwick_tree::<T, T>(tree.as_mut_slice(), i+1, arr[i]);
+    }
+    tree
+}
+
+/// increase index-th element to delta. delta can have any sign
+pub fn add_to_fenwick_tree<T, D>(fenwick_tree: &mut [T], index: usize, delta: D)
+where
+    T: std::ops::Add<D, Output = T> + std::ops::AddAssign<D>,
+    D: Copy
+{
+    let mut idx: usize = index;
+    while idx < fenwick_tree.len() {
+        fenwick_tree[idx] += delta;
+        idx = idx + (idx & !idx + 1);
+    }
+}
+
+pub fn range_sum_fenwick<T>(fenwick_tree: &[T], index: usize) -> T
+where
+    T: Default + Copy + std::ops::Add<Output = T>
+{
+    let mut idx: usize = index;
+    let mut sum: T = T::default();
+    while idx > 0 {
+        sum = sum + fenwick_tree[idx];
+        idx = idx - (idx & !idx + 1);
+    }
+    sum
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -701,5 +737,13 @@ mod tests {
 
         let min: usize = range_min(&table, arr.len(), 0, 0);
         assert_eq!(min, 1);
+    }
+
+    #[test]
+    fn test_fenwick_tree() {
+        let arr: Vec<i32> = vec![3, 2, -1, 6, 5, 4, -3, 3, 7, 2, 3];
+        let fenwick_tree: Vec<i32> = build_fenwick_tree(&arr);
+        let sum: i32 = range_sum_fenwick(&fenwick_tree, 5);
+        assert_eq!(sum, 15);
     }
 }
