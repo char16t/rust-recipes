@@ -306,7 +306,7 @@ where
     sum
 }
 
-pub fn build_segment_tree<T>(arr: &[T]) -> Vec<T>
+pub fn build_segment_tree_sum<T>(arr: &[T]) -> Vec<T>
 where T: Default + Copy + std::ops::Add<Output = T>
 {
     let n: usize = arr.len();
@@ -320,7 +320,7 @@ where T: Default + Copy + std::ops::Add<Output = T>
     tree
 }
 
-pub fn query_segment_tree<T>(segment_tree: &[T], left: usize, right: usize) -> T
+pub fn query_segment_tree_sum<T>(segment_tree: &[T], left: usize, right: usize) -> T
 where
     T: Default + Copy + std::ops::Add<Output = T>
 {
@@ -343,7 +343,7 @@ where
     sum
 }
 
-pub fn update_segment_tree<T>(segment_tree: &mut [T], index: usize, value: T)
+pub fn update_segment_tree_sum<T>(segment_tree: &mut [T], index: usize, value: T)
 where
     T: Default + Copy + std::ops::Add<Output = T>
 {
@@ -353,6 +353,55 @@ where
     while idx > 1 {
         idx /= 2;
         segment_tree[idx] = segment_tree[2 * idx] + segment_tree[2 * idx + 1];
+    }
+}
+
+pub struct SegmentTree<T, F> {
+    tree: Vec<T>,
+    n: usize,
+    operation: F,
+}
+impl<T, F> SegmentTree<T, F>
+where
+    T: Default + Copy + std::ops::Add<Output = T>,
+    F: Fn(T, T) -> T
+{
+    pub fn new(arr: &[T], operation: F) -> SegmentTree<T, F> {
+        let n: usize = arr.len();
+        let mut tree: Vec<T> = vec![T::default(); 2 * n];
+        for i in 0..n {
+            tree[n + i] = arr[i];
+        }
+        for i in (1..n).rev() {
+            tree[i] = operation(tree[2 * i], tree[2 * i + 1]);
+        }
+        SegmentTree{ tree, n, operation }
+    }
+    pub fn query(&self, left: usize, right: usize) -> T {
+        let mut sum: T = T::default();
+        let mut l: usize = left + self.n;
+        let mut r: usize = right + self.n;
+        while l <= r {
+            if l % 2 == 1 {
+                sum = sum + self.tree[l];
+                l += 1;
+            }
+            if r % 2 == 0 {
+                sum = sum + self.tree[r];
+                r -= 1;
+            }
+            l /= 2;
+            r /= 2;
+        }
+        sum
+    }
+    pub fn update(&mut self, index: usize, value: T) {
+        let mut idx: usize = index + self.n;
+        self.tree[idx] = value;
+        while idx > 1 {
+            idx /= 2;
+            self.tree[idx] = (self.operation)(self.tree[2 * idx], self.tree[2 * idx + 1]);
+        }
     }
 }
 
@@ -798,9 +847,9 @@ mod tests {
     }
 
     #[test]
-    fn test_segment_tree() {
+    fn test_segment_tree_sum() {
         let arr: Vec<i32> = vec![1, 3, 5, 7, 9];
-        let mut segment_tree: Vec<i32> = build_segment_tree(&arr);
+        let mut segment_tree: Vec<i32> = build_segment_tree_sum(&arr);
 
         assert_eq!(segment_tree[0], 0);
         assert_eq!(segment_tree[1], 25);
@@ -813,14 +862,39 @@ mod tests {
         assert_eq!(segment_tree[8], 7);
         assert_eq!(segment_tree[9], 9);
 
-        let sum: i32 = query_segment_tree(&segment_tree, 0, 0);
+        let sum: i32 = query_segment_tree_sum(&segment_tree, 0, 0);
         assert_eq!(sum, 1);
 
-        let sum: i32 = query_segment_tree(&segment_tree, 1, 3);
+        let sum: i32 = query_segment_tree_sum(&segment_tree, 1, 3);
         assert_eq!(sum, 15);
 
-        update_segment_tree(&mut segment_tree, 2, 10);
-        let sum: i32 = query_segment_tree(&segment_tree, 1, 3);
+        update_segment_tree_sum(&mut segment_tree, 2, 10);
+        let sum: i32 = query_segment_tree_sum(&segment_tree, 1, 3);
         assert_eq!(sum, 20);
+    }
+
+    #[test]
+    fn test_segment_tree_struct_sum() {
+        let arr: Vec<i32> = vec![1, 3, 5, 7, 9];
+        let sum_op = |a, b| { a + b };
+        let mut tree = SegmentTree::new(&arr, sum_op);
+        
+        assert_eq!(tree.query(0, 0), 1);
+        assert_eq!(tree.query(1, 3), 15);
+        tree.update(2, 10);
+        assert_eq!(tree.query(1, 3), 20);
+    }
+
+    #[test]
+    fn test_segment_tree_struct_logical_ops() {
+        let arr: Vec<u8> = vec![0, 0, 0, 1, 1];
+        let sum_op = |a, b| { a | b };
+        let mut tree = SegmentTree::new(&arr, sum_op);
+        
+        assert_eq!(tree.query(0, 0), 0);
+        assert_eq!(tree.query(1, 3), 1);
+        assert_eq!(tree.query(1, 2), 0);
+        tree.update(2, 1);
+        assert_eq!(tree.query(1, 2), 1);
     }
 }
