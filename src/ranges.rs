@@ -405,6 +405,37 @@ where
     }
 }
 
+pub fn build_difference_array<T>(arr: &[T]) -> Vec<T>
+where
+    T: Default + Copy + std::ops::Sub<Output = T>
+{
+    let n: usize = arr.len();
+    let mut difference_array: Vec<T> = vec![T::default(); n];
+    difference_array[0] = arr[0];
+    for i in 1..n {
+        difference_array[i] = arr[i] - arr[i-1];
+    }
+    difference_array
+}
+
+
+pub fn update_difference_array<T>(diff_arr: &mut [T], l: usize, r: usize, val: T)
+where
+    T: Copy + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
+{
+    diff_arr[l] = diff_arr[l] + val;
+    if r + 1 < diff_arr.len() {
+        diff_arr[r + 1] = diff_arr[r + 1] - val;
+    }
+}
+
+pub fn build_original_by_difference_array<T>(diff_arr: &[T]) -> Vec<T>
+where 
+    T: Default + Copy + std::ops::Add<Output = T>
+{
+    build_prefix_sum_array(&diff_arr)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -896,5 +927,33 @@ mod tests {
         assert_eq!(tree.query(1, 2), 0);
         tree.update(2, 1);
         assert_eq!(tree.query(1, 2), 1);
+    }
+
+    #[test]
+    fn test_difference_array() {
+        let arr: Vec<i32> = vec![3, 1, 4, 1, 5];
+        let mut difference_array: Vec<i32> = build_difference_array(&arr);
+
+        assert_eq!(difference_array[0], 3);
+        assert_eq!(difference_array[1], -2);
+        assert_eq!(difference_array[2], 3);
+        assert_eq!(difference_array[3], -3);
+        assert_eq!(difference_array[4], 4);
+
+        update_difference_array(&mut difference_array, 1, 3, 5);
+        let restored: Vec<i32> = build_original_by_difference_array(&difference_array);
+        assert_eq!(restored[0], 3);
+        assert_eq!(restored[1], 6);
+        assert_eq!(restored[2], 9);
+        assert_eq!(restored[3], 6);
+        assert_eq!(restored[4], 5);
+
+        update_difference_array(&mut difference_array, 1, 3, -4);
+        let restored: Vec<i32> = build_original_by_difference_array(&difference_array);
+        assert_eq!(restored[0], 3);
+        assert_eq!(restored[1], 2);
+        assert_eq!(restored[2], 5);
+        assert_eq!(restored[3], 2);
+        assert_eq!(restored[4], 5);
     }
 }
