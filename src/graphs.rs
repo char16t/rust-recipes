@@ -1,41 +1,25 @@
 use std::collections::HashMap;
 
-pub struct UndirectedGraph<T> {
+pub struct AdjacencyListGraph<T> {
     adjacency_list: HashMap<T, Vec<T>>,
+    is_directed: bool
 }
 
-impl<T> UndirectedGraph<T>
+impl<T> AdjacencyListGraph<T>
 where
     T: Copy + Eq + std::hash::Hash
 {
-    pub fn new() -> Self {
-        Self { adjacency_list: HashMap::new() }
+    pub fn new_undirected() -> Self {
+        Self { adjacency_list: HashMap::new(), is_directed: false }
+    }
+    pub fn new_directed() -> Self {
+        Self { adjacency_list: HashMap::new(), is_directed: true }
     }
     pub fn add_edge(&mut self, a: T, b: T) {
         self.adjacency_list.entry(a).or_insert(Vec::new()).push(b);
-        self.adjacency_list.entry(b).or_insert(Vec::new()).push(a);
-    }
-    pub fn neighbors(&self, v: T) -> &[T] {
-        match self.adjacency_list.get(&v) {
-            Some(vec) => vec,
-            None => &[]
+        if !self.is_directed {
+            self.adjacency_list.entry(b).or_insert(Vec::new()).push(a);
         }
-    }
-}
-
-pub struct DirectedGraph<T> {
-    adjacency_list: HashMap<T, Vec<T>>,
-}
-
-impl<T> DirectedGraph<T>
-where
-    T: Copy + Eq + std::hash::Hash
-{
-    pub fn new() -> Self {
-        Self { adjacency_list: HashMap::new() }
-    }
-    pub fn add_edge(&mut self, a: T, b: T) {
-        self.adjacency_list.entry(a).or_insert(Vec::new()).push(b);
     }
     pub fn neighbors(&self, v: T) -> &[T] {
         match self.adjacency_list.get(&v) {
@@ -50,8 +34,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_undirected_graph() {
-        let mut graph: UndirectedGraph<i32> = UndirectedGraph::new();
+    fn test_adjacency_list_undirected_graph() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
         graph.add_edge(0, 1);
         graph.add_edge(0, 2);
         graph.add_edge(1, 3);
@@ -78,8 +62,8 @@ mod tests {
     }
 
     #[test]
-    fn test_directed_graph() {
-        let mut graph: DirectedGraph<i32> = DirectedGraph::new();
+    fn test_adjacency_list_directed_graph() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         graph.add_edge(0, 1);
         graph.add_edge(0, 2);
         graph.add_edge(1, 3);
