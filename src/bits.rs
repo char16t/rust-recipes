@@ -51,6 +51,30 @@ pub fn is_bit_set_in_matrix(matrix: isize, _n: usize, m: usize, row: usize, col:
     is_bit_set(matrix, xy(row, col))
 }
 
+pub fn sets_union(a: isize, b: isize) -> isize {
+    a | b
+}
+
+pub fn sets_intersection(a: isize, b: isize) -> isize {
+    a & b
+}
+
+pub fn sets_symetric_difference(a: isize, b: isize) -> isize {
+    a ^ b
+}
+
+pub fn sets_difference(a: isize, b: isize) -> isize {
+    a & !b
+}
+
+pub fn sets_is_subset(a: isize, b: isize) -> bool {
+    (a & b) == a
+}
+
+pub fn sets_is_superset(a: isize, b: isize) -> bool {
+    (a & b) == b
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -120,5 +144,44 @@ mod tests {
     fn test_is_bit_set_in_matrix() {
         assert_eq!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 0), true);
         assert_eq!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 1),false);
+    }
+
+    #[test]
+    fn test_sets_union() {
+        assert_eq!(sets_union(0b10101, 0b01010), 0b11111);
+        assert_eq!(sets_union(0b10111, 0b01010), 0b11111);
+    }
+
+    #[test]
+    fn test_sets_intersection() {
+        assert_eq!(sets_intersection(0b10101, 0b01010), 0b00000);
+        assert_eq!(sets_intersection(0b10111, 0b01010), 0b00010);
+    }
+
+    #[test]
+    fn test_sets_symetric_difference() {
+        assert_eq!(sets_symetric_difference(0b10101, 0b01010), 0b11111);
+        assert_eq!(sets_symetric_difference(0b10111, 0b01010), 0b11101);
+    }
+
+    #[test]
+    fn test_sets_difference() {
+        assert_eq!(sets_difference(0b10101, 0b01010), 0b10101);
+        assert_eq!(sets_difference(0b11111, 0b11010), 0b00101);
+    }
+
+    #[test]
+    fn test_sets_is_subset() {
+        assert_eq!(sets_is_subset(0b10101, 0b01010), false);
+        assert_eq!(sets_is_subset(0b11111, 0b11010), false);
+
+        assert_eq!(sets_is_subset(0b00010, 0b11111), true);
+    }
+
+
+    #[test]
+    fn test_sets_is_superset() {
+        assert_eq!(sets_is_superset(0b11111, 0b11010), true);
+        assert_eq!(sets_is_superset(0b00010, 0b11111), false);
     }
 }
