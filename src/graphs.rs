@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::create_coordinate_function_2d;
+
 pub struct AdjacencyListGraph<T> {
     adjacency_list: HashMap<T, Vec<T>>,
     is_directed: bool
@@ -58,6 +60,44 @@ where
         }
     }
 }
+
+pub struct AdjacencyMatrixWeighted<W> {
+    adjacency_matrix: Vec<W>,
+    is_directed: bool,
+    capacity: usize,
+}
+impl<W> AdjacencyMatrixWeighted<W> 
+where
+    W: Default + Copy + std::fmt::Debug,
+{
+    pub fn new_undirected(size: usize) -> Self {
+        Self {
+            adjacency_matrix: vec![W::default(); size * size],
+            is_directed: false,
+            capacity: size,
+        }
+    }
+    pub fn new_directed(size: usize) -> Self {
+        Self {
+            adjacency_matrix: vec![W::default(); size * size],
+            is_directed: true,
+            capacity: size
+        }
+    }
+    pub fn add_edge(&mut self, a: usize, b: usize, w: W) {
+        let xy = create_coordinate_function_2d!(self.capacity, self.capacity);
+        self.adjacency_matrix[xy(a, b)] = w;
+        if !self.is_directed {
+            self.adjacency_matrix[xy(b, a)] = w;
+        }
+    }
+    pub fn weigth(&self, a: usize, b: usize) -> W {
+        let xy = create_coordinate_function_2d!(self.capacity, self.capacity);
+        let pos: usize = xy(a, b);
+        return self.adjacency_matrix[pos];
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -167,5 +207,52 @@ mod tests {
 
         let neighbors: &[(i32, f64)] = graph.neighbors(4);
         assert_eq!(neighbors.len(), 0);
+    }
+
+    #[test]
+    fn test_adjacency_matrix_weighed_undirected_graph() {
+        let mut graph = AdjacencyMatrixWeighted::new_undirected(4);
+        graph.add_edge(0, 1, 0.5);
+        graph.add_edge(0, 2, 0.7);
+        graph.add_edge(1, 3, 0.9);
+        graph.add_edge(2, 3, 0.1);
+        
+        assert_eq!(graph.weigth(0, 1), 0.5);
+        assert_eq!(graph.weigth(1, 0), 0.5);
+
+        assert_eq!(graph.weigth(0, 2), 0.7);
+        assert_eq!(graph.weigth(2, 0), 0.7);
+
+        assert_eq!(graph.weigth(1, 3), 0.9);
+        assert_eq!(graph.weigth(3, 1), 0.9);
+
+        assert_eq!(graph.weigth(2, 3), 0.1);
+        assert_eq!(graph.weigth(3, 2), 0.1);
+
+        assert_eq!(graph.weigth(3, 0), 0.0);
+    }
+
+
+    #[test]
+    fn test_adjacency_matrix_weighed_directed_graph() {
+        let mut graph = AdjacencyMatrixWeighted::new_directed(4);
+        graph.add_edge(0, 1, 0.5);
+        graph.add_edge(0, 2, 0.7);
+        graph.add_edge(1, 3, 0.9);
+        graph.add_edge(2, 3, 0.1);
+        
+        assert_eq!(graph.weigth(0, 1), 0.5);
+        assert_eq!(graph.weigth(1, 0), 0.0);
+
+        assert_eq!(graph.weigth(0, 2), 0.7);
+        assert_eq!(graph.weigth(2, 0), 0.0);
+
+        assert_eq!(graph.weigth(1, 3), 0.9);
+        assert_eq!(graph.weigth(3, 1), 0.0);
+
+        assert_eq!(graph.weigth(2, 3), 0.1);
+        assert_eq!(graph.weigth(3, 2), 0.0);
+
+        assert_eq!(graph.weigth(3, 0), 0.0);
     }
 }
