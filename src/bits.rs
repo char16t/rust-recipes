@@ -75,6 +75,80 @@ pub fn sets_is_superset(a: isize, b: isize) -> bool {
     (a & b) == b
 }
 
+const BITS_PER_U64: usize = 64;
+
+pub struct LongArithmetic {
+    data: Vec<u64>,
+}
+
+impl LongArithmetic {
+
+    pub fn new() -> Self {
+        LongArithmetic { data: Vec::with_capacity(1) }
+    }
+
+    pub fn with_capacity(size: usize) -> Self {
+        let cap: usize = size / BITS_PER_U64 + 1;
+        let mut a: LongArithmetic = LongArithmetic { data: Vec::with_capacity(1) };
+        a.data.resize_with(cap, Default::default);
+        a
+    }
+
+    pub fn set_bit(&mut self, index: usize) {
+        let array_index: usize = index / BITS_PER_U64;
+        let bit_index: usize = index % BITS_PER_U64;
+       
+        while array_index >= self.data.len() {
+            self.data.push(0);
+        }
+
+        self.data[array_index] |= 1 << bit_index;
+    }
+
+    pub fn unset_bit(&mut self, index: usize) {
+        let array_index: usize = index / BITS_PER_U64;
+        let bit_index: usize = index % BITS_PER_U64;
+       
+        while array_index >= self.data.len() {
+            self.data.push(0);
+        }
+
+        self.data[array_index] &= !(1 << bit_index);
+    }
+
+    pub fn toggle_bit(&mut self, index: usize) {
+        let array_index: usize = index / BITS_PER_U64;
+        let bit_index: usize = index % BITS_PER_U64;
+       
+        while array_index >= self.data.len() {
+            self.data.push(0);
+        }
+
+        self.data[array_index] ^= 1 << bit_index;
+    }
+
+    pub fn is_bit_set(&mut self, index: usize) -> bool {
+        let array_index: usize = index / BITS_PER_U64;
+        let bit_index: usize = index % BITS_PER_U64;
+       
+        while array_index >= self.data.len() {
+            self.data.push(0);
+        }
+
+        (self.data[array_index] & (1 << bit_index)) != 0
+    }
+}
+
+#[allow(unused_must_use)]
+impl std::fmt::Debug for LongArithmetic {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (i, &num) in self.data.iter().enumerate() {
+            write!(f, "Array[{}]: {:064b} ({})\n", i, num, num);
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -178,10 +252,61 @@ mod tests {
         assert_eq!(sets_is_subset(0b00010, 0b11111), true);
     }
 
-
     #[test]
     fn test_sets_is_superset() {
         assert_eq!(sets_is_superset(0b11111, 0b11010), true);
         assert_eq!(sets_is_superset(0b00010, 0b11111), false);
+    }
+
+    #[test]
+    fn test_long_arithmetic_with_capacity() {
+        let a: LongArithmetic = LongArithmetic::with_capacity(64);
+        let expected_output: &str = concat!(
+            "Array[0]: 0000000000000000000000000000000000000000000000000000000000000000 (0)\n",
+            "Array[1]: 0000000000000000000000000000000000000000000000000000000000000000 (0)\n"
+        );
+        assert_eq!(format!("{:?}", a), expected_output);
+    }
+
+    #[test]
+    fn test_long_arithmetic_debug() {
+        let mut a: LongArithmetic = LongArithmetic::new();
+        a.set_bit(65);
+        let expected_output: &str = concat!(
+            "Array[0]: 0000000000000000000000000000000000000000000000000000000000000000 (0)\n",
+            "Array[1]: 0000000000000000000000000000000000000000000000000000000000000010 (2)\n"
+        );
+        assert_eq!(format!("{:?}", a), expected_output);
+    }
+
+    #[test]
+    fn test_long_arithmetic_set_bit() {
+        let mut a: LongArithmetic = LongArithmetic::new();
+        a.set_bit(65);
+        assert_eq!(a.is_bit_set(65), true);
+        assert_eq!(a.is_bit_set(128), false);
+    }
+
+    #[test]
+    fn test_long_arithmetic_unset_bit() {
+        let mut a: LongArithmetic = LongArithmetic::new();
+        a.set_bit(65);
+        a.unset_bit(65);
+        assert_eq!(a.is_bit_set(65), false);
+
+        a.unset_bit(256);
+        assert_eq!(a.is_bit_set(256), false);
+
+    }
+
+    #[test]
+    fn test_long_arithmetic_toggle_bit() {
+        let mut a: LongArithmetic = LongArithmetic::new();
+        a.toggle_bit(65);
+        assert_eq!(a.is_bit_set(65), true);
+        a.toggle_bit(65);
+        assert_eq!(a.is_bit_set(65), false);
+        a.toggle_bit(65);
+        assert_eq!(a.is_bit_set(65), true);
     }
 }
