@@ -18,6 +18,17 @@ pub fn is_power_of_two(n: isize) -> bool {
     (n & (n - 1)) == 0
 }
 
+/// Brian Kernighan's algorithm
+pub fn count_set_bits(n: isize) -> isize {
+    let mut count: isize = 0;
+    let mut num: isize = n;
+    while num != 0 {
+        num &= num - 1;
+        count += 1;
+    }
+    count
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -54,5 +65,14 @@ mod tests {
         assert_eq!(is_power_of_two(0b0100), true);
         assert_eq!(is_power_of_two(0b0110), false);
         assert_eq!(is_power_of_two(0b0101), false);
+    }
+
+    #[test]
+    fn test_count_set_bits() {
+        assert_eq!(count_set_bits(0b0000), 0);
+        assert_eq!(count_set_bits(0b1000), 1);
+        assert_eq!(count_set_bits(0b1100), 2);
+        assert_eq!(count_set_bits(0b1101), 3);
+        assert_eq!(count_set_bits(0b1111), 4);
     }
 }
