@@ -6,3 +6,4 @@ pub mod ranges;
 pub mod coordinates;
 pub mod sequences;
 pub mod graphs;
+pub mod bits;
