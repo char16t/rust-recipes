@@ -147,6 +147,22 @@ where
     }
 }
 
+pub struct EdgeListWegihtedGraph<T, W> {
+    pub edges: Vec<(T, T, W)>
+}
+
+impl<T, W> EdgeListWegihtedGraph<T, W>
+where
+    T: Copy + Eq + std::hash::Hash
+{
+    pub fn new_directed() -> Self {
+        Self { edges: Vec::new() }
+    }
+    pub fn add_edge(&mut self, a: T, b: T, w: W) {
+        self.edges.push((a, b, w));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -357,6 +373,17 @@ mod tests {
         assert_eq!(g.edges[0], (1, 2));
         assert_eq!(g.edges[1], (2, 3));
         assert_eq!(g.edges[2], (3, 4));
+    }
+
+    #[test]
+    fn test_edge_list_weighted_directed_graph() {
+        let mut g: EdgeListWegihtedGraph<i32, f64> = EdgeListWegihtedGraph::new_directed();
+        g.add_edge(1, 2, 0.7);
+        g.add_edge(2, 3, 0.9);
+        g.add_edge(3, 4, 0.5);
+        assert_eq!(g.edges[0], (1, 2, 0.7));
+        assert_eq!(g.edges[1], (2, 3, 0.9));
+        assert_eq!(g.edges[2], (3, 4, 0.5));
     }
 
 }
