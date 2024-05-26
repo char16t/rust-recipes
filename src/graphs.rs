@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{bits::{self, LongArithmetic}, coordinates, create_coordinate_function_2d};
+use crate::{bits, coordinates};
 
 pub struct AdjacencyListGraph<T> {
     adjacency_list: HashMap<T, Vec<T>>,
@@ -85,14 +85,14 @@ where
         }
     }
     pub fn add_edge(&mut self, a: usize, b: usize, w: W) {
-        let xy = create_coordinate_function_2d!(self.capacity, self.capacity);
+        let xy = coordinates::create_coordinate_function_2d!(self.capacity, self.capacity);
         self.adjacency_matrix[xy(a, b)] = w;
         if !self.is_directed {
             self.adjacency_matrix[xy(b, a)] = w;
         }
     }
     pub fn weigth(&self, a: usize, b: usize) -> W {
-        let xy = create_coordinate_function_2d!(self.capacity, self.capacity);
+        let xy = coordinates::create_coordinate_function_2d!(self.capacity, self.capacity);
         let pos: usize = xy(a, b);
         return self.adjacency_matrix[pos];
     }
@@ -119,15 +119,31 @@ impl AdjacencyMatrix {
         }
     }
     pub fn add_edge(&mut self, a: usize, b: usize) {
-        let xy = create_coordinate_function_2d!(self.length, self.length);
+        let xy = coordinates::create_coordinate_function_2d!(self.length, self.length);
         self.data.set_bit(xy(a, b));
         if !self.is_directed {
             self.data.set_bit(xy(b, a));
         }
     }
     pub fn check_edge(&mut self, a: usize, b: usize) -> bool {
-        let xy = create_coordinate_function_2d!(self.length, self.length);
+        let xy = coordinates::create_coordinate_function_2d!(self.length, self.length);
         self.data.is_bit_set(xy(a, b))
+    }
+}
+
+pub struct EdgeListGraph<T> {
+    pub edges: Vec<(T, T)>
+}
+
+impl<T> EdgeListGraph<T>
+where
+    T: Copy + Eq + std::hash::Hash
+{
+    pub fn new_directed() -> Self {
+        Self { edges: Vec::new() }
+    }
+    pub fn add_edge(&mut self, a: T, b: T) {
+        self.edges.push((a, b));
     }
 }
 
@@ -331,4 +347,16 @@ mod tests {
         assert_eq!(g.check_edge(32, 16), true);
         assert_eq!(g.check_edge(16, 32), true);
     }
+
+    #[test]
+    fn test_edge_list_directed_graph() {
+        let mut g: EdgeListGraph<i32> = EdgeListGraph::new_directed();
+        g.add_edge(1, 2);
+        g.add_edge(2, 3);
+        g.add_edge(3, 4);
+        assert_eq!(g.edges[0], (1, 2));
+        assert_eq!(g.edges[1], (2, 3));
+        assert_eq!(g.edges[2], (3, 4));
+    }
+
 }
