@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::create_coordinate_function_2d;
+use crate::{bits::{self, LongArithmetic}, coordinates, create_coordinate_function_2d};
 
 pub struct AdjacencyListGraph<T> {
     adjacency_list: HashMap<T, Vec<T>>,
@@ -98,6 +98,38 @@ where
     }
 }
 
+pub struct AdjacencyMatrix {
+    data: bits::LongArithmetic,
+    length: usize,
+    is_directed: bool
+}
+impl AdjacencyMatrix {
+    pub fn new_undirected(size: usize) -> Self {
+        Self {
+            data: bits::LongArithmetic::with_capacity(size),
+            length: size,
+            is_directed: false
+        }
+    }
+    pub fn new_directed(size: usize) -> Self {
+        Self {
+            data: bits::LongArithmetic::with_capacity(size),
+            length: size,
+            is_directed: true
+        }
+    }
+    pub fn add_edge(&mut self, a: usize, b: usize) {
+        let xy = create_coordinate_function_2d!(self.length, self.length);
+        self.data.set_bit(xy(a, b));
+        if !self.is_directed {
+            self.data.set_bit(xy(b, a));
+        }
+    }
+    pub fn check_edge(&mut self, a: usize, b: usize) -> bool {
+        let xy = create_coordinate_function_2d!(self.length, self.length);
+        self.data.is_bit_set(xy(a, b))
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -254,5 +286,49 @@ mod tests {
         assert_eq!(graph.weigth(3, 2), 0.0);
 
         assert_eq!(graph.weigth(3, 0), 0.0);
+    }
+
+    #[test]
+    fn test_adjacency_matrix_undirected_graph() {
+        let mut g: AdjacencyMatrix = AdjacencyMatrix::new_undirected(512);
+        g.add_edge(256, 128);
+        g.add_edge(128, 64);
+        g.add_edge(64, 32);
+        g.add_edge(32, 16);
+        g.add_edge(16, 32);
+
+        assert_eq!(g.check_edge(256, 128), true);
+        assert_eq!(g.check_edge(128, 256), true);
+
+        assert_eq!(g.check_edge(128, 64), true);
+        assert_eq!(g.check_edge(64, 128), true);
+
+        assert_eq!(g.check_edge(64, 32), true);
+        assert_eq!(g.check_edge(32, 64), true);
+
+        assert_eq!(g.check_edge(32, 16), true);
+        assert_eq!(g.check_edge(16, 32), true);
+    }
+
+    #[test]
+    fn test_adjacency_matrix_directed_graph() {
+        let mut g: AdjacencyMatrix = AdjacencyMatrix::new_directed(512);
+        g.add_edge(256, 128);
+        g.add_edge(128, 64);
+        g.add_edge(64, 32);
+        g.add_edge(32, 16);
+        g.add_edge(16, 32);
+
+        assert_eq!(g.check_edge(256, 128), true);
+        assert_eq!(g.check_edge(128, 256), false);
+
+        assert_eq!(g.check_edge(128, 64), true);
+        assert_eq!(g.check_edge(64, 128), false);
+
+        assert_eq!(g.check_edge(64, 32), true);
+        assert_eq!(g.check_edge(32, 64), false);
+
+        assert_eq!(g.check_edge(32, 16), true);
+        assert_eq!(g.check_edge(16, 32), true);
     }
 }
