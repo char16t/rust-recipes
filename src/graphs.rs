@@ -32,6 +32,9 @@ where
     pub fn iter_dfs(&self, start_node: T) -> AdjacencyListGraphDfsIterator<T> {
         AdjacencyListGraphDfsIterator::new(&self.adjacency_list, start_node)
     }
+    pub fn iter_bfs(&self, start_node: T) -> AdjacencyListGraphBfsIterator<T> {
+        AdjacencyListGraphBfsIterator::new(&self.adjacency_list, start_node)
+    }
 }
 
 pub struct AdjacencyListGraphDfsIterator<'a, T> {
@@ -69,6 +72,50 @@ where
             for &neighbor in &self.adjacency_list[&node] {
                 if !self.visited.contains(&neighbor) {
                     self.stack.push_front(neighbor);
+                    self.visited.insert(neighbor);
+                }
+            }
+            return Some(node);
+        }
+        None
+    }
+}
+
+pub struct AdjacencyListGraphBfsIterator<'a, T> {
+    adjacency_list: &'a HashMap<T, Vec<T>>,
+    visited: HashSet<T>,
+    queue: VecDeque<T>,
+}
+
+impl<'a, T> AdjacencyListGraphBfsIterator<'a, T>
+where
+    T: Copy + Eq + std::hash::Hash
+{
+    fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
+        let mut queue: VecDeque<T> = VecDeque::new();
+        queue.push_back(start_node);
+        let mut visited: HashSet<T> = HashSet::new();
+        visited.insert(start_node);
+
+        AdjacencyListGraphBfsIterator {
+            adjacency_list,
+            visited,
+            queue,
+        }
+    }
+}
+
+impl<'a, T> Iterator for AdjacencyListGraphBfsIterator<'a, T>
+where
+    T: Copy + Eq + std::hash::Hash
+{
+    type Item = T;
+
+    fn next(&mut self) -> Option<T> {
+        while let Some(node) = self.queue.pop_front() {
+            for &neighbor in &self.adjacency_list[&node] {
+                if !self.visited.contains(&neighbor) {
+                    self.queue.push_back(neighbor);
                     self.visited.insert(neighbor);
                 }
             }
@@ -434,7 +481,7 @@ mod tests {
     }
 
     #[test]
-    fn test_() {
+    fn test_adjacency_list_graph_dfs_iterator() {
         let mut g: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         g.add_edge(0, 1);
         g.add_edge(0, 2);
@@ -453,6 +500,29 @@ mod tests {
 
         let expected_order: Vec<i32> = vec![0, 2, 5, 1, 4, 3];
         let actual_order: Vec<i32> = g.iter_dfs(0).collect();
+        assert_eq!(actual_order, expected_order);
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_bfs_iterator() {
+        let mut g: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        g.add_edge(0, 1);
+        g.add_edge(0, 2);
+        g.add_edge(1, 0);
+        g.add_edge(1, 3);
+        g.add_edge(1, 4);
+        g.add_edge(2, 0);
+        g.add_edge(2, 5);
+        g.add_edge(3, 1);
+        g.add_edge(4, 1);
+        g.add_edge(5, 2);
+
+        // for node in g.iter_bfs(0) {
+        //     println!("Visited Node: {}", node);
+        // }
+
+        let expected_order: Vec<i32> = vec![0, 1, 2, 3, 4, 5];
+        let actual_order: Vec<i32> = g.iter_bfs(0).collect();
         assert_eq!(actual_order, expected_order);
     }
 }
