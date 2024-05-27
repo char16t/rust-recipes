@@ -17,6 +17,9 @@ where
     pub fn new_directed() -> Self {
         Self { adjacency_list: HashMap::new(), is_directed: true }
     }
+    pub fn add_vertex(&mut self, a: T) {
+        self.adjacency_list.entry(a).or_insert(Vec::new());
+    }
     pub fn add_edge(&mut self, a: T, b: T) {
         self.adjacency_list.entry(a).or_insert(Vec::new()).push(b);
         if !self.is_directed {
@@ -34,6 +37,13 @@ where
     }
     pub fn iter_bfs(&self, start_node: T) -> AdjacencyListGraphBfsIterator<T> {
         AdjacencyListGraphBfsIterator::new(&self.adjacency_list, start_node)
+    }
+    pub fn is_connected(&self) -> bool {
+        if let Some((key, _value)) = self.adjacency_list.iter().next() {
+            let visited: Vec<T> = self.iter_dfs(*key).collect();
+            return visited.len() == self.adjacency_list.len();
+        }
+        true // empty graph is connected
     }
 }
 
@@ -141,11 +151,21 @@ where
     pub fn new_directed() -> Self {
         Self { adjacency_list: HashMap::new(), is_directed: true }
     }
+    pub fn add_vertex(&mut self, a: T) {
+        self.adjacency_list.entry(a).or_insert(Vec::new());
+    }
     pub fn add_edge(&mut self, a: T, b: T, w: W) {
         self.adjacency_list.entry(a).or_insert(Vec::new()).push((b, w));
         if !self.is_directed {
             self.adjacency_list.entry(b).or_insert(Vec::new()).push((a, w));
         }
+    }
+    pub fn is_connected(&self) -> bool {
+        if let Some((key, _value)) = self.adjacency_list.iter().next() {
+            let visited: Vec<(T, W)> = self.iter_dfs(*key).collect();
+            return visited.len() == self.adjacency_list.len();
+        }
+        true // empty graph is connected
     }
     pub fn neighbors(&self, v: T) -> &[(T, W)] {
         match self.adjacency_list.get(&v) {
@@ -617,6 +637,34 @@ mod tests {
     }
 
     #[test]
+    fn test_adjacency_list_graph_is_connected() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_edge(0, 1);
+        graph.add_edge(0, 2);
+        graph.add_edge(1, 3);
+        graph.add_edge(2, 3);
+        assert_eq!(graph.is_connected(), true);
+
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_vertex(0);
+        graph.add_vertex(1);
+        graph.add_vertex(2);
+        graph.add_edge(0, 1);
+        graph.add_edge(0, 2);
+        assert_eq!(graph.is_connected(), true);
+
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_vertex(0);
+        graph.add_vertex(1);
+        graph.add_vertex(2);
+        graph.add_edge(0, 1);
+        assert_eq!(graph.is_connected(), false);
+
+        let empty: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        assert_eq!(empty.is_connected(), true);
+    }
+
+    #[test]
     fn test_adjacency_list_weighed_undirected_graph() {
         let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(0, 1, 0.5);
@@ -670,6 +718,34 @@ mod tests {
     }
 
     #[test]
+    fn test_adjacency_list_weighted_graph_is_connected() {
+        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_edge(0, 1, 0.1);
+        graph.add_edge(0, 2, 0.1);
+        graph.add_edge(1, 3, 0.1);
+        graph.add_edge(2, 3, 0.1);
+        assert_eq!(graph.is_connected(), true);
+
+        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_vertex(0);
+        graph.add_vertex(1);
+        graph.add_vertex(2);
+        graph.add_edge(0, 1, 0.1);
+        graph.add_edge(0, 2, 0.1);
+        assert_eq!(graph.is_connected(), true);
+
+        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_vertex(0);
+        graph.add_vertex(1);
+        graph.add_vertex(2);
+        graph.add_edge(0, 1, 0.1);
+        assert_eq!(graph.is_connected(), false);
+
+        let empty: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        assert_eq!(empty.is_connected(), true);
+    }
+
+    #[test]
     fn test_adjacency_matrix_weighed_undirected_graph() {
         let mut graph = AdjacencyMatrixWeighted::new_undirected(4);
         graph.add_edge(0, 1, 0.5);
@@ -691,7 +767,6 @@ mod tests {
 
         assert_eq!(graph.weigth(3, 0), 0.0);
     }
-
 
     #[test]
     fn test_adjacency_matrix_weighed_directed_graph() {
