@@ -889,7 +889,7 @@ mod tests {
         g.add_edge(4, 1, 90);
         g.add_edge(5, 2, 25);
 
-        // for node in g.iter_dfs(0) {
+        // for node in g.iter_dfs_asc(0) {
         //     println!("Visited Node: {}", node);
         // }
 
@@ -912,7 +912,7 @@ mod tests {
         g.add_edge(4, 1, 90);
         g.add_edge(5, 2, 25);
 
-        // for node in g.iter_bfs(0) {
+        // for node in g.iter_bfs_asc(0) {
         //     println!("Visited Node: {} ({})", node.0, node.1);
         // }
 
@@ -935,7 +935,7 @@ mod tests {
         g.add_edge(4, 1, 90);
         g.add_edge(5, 2, 25);
 
-        // for node in g.iter_dfs(0) {
+        // for node in g.iter_dfs_desc(0) {
         //     println!("Visited Node: {}", node);
         // }
 
@@ -958,7 +958,7 @@ mod tests {
         g.add_edge(4, 1, 90);
         g.add_edge(5, 2, 25);
 
-        // for node in g.iter_bfs(0) {
+        // for node in g.iter_bfs_desc(0) {
         //     println!("Visited Node: {} ({})", node.0, node.1);
         // }
 
