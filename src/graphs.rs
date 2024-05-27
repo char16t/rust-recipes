@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use crate::{bits, coordinates};
 
@@ -28,6 +28,53 @@ where
             Some(vec) => vec,
             None => &[]
         }
+    }
+    pub fn iter_dfs(&self, start_node: T) -> AdjacencyListGraphDfsIterator<T> {
+        AdjacencyListGraphDfsIterator::new(&self.adjacency_list, start_node)
+    }
+}
+
+pub struct AdjacencyListGraphDfsIterator<'a, T> {
+    adjacency_list: &'a HashMap<T, Vec<T>>,
+    visited: HashSet<T>,
+    stack: VecDeque<T>,
+}
+
+impl<'a, T> AdjacencyListGraphDfsIterator<'a, T>
+where
+    T: Copy + Eq + std::hash::Hash
+{
+    fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
+        let mut stack: VecDeque<T> = VecDeque::new();
+        stack.push_front(start_node);
+        let mut visited: HashSet<T> = HashSet::new();
+        visited.insert(start_node);
+
+        AdjacencyListGraphDfsIterator {
+            adjacency_list,
+            visited,
+            stack,
+        }
+    }
+}
+
+impl<'a, T> Iterator for AdjacencyListGraphDfsIterator<'a, T>
+where
+    T: Copy + Eq + std::hash::Hash
+{
+    type Item = T;
+
+    fn next(&mut self) -> Option<T> {
+        while let Some(node) = self.stack.pop_front() {
+            for &neighbor in &self.adjacency_list[&node] {
+                if !self.visited.contains(&neighbor) {
+                    self.stack.push_front(neighbor);
+                    self.visited.insert(neighbor);
+                }
+            }
+            return Some(node);
+        }
+        None
     }
 }
 
@@ -386,4 +433,26 @@ mod tests {
         assert_eq!(g.edges[2], (3, 4, 0.5));
     }
 
+    #[test]
+    fn test_() {
+        let mut g: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        g.add_edge(0, 1);
+        g.add_edge(0, 2);
+        g.add_edge(1, 0);
+        g.add_edge(1, 3);
+        g.add_edge(1, 4);
+        g.add_edge(2, 0);
+        g.add_edge(2, 5);
+        g.add_edge(3, 1);
+        g.add_edge(4, 1);
+        g.add_edge(5, 2);
+
+        // for node in g.iter_dfs(0) {
+        //     println!("Visited Node: {}", node);
+        // }
+
+        let expected_order: Vec<i32> = vec![0, 2, 5, 1, 4, 3];
+        let actual_order: Vec<i32> = g.iter_dfs(0).collect();
+        assert_eq!(actual_order, expected_order);
+    }
 }
