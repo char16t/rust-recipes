@@ -7,3 +7,4 @@ pub mod coordinates;
 pub mod sequences;
 pub mod graphs;
 pub mod bits;
+pub mod heaps;
