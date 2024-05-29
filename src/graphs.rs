@@ -511,7 +511,7 @@ pub struct AdjacencyMatrixWeighted<W> {
 }
 impl<W> AdjacencyMatrixWeighted<W> 
 where
-    W: Default + Copy + std::fmt::Debug,
+    W: Default + Copy + Ord + std::ops::Add<Output = W>,
 {
     pub fn new_undirected(size: usize) -> Self {
         Self {
@@ -538,6 +538,56 @@ where
         let xy = coordinates::create_coordinate_function_2d!(self.capacity, self.capacity);
         let pos: usize = xy(a, b);
         return self.adjacency_matrix[pos];
+    }
+    pub fn floyd_warshall(&self) -> Vec<Option<W>> {
+        let num_vertices: usize = self.capacity;
+        let xy = coordinates::create_coordinate_function_2d!(self.capacity, self.capacity);
+        let mut matrix: Vec<Option<W>> = vec![None; num_vertices * num_vertices];
+
+        for i in 0..num_vertices {
+            for j in 0..num_vertices {
+                let coordinate: usize = xy(i, j);
+                if i == j {
+                    matrix[coordinate] = Some(W::default());
+                } else if self.adjacency_matrix[coordinate] != W::default() {
+                    matrix[coordinate] = Some(self.adjacency_matrix[coordinate]);
+                }
+            }
+        }
+
+        for k in 0..num_vertices {
+            for i in 0..num_vertices {
+                for j in 0..num_vertices {
+                    // dist[i][j] = min( dist[i][j] , dist[i][k] + dist[k][j] )
+
+                    let left: Option<W> = matrix[xy(i, j)];
+                    let right_a: Option<W> = matrix[xy(i, k)];
+                    let right_b: Option<W> = matrix[xy(k, j)]; 
+                    
+                    let right: Option<W> = if let Some(right_a_value) = right_a {
+                        if let Some(right_b_value) = right_b {
+                            Some(right_a_value + right_b_value)
+                        } else { None }
+                    } else { None };
+
+                    let result: Option<W> = if let Some(right_value) = right {
+                        if let Some(left_value) = left {
+                            Some(cmp::min(left_value, right_value))
+                        } else { 
+                            Some(right_value) 
+                        }
+                    } else {
+                        if let Some(left_value) = left {
+                            Some(left_value)
+                        } else {
+                            None
+                        }
+                    };
+                    matrix[xy(i, j)] = result;
+                }
+            }
+        }
+        matrix
     }
 }
 
@@ -832,48 +882,102 @@ mod tests {
 
     #[test]
     fn test_adjacency_matrix_weighed_undirected_graph() {
-        let mut graph = AdjacencyMatrixWeighted::new_undirected(4);
-        graph.add_edge(0, 1, 0.5);
-        graph.add_edge(0, 2, 0.7);
-        graph.add_edge(1, 3, 0.9);
-        graph.add_edge(2, 3, 0.1);
+        let mut graph: AdjacencyMatrixWeighted<i64> = AdjacencyMatrixWeighted::new_undirected(4);
+        graph.add_edge(0, 1, 50);
+        graph.add_edge(0, 2, 70);
+        graph.add_edge(1, 3, 90);
+        graph.add_edge(2, 3, 10);
         
-        assert_eq!(graph.weigth(0, 1), 0.5);
-        assert_eq!(graph.weigth(1, 0), 0.5);
+        assert_eq!(graph.weigth(0, 1), 50);
+        assert_eq!(graph.weigth(1, 0), 50);
 
-        assert_eq!(graph.weigth(0, 2), 0.7);
-        assert_eq!(graph.weigth(2, 0), 0.7);
+        assert_eq!(graph.weigth(0, 2), 70);
+        assert_eq!(graph.weigth(2, 0), 70);
 
-        assert_eq!(graph.weigth(1, 3), 0.9);
-        assert_eq!(graph.weigth(3, 1), 0.9);
+        assert_eq!(graph.weigth(1, 3), 90);
+        assert_eq!(graph.weigth(3, 1), 90);
 
-        assert_eq!(graph.weigth(2, 3), 0.1);
-        assert_eq!(graph.weigth(3, 2), 0.1);
+        assert_eq!(graph.weigth(2, 3), 10);
+        assert_eq!(graph.weigth(3, 2), 10);
 
-        assert_eq!(graph.weigth(3, 0), 0.0);
+        assert_eq!(graph.weigth(3, 0), 0);
     }
 
     #[test]
     fn test_adjacency_matrix_weighed_directed_graph() {
-        let mut graph = AdjacencyMatrixWeighted::new_directed(4);
-        graph.add_edge(0, 1, 0.5);
-        graph.add_edge(0, 2, 0.7);
-        graph.add_edge(1, 3, 0.9);
-        graph.add_edge(2, 3, 0.1);
+        let mut graph: AdjacencyMatrixWeighted<i64> = AdjacencyMatrixWeighted::new_directed(4);
+        graph.add_edge(0, 1, 50);
+        graph.add_edge(0, 2, 70);
+        graph.add_edge(1, 3, 90);
+        graph.add_edge(2, 3, 10);
         
-        assert_eq!(graph.weigth(0, 1), 0.5);
-        assert_eq!(graph.weigth(1, 0), 0.0);
+        assert_eq!(graph.weigth(0, 1), 50);
+        assert_eq!(graph.weigth(1, 0), 0);
 
-        assert_eq!(graph.weigth(0, 2), 0.7);
-        assert_eq!(graph.weigth(2, 0), 0.0);
+        assert_eq!(graph.weigth(0, 2), 70);
+        assert_eq!(graph.weigth(2, 0), 0);
 
-        assert_eq!(graph.weigth(1, 3), 0.9);
-        assert_eq!(graph.weigth(3, 1), 0.0);
+        assert_eq!(graph.weigth(1, 3), 90);
+        assert_eq!(graph.weigth(3, 1), 0);
 
-        assert_eq!(graph.weigth(2, 3), 0.1);
-        assert_eq!(graph.weigth(3, 2), 0.0);
+        assert_eq!(graph.weigth(2, 3), 10);
+        assert_eq!(graph.weigth(3, 2), 0);
 
-        assert_eq!(graph.weigth(3, 0), 0.0);
+        assert_eq!(graph.weigth(3, 0), 0);
+    }
+
+    #[test]
+    fn test_adjacency_matrix_weighed_directed_graph_floyd_warshall() {
+        let size: usize = 6;
+        let mut graph: AdjacencyMatrixWeighted<i64> = AdjacencyMatrixWeighted::new_undirected(size);
+        graph.add_edge(1, 2, 5);
+        graph.add_edge(1, 4, 9);
+        graph.add_edge(1, 5, 1);
+        graph.add_edge(2, 3, 2);
+        graph.add_edge(3, 4, 7);
+        graph.add_edge(4, 5, 2);
+
+        let xy = coordinates::create_coordinate_function_2d!(size, size);
+        let matrix: Vec<Option<i64>> = graph.floyd_warshall();
+
+        assert_eq!(matrix[xy(1, 1)], Some(0));
+        assert_eq!(matrix[xy(1, 2)], Some(5));
+        assert_eq!(matrix[xy(1, 3)], Some(7));
+        assert_eq!(matrix[xy(1, 4)], Some(3));
+        assert_eq!(matrix[xy(1, 5)], Some(1));
+
+        assert_eq!(matrix[xy(2, 1)], Some(5));
+        assert_eq!(matrix[xy(2, 2)], Some(0));
+        assert_eq!(matrix[xy(2, 3)], Some(2));
+        assert_eq!(matrix[xy(2, 4)], Some(8));
+        assert_eq!(matrix[xy(2, 5)], Some(6));
+
+        assert_eq!(matrix[xy(3, 1)], Some(7));
+        assert_eq!(matrix[xy(3, 2)], Some(2));
+        assert_eq!(matrix[xy(3, 3)], Some(0));
+        assert_eq!(matrix[xy(3, 4)], Some(7));
+        assert_eq!(matrix[xy(3, 5)], Some(8));
+
+        assert_eq!(matrix[xy(4, 1)], Some(3));
+        assert_eq!(matrix[xy(4, 2)], Some(8));
+        assert_eq!(matrix[xy(4, 3)], Some(7));
+        assert_eq!(matrix[xy(4, 4)], Some(0));
+        assert_eq!(matrix[xy(4, 5)], Some(2));
+
+        assert_eq!(matrix[xy(5, 1)], Some(1));
+        assert_eq!(matrix[xy(5, 2)], Some(6));
+        assert_eq!(matrix[xy(5, 3)], Some(8));
+        assert_eq!(matrix[xy(5, 4)], Some(2));
+        assert_eq!(matrix[xy(5, 5)], Some(0));
+
+        // Debug :)
+        // for i in 0..size {
+        //     for j in 0..size {
+        //         print!("{:?} ", matrix[xy(i, j)])
+        //     }
+        //     println!("")
+        // }
+
     }
 
     #[test]
