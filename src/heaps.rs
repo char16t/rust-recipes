@@ -9,8 +9,10 @@ where
     T: Default + Copy + PartialOrd
 {
     pub fn with_capacity(capacity: usize) -> Self {
+        let mut data: Vec<T> = Vec::with_capacity(0);
+        data.resize(capacity, T::default());
         Self {
-            data: vec![T::default(); capacity],
+            data,
             capacity,
             size: 0
         }
@@ -126,8 +128,10 @@ where
     W: Default + Copy + PartialOrd
 {
     pub fn with_capacity(capacity: usize) -> Self {
+        let mut data: Vec<(T, W)> = Vec::with_capacity(0);
+        data.resize(capacity, (T::default(), W::default()));
         Self {
-            data: vec![(T::default(), W::default()); capacity],
+            data,
             capacity,
             size: 0
         }
@@ -243,8 +247,10 @@ where
     T: Default + Copy + PartialOrd
 {
     pub fn with_capacity(capacity: usize) -> Self {
+        let mut data: Vec<T> = Vec::with_capacity(0);
+        data.resize(capacity, T::default());
         Self {
-            data: vec![T::default(); capacity],
+            data,
             capacity,
             size: 0
         }
@@ -360,6 +366,8 @@ where
     W: Default + Copy + PartialOrd
 {
     pub fn with_capacity(capacity: usize) -> Self {
+        let mut data: Vec<(T, W)> = Vec::with_capacity(0);
+        data.resize(capacity, (T::default(), W::default()));
         Self {
             data: vec![(T::default(), W::default()); capacity],
             capacity,
