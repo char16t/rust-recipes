@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use crate::{bits, coordinates};
+use crate::{bits, coordinates, heaps};
 
 pub struct AdjacencyListGraph<T> {
     adjacency_list: HashMap<T, Vec<T>>,
@@ -143,8 +143,8 @@ pub struct AdjacencyListWightedGraph<T, W> {
 
 impl<T, W> AdjacencyListWightedGraph<T, W>
 where
-    T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default
+    T: Default + Copy + Eq + std::hash::Hash,
+    W: Copy + Default + std::cmp::PartialOrd + std::ops::Add<Output = W>
 {
     pub fn new_undirected() -> Self {
         Self { adjacency_list: HashMap::new(), is_directed: false }
@@ -192,6 +192,31 @@ where
     }
     pub fn iter_bfs_desc(&self, start_node: T) -> AdjacencyListWightedGraphDescBfsIterator<T, W> {
         AdjacencyListWightedGraphDescBfsIterator::new(&self.adjacency_list, start_node)
+    }
+    pub fn dijkstra(&self, start_node: T) -> HashMap<T, W> {
+        let mut distances: HashMap<T, W> = HashMap::new();
+        distances.insert(start_node, W::default());
+
+        let mut heap: heaps::MinBinaryHeap2<T, W> = heaps::MinBinaryHeap2::with_capacity(self.adjacency_list.len());
+        heap.push(start_node, W::default());
+
+        while let Some((node, dist)) = heap.pop() {
+            if let Some(neighbors) = self.adjacency_list.get(&node) {
+                for (neighbor, weight) in neighbors {
+                    let new_dist: W = dist + *weight;
+                    let is_shorter_path_found: bool = match distances.get(neighbor) {
+                        Some(&dist) => new_dist < dist,
+                        None => true
+                    };
+                    if is_shorter_path_found {
+                        distances.insert(*neighbor, new_dist);
+                        heap.push(*neighbor, new_dist);
+                    }
+                }
+            }
+        }
+
+        distances
     }
 }
 
@@ -745,6 +770,20 @@ mod tests {
 
         let empty: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
         assert_eq!(empty.is_connected(), true);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_dijkstra() {
+        let mut graph: AdjacencyListWightedGraph<char, f64> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_edge('A', 'B', 10.0);
+        graph.add_edge('A', 'C', 5.0);
+        graph.add_edge('B', 'D', 25.0);
+        graph.add_edge('C', 'D', 50.0);
+        let distances: HashMap<char, f64> = graph.dijkstra('A');
+        assert_eq!(distances[&'A'], 0.0);
+        assert_eq!(distances[&'B'], 10.0);
+        assert_eq!(distances[&'C'], 5.0);
+        assert_eq!(distances[&'D'], 35.0);
     }
 
     #[test]

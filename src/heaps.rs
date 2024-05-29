@@ -17,7 +17,7 @@ where
             size: 0
         }
     }
-    pub fn insert(&mut self, value: T) {
+    pub fn push(&mut self, value: T) {
         if self.size >= self.capacity {
             self.data.resize(self.capacity * 2 + 1, T::default());
             self.capacity *= 2;
@@ -37,7 +37,7 @@ where
         self.size += 1;
     }
     
-    pub fn remove(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T> {
         if self.size == 0 {
             return None;
         }
@@ -105,7 +105,7 @@ where
     
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
-        pos > self.size / 2
+        pos >= self.size / 2
     }
 
     #[inline(always)]
@@ -136,7 +136,7 @@ where
             size: 0
         }
     }
-    pub fn insert(&mut self, value: T, weight: W) {
+    pub fn push(&mut self, value: T, weight: W) {
         if self.size >= self.capacity {
             self.data.resize(self.capacity * 2 + 1, (T::default(), W::default()));
             self.capacity *= 2;
@@ -157,7 +157,7 @@ where
         self.size += 1;
     }
     
-    pub fn remove(&mut self) -> Option<(T, W)> {
+    pub fn pop(&mut self) -> Option<(T, W)> {
         if self.size == 0 {
             return None;
         }
@@ -225,7 +225,7 @@ where
     
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
-        pos > self.size / 2
+        pos >= self.size / 2
     }
 
     #[inline(always)]
@@ -255,7 +255,7 @@ where
             size: 0
         }
     }
-    pub fn insert(&mut self, value: T) {
+    pub fn push(&mut self, value: T) {
         if self.size >= self.capacity {
             self.data.resize(self.capacity * 2 + 1, T::default());
             self.capacity *= 2;
@@ -275,7 +275,7 @@ where
         self.size += 1;
     }
     
-    pub fn remove(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T> {
         if self.size == 0 {
             return None;
         }
@@ -343,7 +343,7 @@ where
     
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
-        pos > self.size / 2
+        pos >= self.size / 2
     }
 
     #[inline(always)]
@@ -374,7 +374,7 @@ where
             size: 0
         }
     }
-    pub fn insert(&mut self, value: T, weight: W) {
+    pub fn push(&mut self, value: T, weight: W) {
         if self.size >= self.capacity {
             self.data.resize(self.capacity * 2 + 1, (T::default(), W::default()));
             self.capacity *= 2;
@@ -394,7 +394,7 @@ where
         self.size += 1;
     }
     
-    pub fn remove(&mut self) -> Option<(T, W)> {
+    pub fn pop(&mut self) -> Option<(T, W)> {
         if self.size == 0 {
             return None;
         }
@@ -462,7 +462,7 @@ where
     
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
-        pos > self.size / 2
+        pos >= self.size / 2
     }
 
     #[inline(always)]
@@ -480,366 +480,366 @@ mod tests {
     #[test]
     fn test_min_binary_heap() {
         let mut min_heap: MinBinaryHeap<i32> = MinBinaryHeap::with_capacity(3);
-        min_heap.insert(4);
-        min_heap.insert(5);
-        min_heap.insert(6);
+        min_heap.push(4);
+        min_heap.push(5);
+        min_heap.push(6);
         assert_eq!(min_heap.capacity, 3);
-        min_heap.insert(7);
-        min_heap.insert(8);
-        min_heap.insert(9);
+        min_heap.push(7);
+        min_heap.push(8);
+        min_heap.push(9);
         assert_eq!(min_heap.capacity, 6);
-        assert_eq!(min_heap.remove(), Some(4));
-        assert_eq!(min_heap.remove(), Some(5));
-        assert_eq!(min_heap.remove(), Some(6));
-        assert_eq!(min_heap.remove(), Some(7));
-        assert_eq!(min_heap.remove(), Some(8));
-        assert_eq!(min_heap.remove(), Some(9));        
+        assert_eq!(min_heap.pop(), Some(4));
+        assert_eq!(min_heap.pop(), Some(5));
+        assert_eq!(min_heap.pop(), Some(6));
+        assert_eq!(min_heap.pop(), Some(7));
+        assert_eq!(min_heap.pop(), Some(8));
+        assert_eq!(min_heap.pop(), Some(9));        
 
         let mut min_heap: MinBinaryHeap<i32> = MinBinaryHeap::with_capacity(10);
-        assert_eq!(min_heap.remove(), None);
+        assert_eq!(min_heap.pop(), None);
         
-        min_heap.insert(1);
-        assert_eq!(min_heap.remove(), Some(1));
-        assert_eq!(min_heap.remove(), None);
+        min_heap.push(1);
+        assert_eq!(min_heap.pop(), Some(1));
+        assert_eq!(min_heap.pop(), None);
 
-        min_heap.insert(1);
-        min_heap.insert(2);
-        min_heap.insert(3);
-        assert_eq!(min_heap.remove(), Some(1));
-        assert_eq!(min_heap.remove(), Some(2));
-        assert_eq!(min_heap.remove(), Some(3));
+        min_heap.push(1);
+        min_heap.push(2);
+        min_heap.push(3);
+        assert_eq!(min_heap.pop(), Some(1));
+        assert_eq!(min_heap.pop(), Some(2));
+        assert_eq!(min_heap.pop(), Some(3));
 
-        min_heap.insert(3);
-        min_heap.insert(2);
-        min_heap.insert(1);
-        assert_eq!(min_heap.remove(), Some(1));
-        assert_eq!(min_heap.remove(), Some(2));
-        assert_eq!(min_heap.remove(), Some(3));
+        min_heap.push(3);
+        min_heap.push(2);
+        min_heap.push(1);
+        assert_eq!(min_heap.pop(), Some(1));
+        assert_eq!(min_heap.pop(), Some(2));
+        assert_eq!(min_heap.pop(), Some(3));
 
-        min_heap.insert(2);
-        min_heap.insert(5);
-        min_heap.insert(1);
-        min_heap.insert(2);
-        min_heap.insert(3);
-        assert_eq!(min_heap.remove(), Some(1));
-        assert_eq!(min_heap.remove(), Some(2));
-        assert_eq!(min_heap.remove(), Some(2));
-        assert_eq!(min_heap.remove(), Some(3));
-        assert_eq!(min_heap.remove(), Some(5));
+        min_heap.push(2);
+        min_heap.push(5);
+        min_heap.push(1);
+        min_heap.push(2);
+        min_heap.push(3);
+        assert_eq!(min_heap.pop(), Some(1));
+        assert_eq!(min_heap.pop(), Some(2));
+        assert_eq!(min_heap.pop(), Some(2));
+        assert_eq!(min_heap.pop(), Some(3));
+        assert_eq!(min_heap.pop(), Some(5));
 
-        min_heap.insert(3);
-        min_heap.insert(7);
-        min_heap.insert(2);
-        min_heap.insert(1);
-        min_heap.insert(3);
-        assert_eq!(min_heap.remove(), Some(1));
-        assert_eq!(min_heap.remove(), Some(2));
-        assert_eq!(min_heap.remove(), Some(3));
-        assert_eq!(min_heap.remove(), Some(3));
-        assert_eq!(min_heap.remove(), Some(7));
+        min_heap.push(3);
+        min_heap.push(7);
+        min_heap.push(2);
+        min_heap.push(1);
+        min_heap.push(3);
+        assert_eq!(min_heap.pop(), Some(1));
+        assert_eq!(min_heap.pop(), Some(2));
+        assert_eq!(min_heap.pop(), Some(3));
+        assert_eq!(min_heap.pop(), Some(3));
+        assert_eq!(min_heap.pop(), Some(7));
 
-        min_heap.insert(1000);
-        min_heap.insert(2);
-        min_heap.insert(3);
-        min_heap.insert(1);
-        min_heap.insert(-1000);
-        assert_eq!(min_heap.remove(), Some(-1000));
+        min_heap.push(1000);
+        min_heap.push(2);
+        min_heap.push(3);
+        min_heap.push(1);
+        min_heap.push(-1000);
+        assert_eq!(min_heap.pop(), Some(-1000));
 
-        min_heap.insert(-10);
-        min_heap.insert(2000);
+        min_heap.push(-10);
+        min_heap.push(2000);
 
-        assert_eq!(min_heap.remove(), Some(-10));
+        assert_eq!(min_heap.pop(), Some(-10));
 
-        min_heap.insert(-2000);
-        assert_eq!(min_heap.remove(), Some(-2000));
+        min_heap.push(-2000);
+        assert_eq!(min_heap.pop(), Some(-2000));
 
-        assert_eq!(min_heap.remove(), Some(1));
-        assert_eq!(min_heap.remove(), Some(2));
-        assert_eq!(min_heap.remove(), Some(3));
-        assert_eq!(min_heap.remove(), Some(1000));
-        assert_eq!(min_heap.remove(), Some(2000));
+        assert_eq!(min_heap.pop(), Some(1));
+        assert_eq!(min_heap.pop(), Some(2));
+        assert_eq!(min_heap.pop(), Some(3));
+        assert_eq!(min_heap.pop(), Some(1000));
+        assert_eq!(min_heap.pop(), Some(2000));
 
-        min_heap.insert(-2000);
-        min_heap.insert(-3000);
-        min_heap.insert(-4000);
-        assert_eq!(min_heap.remove(), Some(-4000));
-        assert_eq!(min_heap.remove(), Some(-3000));
-        assert_eq!(min_heap.remove(), Some(-2000));
+        min_heap.push(-2000);
+        min_heap.push(-3000);
+        min_heap.push(-4000);
+        assert_eq!(min_heap.pop(), Some(-4000));
+        assert_eq!(min_heap.pop(), Some(-3000));
+        assert_eq!(min_heap.pop(), Some(-2000));
     }
 
     #[test]
     fn test_min_binary_heap_2() {
         let mut min_heap: MinBinaryHeap2<char, i64> = MinBinaryHeap2::with_capacity(3);
-        min_heap.insert('A', 4);
-        min_heap.insert('B', 5);
-        min_heap.insert('C', 6);
+        min_heap.push('A', 4);
+        min_heap.push('B', 5);
+        min_heap.push('C', 6);
         assert_eq!(min_heap.capacity, 3);
-        min_heap.insert('D', 7);
-        min_heap.insert('E', 8);
-        min_heap.insert('F', 9);
+        min_heap.push('D', 7);
+        min_heap.push('E', 8);
+        min_heap.push('F', 9);
         assert_eq!(min_heap.capacity, 6);
-        assert_eq!(min_heap.remove(), Some(('A', 4)));
-        assert_eq!(min_heap.remove(), Some(('B', 5)));
-        assert_eq!(min_heap.remove(), Some(('C', 6)));
-        assert_eq!(min_heap.remove(), Some(('D', 7)));
-        assert_eq!(min_heap.remove(), Some(('E', 8)));
-        assert_eq!(min_heap.remove(), Some(('F', 9)));        
+        assert_eq!(min_heap.pop(), Some(('A', 4)));
+        assert_eq!(min_heap.pop(), Some(('B', 5)));
+        assert_eq!(min_heap.pop(), Some(('C', 6)));
+        assert_eq!(min_heap.pop(), Some(('D', 7)));
+        assert_eq!(min_heap.pop(), Some(('E', 8)));
+        assert_eq!(min_heap.pop(), Some(('F', 9)));        
 
         let mut min_heap: MinBinaryHeap2<char, i64> = MinBinaryHeap2::with_capacity(10);
-        assert_eq!(min_heap.remove(), None);
+        assert_eq!(min_heap.pop(), None);
         
-        min_heap.insert('A', 1);
-        assert_eq!(min_heap.remove(), Some(('A', 1)));
-        assert_eq!(min_heap.remove(), None);
+        min_heap.push('A', 1);
+        assert_eq!(min_heap.pop(), Some(('A', 1)));
+        assert_eq!(min_heap.pop(), None);
 
-        min_heap.insert('A', 1);
-        min_heap.insert('B', 2);
-        min_heap.insert('C', 3);
-        assert_eq!(min_heap.remove(), Some(('A', 1)));
-        assert_eq!(min_heap.remove(), Some(('B', 2)));
-        assert_eq!(min_heap.remove(), Some(('C', 3)));
+        min_heap.push('A', 1);
+        min_heap.push('B', 2);
+        min_heap.push('C', 3);
+        assert_eq!(min_heap.pop(), Some(('A', 1)));
+        assert_eq!(min_heap.pop(), Some(('B', 2)));
+        assert_eq!(min_heap.pop(), Some(('C', 3)));
 
-        min_heap.insert('A', 3);
-        min_heap.insert('B', 2);
-        min_heap.insert('C', 1);
-        assert_eq!(min_heap.remove(), Some(('C', 1)));
-        assert_eq!(min_heap.remove(), Some(('B', 2)));
-        assert_eq!(min_heap.remove(), Some(('A', 3)));
+        min_heap.push('A', 3);
+        min_heap.push('B', 2);
+        min_heap.push('C', 1);
+        assert_eq!(min_heap.pop(), Some(('C', 1)));
+        assert_eq!(min_heap.pop(), Some(('B', 2)));
+        assert_eq!(min_heap.pop(), Some(('A', 3)));
 
-        min_heap.insert('A', 2);
-        min_heap.insert('B', 5);
-        min_heap.insert('C', 1);
-        min_heap.insert('D', 2);
-        min_heap.insert('E', 3);
-        assert_eq!(min_heap.remove(), Some(('C', 1)));
-        assert_eq!(min_heap.remove(), Some(('A', 2)));
-        assert_eq!(min_heap.remove(), Some(('D', 2)));
-        assert_eq!(min_heap.remove(), Some(('E', 3)));
-        assert_eq!(min_heap.remove(), Some(('B', 5)));
+        min_heap.push('A', 2);
+        min_heap.push('B', 5);
+        min_heap.push('C', 1);
+        min_heap.push('D', 2);
+        min_heap.push('E', 3);
+        assert_eq!(min_heap.pop(), Some(('C', 1)));
+        assert_eq!(min_heap.pop(), Some(('A', 2)));
+        assert_eq!(min_heap.pop(), Some(('D', 2)));
+        assert_eq!(min_heap.pop(), Some(('E', 3)));
+        assert_eq!(min_heap.pop(), Some(('B', 5)));
 
-        min_heap.insert('A', 3);
-        min_heap.insert('B', 7);
-        min_heap.insert('C', 2);
-        min_heap.insert('D', 1);
-        min_heap.insert('E', 3);
-        assert_eq!(min_heap.remove(), Some(('D', 1)));
-        assert_eq!(min_heap.remove(), Some(('C', 2)));
-        assert_eq!(min_heap.remove(), Some(('A', 3)));
-        assert_eq!(min_heap.remove(), Some(('E', 3)));
-        assert_eq!(min_heap.remove(), Some(('B', 7)));
+        min_heap.push('A', 3);
+        min_heap.push('B', 7);
+        min_heap.push('C', 2);
+        min_heap.push('D', 1);
+        min_heap.push('E', 3);
+        assert_eq!(min_heap.pop(), Some(('D', 1)));
+        assert_eq!(min_heap.pop(), Some(('C', 2)));
+        assert_eq!(min_heap.pop(), Some(('A', 3)));
+        assert_eq!(min_heap.pop(), Some(('E', 3)));
+        assert_eq!(min_heap.pop(), Some(('B', 7)));
 
-        min_heap.insert('A', 1000);
-        min_heap.insert('B', 2);
-        min_heap.insert('C', 3);
-        min_heap.insert('D', 1);
-        min_heap.insert('E', -1000);
-        assert_eq!(min_heap.remove(), Some(('E', -1000)));
+        min_heap.push('A', 1000);
+        min_heap.push('B', 2);
+        min_heap.push('C', 3);
+        min_heap.push('D', 1);
+        min_heap.push('E', -1000);
+        assert_eq!(min_heap.pop(), Some(('E', -1000)));
 
-        min_heap.insert('F', -10);
-        min_heap.insert('G', 2000);
+        min_heap.push('F', -10);
+        min_heap.push('G', 2000);
 
-        assert_eq!(min_heap.remove(), Some(('F', -10)));
+        assert_eq!(min_heap.pop(), Some(('F', -10)));
 
-        min_heap.insert('H', -2000);
-        assert_eq!(min_heap.remove(), Some(('H', -2000)));
+        min_heap.push('H', -2000);
+        assert_eq!(min_heap.pop(), Some(('H', -2000)));
 
-        assert_eq!(min_heap.remove(), Some(('D', 1)));
-        assert_eq!(min_heap.remove(), Some(('B', 2)));
-        assert_eq!(min_heap.remove(), Some(('C', 3)));
-        assert_eq!(min_heap.remove(), Some(('A', 1000)));
-        assert_eq!(min_heap.remove(), Some(('G', 2000)));
+        assert_eq!(min_heap.pop(), Some(('D', 1)));
+        assert_eq!(min_heap.pop(), Some(('B', 2)));
+        assert_eq!(min_heap.pop(), Some(('C', 3)));
+        assert_eq!(min_heap.pop(), Some(('A', 1000)));
+        assert_eq!(min_heap.pop(), Some(('G', 2000)));
 
-        min_heap.insert('I', -2000);
-        min_heap.insert('J', -3000);
-        min_heap.insert('K', -4000);
-        assert_eq!(min_heap.remove(), Some(('K', -4000)));
-        assert_eq!(min_heap.remove(), Some(('J', -3000)));
-        assert_eq!(min_heap.remove(), Some(('I', -2000)));
+        min_heap.push('I', -2000);
+        min_heap.push('J', -3000);
+        min_heap.push('K', -4000);
+        assert_eq!(min_heap.pop(), Some(('K', -4000)));
+        assert_eq!(min_heap.pop(), Some(('J', -3000)));
+        assert_eq!(min_heap.pop(), Some(('I', -2000)));
     }
 
     #[test]
     fn test_max_binary_heap() {
         let mut heap: MaxBinaryHeap<i32> = MaxBinaryHeap::with_capacity(3);
-        heap.insert(4);
-        heap.insert(5);
-        heap.insert(6);
+        heap.push(4);
+        heap.push(5);
+        heap.push(6);
         assert_eq!(heap.capacity, 3);
-        heap.insert(7);
-        heap.insert(8);
-        heap.insert(9);
+        heap.push(7);
+        heap.push(8);
+        heap.push(9);
         assert_eq!(heap.capacity, 6);
-        assert_eq!(heap.remove(), Some(9));
-        assert_eq!(heap.remove(), Some(8));
-        assert_eq!(heap.remove(), Some(7));
-        assert_eq!(heap.remove(), Some(6));
-        assert_eq!(heap.remove(), Some(5));
-        assert_eq!(heap.remove(), Some(4));
+        assert_eq!(heap.pop(), Some(9));
+        assert_eq!(heap.pop(), Some(8));
+        assert_eq!(heap.pop(), Some(7));
+        assert_eq!(heap.pop(), Some(6));
+        assert_eq!(heap.pop(), Some(5));
+        assert_eq!(heap.pop(), Some(4));
         assert_eq!(heap.capacity, 6);
         
 
         let mut heap: MaxBinaryHeap<i32> = MaxBinaryHeap::with_capacity(10);
-        assert_eq!(heap.remove(), None);
+        assert_eq!(heap.pop(), None);
         
-        heap.insert(1);
-        assert_eq!(heap.remove(), Some(1));
-        assert_eq!(heap.remove(), None);
+        heap.push(1);
+        assert_eq!(heap.pop(), Some(1));
+        assert_eq!(heap.pop(), None);
 
-        heap.insert(1);
-        heap.insert(2);
-        heap.insert(3);
-        assert_eq!(heap.remove(), Some(3));
-        assert_eq!(heap.remove(), Some(2));
-        assert_eq!(heap.remove(), Some(1));
+        heap.push(1);
+        heap.push(2);
+        heap.push(3);
+        assert_eq!(heap.pop(), Some(3));
+        assert_eq!(heap.pop(), Some(2));
+        assert_eq!(heap.pop(), Some(1));
 
-        heap.insert(3);
-        heap.insert(2);
-        heap.insert(1);
-        assert_eq!(heap.remove(), Some(3));
-        assert_eq!(heap.remove(), Some(2));
-        assert_eq!(heap.remove(), Some(1));
+        heap.push(3);
+        heap.push(2);
+        heap.push(1);
+        assert_eq!(heap.pop(), Some(3));
+        assert_eq!(heap.pop(), Some(2));
+        assert_eq!(heap.pop(), Some(1));
 
-        heap.insert(2);
-        heap.insert(5);
-        heap.insert(1);
-        heap.insert(2);
-        heap.insert(3);
-        assert_eq!(heap.remove(), Some(5));
-        assert_eq!(heap.remove(), Some(3));
-        assert_eq!(heap.remove(), Some(2));
-        assert_eq!(heap.remove(), Some(2));
-        assert_eq!(heap.remove(), Some(1));
+        heap.push(2);
+        heap.push(5);
+        heap.push(1);
+        heap.push(2);
+        heap.push(3);
+        assert_eq!(heap.pop(), Some(5));
+        assert_eq!(heap.pop(), Some(3));
+        assert_eq!(heap.pop(), Some(2));
+        assert_eq!(heap.pop(), Some(2));
+        assert_eq!(heap.pop(), Some(1));
 
-        heap.insert(3);
-        heap.insert(7);
-        heap.insert(2);
-        heap.insert(1);
-        heap.insert(3);
-        assert_eq!(heap.remove(), Some(7));
-        assert_eq!(heap.remove(), Some(3));
-        assert_eq!(heap.remove(), Some(3));
-        assert_eq!(heap.remove(), Some(2));
-        assert_eq!(heap.remove(), Some(1));
+        heap.push(3);
+        heap.push(7);
+        heap.push(2);
+        heap.push(1);
+        heap.push(3);
+        assert_eq!(heap.pop(), Some(7));
+        assert_eq!(heap.pop(), Some(3));
+        assert_eq!(heap.pop(), Some(3));
+        assert_eq!(heap.pop(), Some(2));
+        assert_eq!(heap.pop(), Some(1));
 
-        heap.insert(1000);
-        heap.insert(2);
-        heap.insert(3);
-        heap.insert(1);
-        heap.insert(-1000);
-        assert_eq!(heap.remove(), Some(1000));
+        heap.push(1000);
+        heap.push(2);
+        heap.push(3);
+        heap.push(1);
+        heap.push(-1000);
+        assert_eq!(heap.pop(), Some(1000));
 
-        heap.insert(-10);
-        heap.insert(2000);
+        heap.push(-10);
+        heap.push(2000);
 
-        assert_eq!(heap.remove(), Some(2000));
+        assert_eq!(heap.pop(), Some(2000));
 
-        heap.insert(-2000);
-        assert_eq!(heap.remove(), Some(3));
+        heap.push(-2000);
+        assert_eq!(heap.pop(), Some(3));
 
-        assert_eq!(heap.remove(), Some(2));
-        assert_eq!(heap.remove(), Some(1));
-        assert_eq!(heap.remove(), Some(-10));
-        assert_eq!(heap.remove(), Some(-1000));
-        assert_eq!(heap.remove(), Some(-2000));
+        assert_eq!(heap.pop(), Some(2));
+        assert_eq!(heap.pop(), Some(1));
+        assert_eq!(heap.pop(), Some(-10));
+        assert_eq!(heap.pop(), Some(-1000));
+        assert_eq!(heap.pop(), Some(-2000));
 
-        heap.insert(-2000);
-        heap.insert(-3000);
-        heap.insert(-4000);
-        assert_eq!(heap.remove(), Some(-2000));
-        assert_eq!(heap.remove(), Some(-3000));
-        assert_eq!(heap.remove(), Some(-4000));
+        heap.push(-2000);
+        heap.push(-3000);
+        heap.push(-4000);
+        assert_eq!(heap.pop(), Some(-2000));
+        assert_eq!(heap.pop(), Some(-3000));
+        assert_eq!(heap.pop(), Some(-4000));
     }
 
     #[test]
     fn test_max_binary_heap_2() {
         let mut heap: MaxBinaryHeap2<char, i64> = MaxBinaryHeap2::with_capacity(3);
-        heap.insert('A', 4);
-        heap.insert('B', 5);
-        heap.insert('C', 6);
+        heap.push('A', 4);
+        heap.push('B', 5);
+        heap.push('C', 6);
         assert_eq!(heap.capacity, 3);
-        heap.insert('D', 7);
-        heap.insert('E', 8);
-        heap.insert('F', 9);
+        heap.push('D', 7);
+        heap.push('E', 8);
+        heap.push('F', 9);
         assert_eq!(heap.capacity, 6);
-        assert_eq!(heap.remove(), Some(('F', 9)));        
-        assert_eq!(heap.remove(), Some(('E', 8)));
-        assert_eq!(heap.remove(), Some(('D', 7)));
-        assert_eq!(heap.remove(), Some(('C', 6)));
-        assert_eq!(heap.remove(), Some(('B', 5)));
-        assert_eq!(heap.remove(), Some(('A', 4)));
+        assert_eq!(heap.pop(), Some(('F', 9)));        
+        assert_eq!(heap.pop(), Some(('E', 8)));
+        assert_eq!(heap.pop(), Some(('D', 7)));
+        assert_eq!(heap.pop(), Some(('C', 6)));
+        assert_eq!(heap.pop(), Some(('B', 5)));
+        assert_eq!(heap.pop(), Some(('A', 4)));
 
 
         let mut heap: MaxBinaryHeap2<char, i64> = MaxBinaryHeap2::with_capacity(10);
-        assert_eq!(heap.remove(), None);
+        assert_eq!(heap.pop(), None);
         
-        heap.insert('A', 1);
-        assert_eq!(heap.remove(), Some(('A', 1)));
-        assert_eq!(heap.remove(), None);
+        heap.push('A', 1);
+        assert_eq!(heap.pop(), Some(('A', 1)));
+        assert_eq!(heap.pop(), None);
 
-        heap.insert('A', 1);
-        heap.insert('B', 2);
-        heap.insert('C', 3);
-        assert_eq!(heap.remove(), Some(('C', 3)));
-        assert_eq!(heap.remove(), Some(('B', 2)));
-        assert_eq!(heap.remove(), Some(('A', 1)));
+        heap.push('A', 1);
+        heap.push('B', 2);
+        heap.push('C', 3);
+        assert_eq!(heap.pop(), Some(('C', 3)));
+        assert_eq!(heap.pop(), Some(('B', 2)));
+        assert_eq!(heap.pop(), Some(('A', 1)));
 
-        heap.insert('A', 3);
-        heap.insert('B', 2);
-        heap.insert('C', 1);
-        assert_eq!(heap.remove(), Some(('A', 3)));
-        assert_eq!(heap.remove(), Some(('B', 2)));
-        assert_eq!(heap.remove(), Some(('C', 1)));
-
-
-        heap.insert('A', 2);
-        heap.insert('B', 5);
-        heap.insert('C', 1);
-        heap.insert('D', 2);
-        heap.insert('E', 3);
-        assert_eq!(heap.remove(), Some(('B', 5)));
-        assert_eq!(heap.remove(), Some(('E', 3)));
-        assert_eq!(heap.remove(), Some(('D', 2)));
-        assert_eq!(heap.remove(), Some(('A', 2)));
-        assert_eq!(heap.remove(), Some(('C', 1)));
-
-        heap.insert('A', 3);
-        heap.insert('B', 7);
-        heap.insert('C', 2);
-        heap.insert('D', 1);
-        heap.insert('E', 3);
-        assert_eq!(heap.remove(), Some(('B', 7)));
-        assert_eq!(heap.remove(), Some(('E', 3)));
-        assert_eq!(heap.remove(), Some(('A', 3)));
-        assert_eq!(heap.remove(), Some(('C', 2)));
-        assert_eq!(heap.remove(), Some(('D', 1)));
-
-        heap.insert('A', 1000);
-        heap.insert('B', 2);
-        heap.insert('C', 3);
-        heap.insert('D', 1);
-        heap.insert('E', -1000);
-        assert_eq!(heap.remove(), Some(('A', 1000)));
-
-        heap.insert('F', -10);
-        heap.insert('G', 2000);
-
-        assert_eq!(heap.remove(), Some(('G', 2000)));
-
-        heap.insert('H', -2000);
+        heap.push('A', 3);
+        heap.push('B', 2);
+        heap.push('C', 1);
+        assert_eq!(heap.pop(), Some(('A', 3)));
+        assert_eq!(heap.pop(), Some(('B', 2)));
+        assert_eq!(heap.pop(), Some(('C', 1)));
 
 
-        assert_eq!(heap.remove(), Some(('C', 3)));
-        assert_eq!(heap.remove(), Some(('B', 2)));
-        assert_eq!(heap.remove(), Some(('D', 1)));
+        heap.push('A', 2);
+        heap.push('B', 5);
+        heap.push('C', 1);
+        heap.push('D', 2);
+        heap.push('E', 3);
+        assert_eq!(heap.pop(), Some(('B', 5)));
+        assert_eq!(heap.pop(), Some(('E', 3)));
+        assert_eq!(heap.pop(), Some(('D', 2)));
+        assert_eq!(heap.pop(), Some(('A', 2)));
+        assert_eq!(heap.pop(), Some(('C', 1)));
 
-        assert_eq!(heap.remove(), Some(('F', -10)));
-        assert_eq!(heap.remove(), Some(('E', -1000)));
+        heap.push('A', 3);
+        heap.push('B', 7);
+        heap.push('C', 2);
+        heap.push('D', 1);
+        heap.push('E', 3);
+        assert_eq!(heap.pop(), Some(('B', 7)));
+        assert_eq!(heap.pop(), Some(('E', 3)));
+        assert_eq!(heap.pop(), Some(('A', 3)));
+        assert_eq!(heap.pop(), Some(('C', 2)));
+        assert_eq!(heap.pop(), Some(('D', 1)));
 
-        heap.insert('I', -2000);
-        heap.insert('J', -3000);
-        heap.insert('K', -4000);
-        assert_eq!(heap.remove(), Some(('H', -2000)));
-        assert_eq!(heap.remove(), Some(('I', -2000)));
-        assert_eq!(heap.remove(), Some(('J', -3000)));
-        assert_eq!(heap.remove(), Some(('K', -4000)));
+        heap.push('A', 1000);
+        heap.push('B', 2);
+        heap.push('C', 3);
+        heap.push('D', 1);
+        heap.push('E', -1000);
+        assert_eq!(heap.pop(), Some(('A', 1000)));
+
+        heap.push('F', -10);
+        heap.push('G', 2000);
+
+        assert_eq!(heap.pop(), Some(('G', 2000)));
+
+        heap.push('H', -2000);
+
+
+        assert_eq!(heap.pop(), Some(('C', 3)));
+        assert_eq!(heap.pop(), Some(('B', 2)));
+        assert_eq!(heap.pop(), Some(('D', 1)));
+
+        assert_eq!(heap.pop(), Some(('F', -10)));
+        assert_eq!(heap.pop(), Some(('E', -1000)));
+
+        heap.push('I', -2000);
+        heap.push('J', -3000);
+        heap.push('K', -4000);
+        assert_eq!(heap.pop(), Some(('H', -2000)));
+        assert_eq!(heap.pop(), Some(('I', -2000)));
+        assert_eq!(heap.pop(), Some(('J', -3000)));
+        assert_eq!(heap.pop(), Some(('K', -4000)));
     }
 }
