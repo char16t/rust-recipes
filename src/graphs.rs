@@ -22,6 +22,7 @@ where
     }
     pub fn add_edge(&mut self, a: T, b: T) {
         self.adjacency_list.entry(a).or_insert(Vec::new()).push(b);
+        self.adjacency_list.entry(b).or_insert(Vec::new());
         if !self.is_directed {
             self.adjacency_list.entry(b).or_insert(Vec::new()).push(a);
         }
@@ -156,6 +157,7 @@ where
     }
     pub fn add_edge(&mut self, a: T, b: T, w: W) {
         self.adjacency_list.entry(a).or_insert(Vec::new()).push((b, w));
+        self.adjacency_list.entry(b).or_insert(Vec::new());
         if !self.is_directed {
             self.adjacency_list.entry(b).or_insert(Vec::new()).push((a, w));
         }
