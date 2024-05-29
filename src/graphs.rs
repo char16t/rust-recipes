@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{cmp, collections::{HashMap, HashSet, VecDeque}, process::ExitStatus};
 
 use crate::{bits, coordinates, heaps};
 
@@ -591,18 +591,62 @@ where
 }
 
 pub struct EdgeListWegihtedGraph<T, W> {
-    pub edges: Vec<(T, T, W)>
+    pub edges: Vec<(T, T, W)>,
+    is_directed: bool
 }
 
 impl<T, W> EdgeListWegihtedGraph<T, W>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
+    W: Copy + Default + std::cmp::Ord + std::ops::Add<W, Output = W>
 {
+    pub fn new_undirected() -> Self {
+        Self { edges: Vec::new(), is_directed: false }
+    }
     pub fn new_directed() -> Self {
-        Self { edges: Vec::new() }
+        Self { edges: Vec::new(), is_directed: true }
     }
     pub fn add_edge(&mut self, a: T, b: T, w: W) {
         self.edges.push((a, b, w));
+        if !self.is_directed {
+            self.edges.push((b, a, w));
+        }
+    }
+    pub fn bellman_ford(&self, start_node: T, n_vertices: usize) -> HashMap<T, W> {
+        let mut distances: HashMap<T, W> = HashMap::new();
+        distances.insert(start_node, W::default());
+        for _ in 0..n_vertices-1 {
+            for j in self.edges.iter() {
+                let &(a, b, w) = j;
+                
+                // distance[b] = min(distance[b], distance[a]+w);
+                if let Some(&distance_b) = distances.get(&b) {
+                    if let Some(&distance_a) = distances.get(&a) {
+                        distances.insert(b, cmp::min(distance_b, distance_a + w));
+                    } else {
+                        // distance_a = INF
+                        distances.insert(b, distance_b);
+                    }
+                } else {
+                    if let Some(&distance_a) = distances.get(&a) {
+                         // distance_b = INF
+                         distances.insert(b, distance_a + w);
+                    }
+                    // else distance_a = INF && distance_b = INF
+                }
+            }
+        }
+        for &edge in self.edges.iter() {
+            let (source, destination, weight) = edge;
+            if let Some(&source_distance) = distances.get(&source) {
+                if let Some(&destination_distance) = distances.get(&source) {
+                    if source_distance + weight < destination_distance {
+                        panic!("Graph contains a negative cycle");
+                    }
+                }
+            }
+        }
+        distances
     }
 }
 
@@ -889,13 +933,61 @@ mod tests {
 
     #[test]
     fn test_edge_list_weighted_directed_graph() {
-        let mut g: EdgeListWegihtedGraph<i32, f64> = EdgeListWegihtedGraph::new_directed();
-        g.add_edge(1, 2, 0.7);
-        g.add_edge(2, 3, 0.9);
-        g.add_edge(3, 4, 0.5);
-        assert_eq!(g.edges[0], (1, 2, 0.7));
-        assert_eq!(g.edges[1], (2, 3, 0.9));
-        assert_eq!(g.edges[2], (3, 4, 0.5));
+        let mut g: EdgeListWegihtedGraph<i32, i64> = EdgeListWegihtedGraph::new_directed();
+        g.add_edge(1, 2, 70);
+        g.add_edge(2, 3, 90);
+        g.add_edge(3, 4, 50);
+        assert_eq!(g.edges[0], (1, 2, 70));
+        assert_eq!(g.edges[1], (2, 3, 90));
+        assert_eq!(g.edges[2], (3, 4, 50));
+    }
+
+    #[test]
+    fn test_edge_list_weighted_undirected_graph() {
+        let mut g: EdgeListWegihtedGraph<i32, i64> = EdgeListWegihtedGraph::new_undirected();
+        g.add_edge(1, 2, 70);
+        g.add_edge(2, 3, 90);
+        g.add_edge(3, 4, 50);
+        assert_eq!(g.edges[0], (1, 2, 70));
+        assert_eq!(g.edges[1], (2, 1, 70));
+        assert_eq!(g.edges[2], (2, 3, 90));
+        assert_eq!(g.edges[3], (3, 2, 90));
+        assert_eq!(g.edges[4], (3, 4, 50));
+        assert_eq!(g.edges[5], (4, 3, 50));
+    }
+
+    #[test]
+    fn test_edge_list_weighted_directed_graph_bellman_ford() {
+        let mut g: EdgeListWegihtedGraph<i32, i64> = EdgeListWegihtedGraph::new_directed();
+        g.add_edge(1, 2, 10);
+        g.add_edge(1, 3, 5);
+        g.add_edge(2, 4, 25);
+        g.add_edge(3, 4, 50);
+        
+        let start_node: i32 = 1;
+        let n_vertices: usize = 4;
+        let distances: HashMap<i32, i64> = g.bellman_ford(start_node, n_vertices);
+        assert_eq!(distances[&1], 0);
+        assert_eq!(distances[&2], 10);
+        assert_eq!(distances[&3], 5);
+        assert_eq!(distances[&4], 35);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_edge_list_weighted_directed_graph_bellman_ford_negative_cycle() {
+        let mut g: EdgeListWegihtedGraph<i32, i64> = EdgeListWegihtedGraph::new_undirected();
+        g.add_edge(1, 2, 3);
+        g.add_edge(1, 3, 5);
+        g.add_edge(2, 3, 2);
+        g.add_edge(2, 4, 1);
+        g.add_edge(3, 4, -7);
+
+        // negative cycle: 2 → 3 → 4 → 2
+        
+        let start_node: i32 = 2;
+        let n_vertices: usize = 4;
+        g.bellman_ford(start_node, n_vertices);
     }
 
     #[test]
