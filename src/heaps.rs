@@ -1,7 +1,7 @@
 pub struct MinBinaryHeap<T> {
-    pub data: Vec<T>,
+    data: Vec<T>,
     capacity: usize,
-    pub size: usize
+    size: usize
 }
 
 impl<T> MinBinaryHeap<T>
@@ -117,9 +117,9 @@ where
 }
 
 pub struct MinBinaryHeap2<T, W> {
-    pub data: Vec<(T, W)>,
+    data: Vec<(T, W)>,
     capacity: usize,
-    pub size: usize
+    size: usize
 }
 
 impl<T, W> MinBinaryHeap2<T, W>
@@ -237,9 +237,9 @@ where
 }
 
 pub struct MaxBinaryHeap<T> {
-    pub data: Vec<T>,
+    data: Vec<T>,
     capacity: usize,
-    pub size: usize
+    size: usize
 }
 
 impl<T> MaxBinaryHeap<T>
@@ -355,9 +355,9 @@ where
 }
 
 pub struct MaxBinaryHeap2<T, W> {
-    pub data: Vec<(T, W)>,
+    data: Vec<(T, W)>,
     capacity: usize,
-    pub size: usize
+    size: usize
 }
 
 impl<T, W> MaxBinaryHeap2<T, W>
