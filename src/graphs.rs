@@ -204,11 +204,11 @@ where
             if let Some(neighbors) = self.adjacency_list.get(&node) {
                 for (neighbor, weight) in neighbors {
                     let new_dist: W = dist + *weight;
-                    let is_shorter_path_found: bool = match distances.get(neighbor) {
+                    let shorter_path_found: bool = match distances.get(neighbor) {
                         Some(&dist) => new_dist < dist,
                         None => true
                     };
-                    if is_shorter_path_found {
+                    if shorter_path_found {
                         distances.insert(*neighbor, new_dist);
                         heap.push(*neighbor, new_dist);
                     }
