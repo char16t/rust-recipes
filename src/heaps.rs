@@ -15,7 +15,7 @@ where
             size: 0
         }
     }
-    pub fn insert(&mut self, value: T) -> Result<(), ()> {
+    pub fn insert(&mut self, value: T) {
         if self.size >= self.capacity {
             self.data.resize(self.capacity * 2 + 1, T::default());
             self.capacity *= 2;
@@ -33,7 +33,6 @@ where
             parent = self.data[parent_position];
         }
         self.size += 1;
-        Ok(())
     }
     
     pub fn remove(&mut self) -> Option<T> {
@@ -132,7 +131,7 @@ where
             size: 0
         }
     }
-    pub fn insert(&mut self, value: T) -> Result<(), ()> {
+    pub fn insert(&mut self, value: T) {
         if self.size >= self.capacity {
             self.data.resize(self.capacity * 2 + 1, T::default());
             self.capacity *= 2;
@@ -150,7 +149,6 @@ where
             parent = self.data[parent_position];
         }
         self.size += 1;
-        Ok(())
     }
     
     pub fn remove(&mut self) -> Option<T> {
@@ -237,16 +235,15 @@ mod tests {
     use super::*;
 
     #[test]
-    #[allow(unused_must_use)]
     fn test_min_binary_heap() {
         let mut min_heap: MinBinaryHeap<i32> = MinBinaryHeap::with_capacity(3);
-        assert_eq!(min_heap.insert(4), Ok(()));
-        assert_eq!(min_heap.insert(5), Ok(()));
-        assert_eq!(min_heap.insert(6), Ok(()));
+        min_heap.insert(4);
+        min_heap.insert(5);
+        min_heap.insert(6);
         assert_eq!(min_heap.capacity, 3);
-        assert_eq!(min_heap.insert(7), Ok(()));
-        assert_eq!(min_heap.insert(8), Ok(()));
-        assert_eq!(min_heap.insert(9), Ok(()));
+        min_heap.insert(7);
+        min_heap.insert(8);
+        min_heap.insert(9);
         assert_eq!(min_heap.capacity, 6);
         assert_eq!(min_heap.remove(), Some(4));
         assert_eq!(min_heap.remove(), Some(5));
@@ -328,16 +325,15 @@ mod tests {
     }
 
     #[test]
-    #[allow(unused_must_use)]
     fn test_max_binary_heap() {
         let mut heap: MaxBinaryHeap<i32> = MaxBinaryHeap::with_capacity(3);
-        assert_eq!(heap.insert(4), Ok(()));
-        assert_eq!(heap.insert(5), Ok(()));
-        assert_eq!(heap.insert(6), Ok(()));
+        heap.insert(4);
+        heap.insert(5);
+        heap.insert(6);
         assert_eq!(heap.capacity, 3);
-        assert_eq!(heap.insert(7), Ok(()));
-        assert_eq!(heap.insert(8), Ok(()));
-        assert_eq!(heap.insert(9), Ok(()));
+        heap.insert(7);
+        heap.insert(8);
+        heap.insert(9);
         assert_eq!(heap.capacity, 6);
         assert_eq!(heap.remove(), Some(9));
         assert_eq!(heap.remove(), Some(8));
