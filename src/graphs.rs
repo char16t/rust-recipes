@@ -1,4 +1,4 @@
-use std::{cmp, collections::{HashMap, HashSet, VecDeque}, process::ExitStatus};
+use std::{cmp, collections::{HashMap, HashSet, VecDeque}};
 
 use crate::{bits, coordinates, heaps};
 
@@ -617,7 +617,7 @@ where
         distances.insert(start_node, W::default());
         for _ in 0..n_vertices-1 {
             for j in self.edges.iter() {
-                let &(a, b, w) = j;
+                let &(a, b, w): &(T, T, W) = j;
                 
                 // distance[b] = min(distance[b], distance[a]+w);
                 if let Some(&distance_b) = distances.get(&b) {
@@ -639,7 +639,7 @@ where
         for &edge in self.edges.iter() {
             let (source, destination, weight) = edge;
             if let Some(&source_distance) = distances.get(&source) {
-                if let Some(&destination_distance) = distances.get(&source) {
+                if let Some(&destination_distance) = distances.get(&destination) {
                     if source_distance + weight < destination_distance {
                         panic!("Graph contains a negative cycle");
                     }
