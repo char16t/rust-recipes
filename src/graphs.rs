@@ -46,6 +46,46 @@ where
         }
         true // empty graph is connected
     }
+
+    // Kahn’s algorithm
+    pub fn topological_sort(&self) -> Option<Vec<T>> {
+        let mut in_degree: HashMap<T, usize> = HashMap::new();
+        let mut result: Vec<T> = Vec::new();
+        let mut queue: VecDeque<T> = VecDeque::new();
+
+        // Initialize in-degree for each node
+        for neighbors in self.adjacency_list.values() {
+            for neighbor in neighbors {
+                *in_degree.entry(neighbor.clone()).or_insert(0) += 1;
+            }
+        }
+
+        // Add nodes with in-degree 0 to the queue
+        for node in self.adjacency_list.keys() {
+            if !in_degree.contains_key(node) {
+                queue.push_back(node.clone());
+            }
+        }
+
+        while let Some(node) = queue.pop_front() {
+            result.push(node.clone());
+
+            if let Some(neighbors) = self.adjacency_list.get(&node) {
+                for neighbor in neighbors {
+                    *in_degree.get_mut(neighbor).unwrap() -= 1;
+                    if *in_degree.get(neighbor).unwrap() == 0 {
+                        queue.push_back(neighbor.clone());
+                    }
+                }
+            }
+        }
+
+        if result.len() == self.adjacency_list.len() {
+            Some(result)
+        } else {
+            None // Graph contains a cycle
+        }
+    }
 }
 
 pub struct AdjacencyListGraphDfsIterator<'a, T> {
@@ -217,6 +257,46 @@ where
         }
 
         distances
+    }
+
+    // Kahn’s algorithm
+    pub fn topological_sort(&self) -> Option<Vec<T>> {
+        let mut in_degree: HashMap<T, usize> = HashMap::new();
+        let mut result: Vec<T> = Vec::new();
+        let mut queue: VecDeque<T> = VecDeque::new();
+
+        // Initialize in-degree for each node
+        for neighbors in self.adjacency_list.values() {
+            for (neighbor, _) in neighbors {
+                *in_degree.entry(neighbor.clone()).or_insert(0) += 1;
+            }
+        }
+
+        // Add nodes with in-degree 0 to the queue
+        for node in self.adjacency_list.keys() {
+            if !in_degree.contains_key(node) {
+                queue.push_back(node.clone());
+            }
+        }
+
+        while let Some(node) = queue.pop_front() {
+            result.push(node.clone());
+
+            if let Some(neighbors) = self.adjacency_list.get(&node) {
+                for (neighbor, _) in neighbors {
+                    *in_degree.get_mut(neighbor).unwrap() -= 1;
+                    if *in_degree.get(neighbor).unwrap() == 0 {
+                        queue.push_back(neighbor.clone());
+                    }
+                }
+            }
+        }
+
+        if result.len() == self.adjacency_list.len() {
+            Some(result)
+        } else {
+            None // Graph contains a cycle
+        }
     }
 }
 
@@ -786,6 +866,56 @@ mod tests {
     }
 
     #[test]
+    fn test_adjacency_list_graph_topological_sort_directed_1() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(1, 2);
+        graph.add_edge(2, 3);
+        graph.add_edge(3, 6);
+        graph.add_edge(4, 1);
+        graph.add_edge(4, 5);
+        graph.add_edge(5, 2);
+        graph.add_edge(5, 3);
+
+        let sorted: Option<Vec<i32>> = graph.topological_sort();
+        assert_eq!(sorted, Some(vec![4, 1, 5, 2, 3, 6]));
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_topological_sort_directed_2() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+
+        //cycle
+        graph.add_edge(1, 2);
+        graph.add_edge(2, 3);
+        graph.add_edge(3, 1);
+
+        graph.add_edge(3, 2);
+        graph.add_edge(3, 6);
+        graph.add_edge(4, 1);
+        graph.add_edge(4, 5);
+        graph.add_edge(5, 2);
+        graph.add_edge(5, 3);
+
+        let sorted: Option<Vec<i32>> = graph.topological_sort();
+        assert_eq!(sorted, None);
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_topological_sort_undirected() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_edge(1, 2);
+        graph.add_edge(2, 3);
+        graph.add_edge(3, 6);
+        graph.add_edge(4, 1);
+        graph.add_edge(4, 5);
+        graph.add_edge(5, 2);
+        graph.add_edge(5, 3);
+
+        let sorted: Option<Vec<i32>> = graph.topological_sort();
+        assert_eq!(sorted, None);
+    }
+
+    #[test]
     fn test_adjacency_list_weighed_undirected_graph() {
         let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(0, 1, 0.5);
@@ -864,6 +994,56 @@ mod tests {
 
         let empty: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
         assert_eq!(empty.is_connected(), true);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_topological_sort_directed_1() {
+        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(1, 2, 0.5);
+        graph.add_edge(2, 3, 0.5);
+        graph.add_edge(3, 6, 0.5);
+        graph.add_edge(4, 1, 0.5);
+        graph.add_edge(4, 5, 0.5);
+        graph.add_edge(5, 2, 0.5);
+        graph.add_edge(5, 3, 0.5);
+
+        let sorted: Option<Vec<i32>> = graph.topological_sort();
+        assert_eq!(sorted, Some(vec![4, 1, 5, 2, 3, 6]));
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_topological_sort_directed_2() {
+        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
+
+        //cycle
+        graph.add_edge(1, 2, 0.5);
+        graph.add_edge(2, 3, 0.5);
+        graph.add_edge(3, 1, 0.5);
+
+        graph.add_edge(3, 2, 0.5);
+        graph.add_edge(3, 6, 0.5);
+        graph.add_edge(4, 1, 0.5);
+        graph.add_edge(4, 5, 0.5);
+        graph.add_edge(5, 2, 0.5);
+        graph.add_edge(5, 3, 0.5);
+
+        let sorted: Option<Vec<i32>> = graph.topological_sort();
+        assert_eq!(sorted, None);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_topological_sort_undirected() {
+        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_edge(1, 2, 0.5);
+        graph.add_edge(2, 3, 0.5);
+        graph.add_edge(3, 6, 0.5);
+        graph.add_edge(4, 1, 0.5);
+        graph.add_edge(4, 5, 0.5);
+        graph.add_edge(5, 2, 0.5);
+        graph.add_edge(5, 3, 0.5);
+
+        let sorted: Option<Vec<i32>> = graph.topological_sort();
+        assert_eq!(sorted, None);
     }
 
     #[test]
