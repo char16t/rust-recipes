@@ -1,20 +1,41 @@
 use std::cmp;
 use crate::coordinates;
 
-pub fn build_prefix_sum_array<T>(arr: &[T]) -> Vec<T> where T: Default + std::ops::Add<Output = T> + Copy {
-    let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
-    prefix_sum[0] = arr[0];
-    for i in 1..prefix_sum.len() {
-        prefix_sum[i] = prefix_sum[i - 1] + arr[i];
+#[repr(transparent)]
+pub struct PrefixSumArray<T> {
+    prefix_sum: Vec<T>
+}
+impl<T> PrefixSumArray<T>
+where 
+    T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy
+{
+    pub fn new(arr: &[T]) -> Self {
+        let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
+        prefix_sum[0] = arr[0];
+        for i in 1..prefix_sum.len() {
+            prefix_sum[i] = prefix_sum[i - 1] + arr[i];
+        }
+        Self{ prefix_sum }
     }
-    prefix_sum
+
+    pub fn range_sum(&self, l: usize, r: usize) -> T {
+        if l == 0 {
+            self.prefix_sum[r]
+        } else {
+            self.prefix_sum[r] - self.prefix_sum[l-1]
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.prefix_sum.len()
+    }
 }
 
-pub fn range_sum<T>(prefix_sum: &[T], l: usize, r: usize) -> T where T: Default + std::ops::Sub<Output = T> + Copy {
-    if l == 0 {
-        prefix_sum[r]
-    } else {
-        prefix_sum[r] - prefix_sum[l-1]
+impl<T> std::ops::Index<usize> for PrefixSumArray<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.prefix_sum[index]
     }
 }
 
@@ -431,9 +452,10 @@ where
 
 pub fn build_original_by_difference_array<T>(diff_arr: &[T]) -> Vec<T>
 where 
-    T: Default + Copy + std::ops::Add<Output = T>
+    T: Default + Copy + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
 {
-    build_prefix_sum_array(&diff_arr)
+    let psa: PrefixSumArray<T> = PrefixSumArray::new(&diff_arr);
+    return psa.prefix_sum;
 }
 
 #[cfg(test)]
@@ -443,7 +465,7 @@ mod tests {
     #[test]
     fn test_build_prefix_sum_array() {
         let original_array: Vec<i32> = vec![1, 2, 3, 4, 5];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array(&original_array);
+        let prefix_sum_array: PrefixSumArray<i32> = PrefixSumArray::new(&original_array);
         assert_eq!(prefix_sum_array.len(), 5);
         assert_eq!(prefix_sum_array[0], 1);
         assert_eq!(prefix_sum_array[1], 3);
@@ -455,13 +477,13 @@ mod tests {
     #[test]
     fn test_range_sum() {
         let original_array: Vec<i32> = vec![1, 2, 3, 4, 5];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array(&original_array);
+        let psa: PrefixSumArray<i32> = PrefixSumArray::new(&original_array);
         
-        assert_eq!(range_sum(&prefix_sum_array, 1, 3), 9);
-        assert_eq!(range_sum(&prefix_sum_array, 0, 0), 1);
-        assert_eq!(range_sum(&prefix_sum_array, 1, 1), 2);
-        assert_eq!(range_sum(&prefix_sum_array, 1, 2), 5);
-        assert_eq!(range_sum(&prefix_sum_array, 0, 4), 15);
+        assert_eq!(psa.range_sum(1, 3), 9);
+        assert_eq!(psa.range_sum(0, 0), 1);
+        assert_eq!(psa.range_sum(1, 1), 2);
+        assert_eq!(psa.range_sum(1, 2), 5);
+        assert_eq!(psa.range_sum(0, 4), 15);
     }
 
     #[test]
