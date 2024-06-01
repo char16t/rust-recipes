@@ -783,21 +783,28 @@ where
 pub struct SuccessorGraphEnumerated {
     data: Vec<usize>,
     size: usize,
-    steps: usize
+    steps: usize,
+    is_table_filled: bool
 }
 impl SuccessorGraphEnumerated {
     pub fn new(size: usize, steps: usize) -> Self {
         Self {
             size,
             steps: steps + 1,
-            data: vec![0; (steps + 1) * size]
+            data: vec![0; (steps + 1) * size],
+            is_table_filled: false
         }
     }
     pub fn insert(&mut self, idx: usize, successor: usize) {
         let xy = coordinates::create_coordinate_function_2d!(self.steps, self.size);
         self.data[xy(0, idx)] = successor;
+        self.is_table_filled = false;
     }
-    pub fn find_successor(&self, idx: usize, steps: usize) -> usize {
+    pub fn find_successor(&mut self, idx: usize, steps: usize) -> usize {
+        if !self.is_table_filled {
+            self.fill_table();
+            self.is_table_filled = true;
+        }
         let xy = coordinates::create_coordinate_function_2d!(self.steps, self.size);
 
         let mut current_steps: usize = steps;
@@ -811,10 +818,10 @@ impl SuccessorGraphEnumerated {
     
         current_idx
     }
-    pub fn fill_table(&mut self) {
+    fn fill_table(&mut self) {
         let xy = coordinates::create_coordinate_function_2d!(self.steps, self.size);
         for i in 1..self.steps {
-            for j in 0..9 {
+            for j in 0..self.size {
                 let mut idx = self.data[xy(0, j)];
                 for _ in 0..(1 << i)-1 {
                     idx = self.data[xy(0, idx)];
@@ -827,7 +834,8 @@ impl SuccessorGraphEnumerated {
 
 pub struct SuccessorGraph<T> {
     data: HashMap<T, Vec<T>>,
-    steps: usize
+    steps: usize,
+    is_table_filled: bool
 }
 impl<T> SuccessorGraph<T>
 where
@@ -836,7 +844,8 @@ where
     pub fn new(steps: usize) -> Self {
         Self {
             steps: steps + 1,
-            data: HashMap::new()
+            data: HashMap::new(),
+            is_table_filled: false
         }
     }
     pub fn insert(&mut self, source: T, successor: T) {
@@ -846,8 +855,14 @@ where
             vec
         });
         a[0] = successor;
+        self.is_table_filled = false;
     }
-    pub fn find_successor(&self, node: T, steps: usize) -> T {
+    pub fn find_successor(&mut self, node: T, steps: usize) -> T {
+
+        if !self.is_table_filled {
+            self.fill_table();
+            self.is_table_filled = true;
+        }
 
         let mut current_steps: usize = steps;
         let mut current_node: T = node;
@@ -860,7 +875,7 @@ where
 
         current_node
     }
-    pub fn fill_table(&mut self) {
+    fn fill_table(&mut self) {
         for i in 1..self.steps {
             let mut transformed_map: HashMap<T, T> = HashMap::new();
             for (key, values) in self.data.iter_mut() {
@@ -1577,10 +1592,18 @@ mod tests {
         g.insert(6, 0);
         g.insert(7, 5);
         g.insert(8, 2);
-        
-        g.fill_table();
 
         assert_eq!(g.steps, 4);
+        assert_eq!(g.is_table_filled, false);
+        assert_eq!(g.data, vec![
+            2, 4, 6, 5, 1, 1, 0, 5, 2,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+
+        assert_eq!(g.find_successor(0, 0), 0);
+        assert_eq!(g.is_table_filled, true);
         assert_eq!(g.data, vec![
             2, 4, 6, 5, 1, 1, 0, 5, 2,
             6, 1, 0, 1, 4, 4, 2, 1, 6,
@@ -1588,12 +1611,27 @@ mod tests {
             6, 1, 0, 1, 4, 4, 2, 1, 6,
         ]);
 
-        assert_eq!(g.find_successor(0, 0), 0);
         assert_eq!(g.find_successor(0, 1), 2);
         assert_eq!(g.find_successor(0, 2), 6);
         assert_eq!(g.find_successor(0, 4), 2);
         assert_eq!(g.find_successor(0, 8), 6);
         assert_eq!(g.find_successor(3, 11), 4);
+    }
+
+    #[test]
+    fn test_successor_graph_enumerated_2() {
+        let size: usize = 4;
+        let steps: usize = 2; // 2^2 = 4
+        let mut g: SuccessorGraphEnumerated = SuccessorGraphEnumerated::new(size, steps);
+        g.insert(0, 2);
+        g.insert(1, 2);
+        g.insert(2, 3);
+        g.insert(3, 0);
+
+        assert_eq!(g.find_successor(0, 0), 0);
+        assert_eq!(g.find_successor(0, 1), 2);
+        assert_eq!(g.find_successor(0, 2), 3);
+        assert_eq!(g.find_successor(2, 3), 2);
     }
 
     #[test]
@@ -1611,9 +1649,17 @@ mod tests {
         g.insert(7, 5);
         g.insert(8, 2);
         
-        g.fill_table();
-
         assert_eq!(g.steps, 4);
+        assert_eq!(g.is_table_filled, false);
+
+        assert_eq!(g.find_successor(0, 0), 0);
+        assert_eq!(g.find_successor(0, 1), 2);
+        assert_eq!(g.find_successor(0, 2), 6);
+        assert_eq!(g.find_successor(0, 4), 2);
+        assert_eq!(g.find_successor(0, 8), 6);
+        assert_eq!(g.find_successor(3, 11), 4);
+
+        assert_eq!(g.is_table_filled, true);
         assert_eq!(g.data[&0], vec![2, 6, 2, 6]);
         assert_eq!(g.data[&1], vec![4, 1, 1, 1]);
         assert_eq!(g.data[&2], vec![6, 0, 6, 0]);
@@ -1623,12 +1669,5 @@ mod tests {
         assert_eq!(g.data[&6], vec![0, 2, 0, 2]);
         assert_eq!(g.data[&7], vec![5, 1, 1, 1]);
         assert_eq!(g.data[&8], vec![2, 6, 2, 6]);
-
-        assert_eq!(g.find_successor(0, 0), 0);
-        assert_eq!(g.find_successor(0, 1), 2);
-        assert_eq!(g.find_successor(0, 2), 6);
-        assert_eq!(g.find_successor(0, 4), 2);
-        assert_eq!(g.find_successor(0, 8), 6);
-        assert_eq!(g.find_successor(3, 11), 4);
     }
 }
