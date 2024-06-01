@@ -8,4 +8,3 @@ pub mod sequences;
 pub mod graphs;
 pub mod bits;
 pub mod heaps;
-mod successor; // not implemented
