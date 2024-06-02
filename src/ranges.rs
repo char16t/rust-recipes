@@ -39,80 +39,97 @@ impl<T> std::ops::Index<usize> for PrefixSumArray<T> {
     }
 }
 
-pub fn build_prefix_sum_array_2d<T>(arr: &[T], rows: usize, cols: usize) -> Vec<T>
-where 
-    T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy 
-{
-    let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
-    let xy = coordinates::create_coordinate_function_2d!(rows, cols);
-    
-    // Fill first row
-    prefix_sum[xy(0, 0)] = arr[xy(0, 0)];
-    for i in 1..cols {
-        prefix_sum[xy(0, i)] = prefix_sum[xy(0, i - 1)] + arr[xy(0, i)];
-    }
-
-    // Fill first column
-    for i in 1..rows {
-        prefix_sum[xy(i, 0)] = prefix_sum[xy(i - 1, 0)] + arr[xy(i ,0)];
-    }
-
-    for i in 1..rows {
-        for j in 1..cols {
-            prefix_sum[xy(i, j)] = 
-                prefix_sum[xy(i-1, j)]
-                + prefix_sum[xy(i, j-1)] 
-                - prefix_sum[xy(i-1, j-1)] 
-                + arr[xy(i, j)]
-        }
-    }
-
-    prefix_sum
+#[allow(dead_code)]
+pub struct PrefixSumArray2D<T> {
+    prefix_sum: Vec<T>,
+    rows: usize, 
+    cols: usize
 }
-
-pub fn range_sum_2d<T>(arr: &[T], _rows: usize, cols: usize, top_left: (usize, usize), bottom_right: (usize, usize)) -> T 
+impl<T> PrefixSumArray2D<T>
 where 
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy
 {
-    if top_left.0 > bottom_right.0 {
-        panic!(
-            "Coordinate X of top left point ({}, {}) should be less or equals of bottom right's coordinate X ({}, {})",
-            top_left.0, top_left.1,
-            bottom_right.0, bottom_right.1 
-        );
-    }
-    if top_left.1 > bottom_right.1 {
-        panic!(
-            "Coordinate Y of top left point ({}, {}) should be less or equals of bottom right's coordinate Y ({}, {})",
-            top_left.0, top_left.1,
-            bottom_right.0, bottom_right.1 
-        );
+    pub fn new(arr: &[T], rows: usize, cols: usize) -> Self {
+        let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
+        let xy = coordinates::create_coordinate_function_2d!(rows, cols);
+        
+        // Fill first row
+        prefix_sum[xy(0, 0)] = arr[xy(0, 0)];
+        for i in 1..cols {
+            prefix_sum[xy(0, i)] = prefix_sum[xy(0, i - 1)] + arr[xy(0, i)];
+        }
+
+        // Fill first column
+        for i in 1..rows {
+            prefix_sum[xy(i, 0)] = prefix_sum[xy(i - 1, 0)] + arr[xy(i ,0)];
+        }
+
+        for i in 1..rows {
+            for j in 1..cols {
+                prefix_sum[xy(i, j)] = 
+                    prefix_sum[xy(i-1, j)]
+                    + prefix_sum[xy(i, j-1)] 
+                    - prefix_sum[xy(i-1, j-1)] 
+                    + arr[xy(i, j)]
+            }
+        }
+
+        Self{ prefix_sum, rows, cols }
     }
 
-    // * +-----------+
-    // * |  D     C  |
-    // * |   +---+   |
-    // * |   |   |   |
-    // * | B +---A   |
-    // * +-----------+
-    let xy = coordinates::create_coordinate_function_2d!(rows, cols);
-    if top_left.0 == 0 && top_left.1 == 0 {
-        let a: usize = xy(bottom_right.0, bottom_right.1);
-        return arr[a];
-    } else if top_left.0 == 0 {
-        let a: usize = xy(bottom_right.0, bottom_right.1);
-        let b: usize = xy(bottom_right.0, top_left.1 - 1);
-        return arr[a] - arr[b];
-    } else if top_left.1 == 0 {
-        let a: usize = xy(bottom_right.0, bottom_right.1);
-        let c: usize = xy(top_left.0 - 1,  bottom_right.1);
-        return arr[a] - arr[c];
-    } else {
-        let a: usize = xy(bottom_right.0, bottom_right.1);
-        let b: usize = xy(bottom_right.0, top_left.1 - 1);
-        let c: usize = xy(top_left.0 - 1,  bottom_right.1);
-        let d: usize = xy(top_left.0 - 1, top_left.1 - 1);
-        return arr[a] - arr[b] - arr[c] + arr[d]
+    pub fn range_sum(&self, top_left: (usize, usize), bottom_right: (usize, usize)) -> T {
+        if top_left.0 > bottom_right.0 {
+            panic!(
+                "Coordinate X of top left point ({}, {}) should be less or equals of bottom right's coordinate X ({}, {})",
+                top_left.0, top_left.1,
+                bottom_right.0, bottom_right.1 
+            );
+        }
+        if top_left.1 > bottom_right.1 {
+            panic!(
+                "Coordinate Y of top left point ({}, {}) should be less or equals of bottom right's coordinate Y ({}, {})",
+                top_left.0, top_left.1,
+                bottom_right.0, bottom_right.1 
+            );
+        }
+    
+        // * +-----------+
+        // * |  D     C  |
+        // * |   +---+   |
+        // * |   |   |   |
+        // * | B +---A   |
+        // * +-----------+
+        let xy = coordinates::create_coordinate_function_2d!(self.rows, self.cols);
+        if top_left.0 == 0 && top_left.1 == 0 {
+            let a: usize = xy(bottom_right.0, bottom_right.1);
+            return self.prefix_sum[a];
+        } else if top_left.0 == 0 {
+            let a: usize = xy(bottom_right.0, bottom_right.1);
+            let b: usize = xy(bottom_right.0, top_left.1 - 1);
+            return self.prefix_sum[a] - self.prefix_sum[b];
+        } else if top_left.1 == 0 {
+            let a: usize = xy(bottom_right.0, bottom_right.1);
+            let c: usize = xy(top_left.0 - 1,  bottom_right.1);
+            return self.prefix_sum[a] - self.prefix_sum[c];
+        } else {
+            let a: usize = xy(bottom_right.0, bottom_right.1);
+            let b: usize = xy(bottom_right.0, top_left.1 - 1);
+            let c: usize = xy(top_left.0 - 1,  bottom_right.1);
+            let d: usize = xy(top_left.0 - 1, top_left.1 - 1);
+            return self.prefix_sum[a] - self.prefix_sum[b] - self.prefix_sum[c] + self.prefix_sum[d]
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.prefix_sum.len()
+    }
+}
+
+impl<T> std::ops::Index<usize> for PrefixSumArray2D<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.prefix_sum[index]
     }
 }
 
@@ -494,7 +511,7 @@ mod tests {
             1, 1, 1, 1, 1,
             1, 1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_2d(&original_array, 4, 5);
+        let prefix_sum_array: PrefixSumArray2D<i32> = PrefixSumArray2D::new(&original_array, 4, 5);
         assert_eq!(prefix_sum_array.len(), 20);
         
         // 1, 2,  3,  4,  5, 
@@ -534,18 +551,20 @@ mod tests {
             1, 1, 1, 1, 1,
             1, 1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_2d(&original_array, 4, 5);
+        let prefix_sum_array: PrefixSumArray2D<i32> = PrefixSumArray2D::new(&original_array, 4, 5);
+        assert_eq!(prefix_sum_array.rows, 4);
+        assert_eq!(prefix_sum_array.cols, 5);
 
-        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (1, 1), (2, 3));
+        let sum: i32 = prefix_sum_array.range_sum((1, 1), (2, 3));
         assert_eq!(sum, 6);
 
-        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (0, 0), (2, 3));
+        let sum: i32 = prefix_sum_array.range_sum((0, 0), (2, 3));
         assert_eq!(sum, 12);
 
-        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (1, 0), (2, 3));
+        let sum: i32 = prefix_sum_array.range_sum((1, 0), (2, 3));
         assert_eq!(sum, 8);
 
-        let sum: i32 = range_sum_2d(&prefix_sum_array, 4, 5, (0, 1), (2, 3));
+        let sum: i32 = prefix_sum_array.range_sum((0, 1), (2, 3));
         assert_eq!(sum, 9);
     }
 
@@ -558,9 +577,9 @@ mod tests {
             1, 1, 1, 1, 1,
             1, 1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_2d(&original_array, 4, 5);
+        let prefix_sum_array: PrefixSumArray2D<i32> = PrefixSumArray2D::new(&original_array, 4, 5);
 
-        range_sum_2d(&prefix_sum_array, 4, 5, (2, 3), (1, 1));
+        prefix_sum_array.range_sum((2, 3), (1, 1));
     }
 
     #[test]
@@ -572,9 +591,9 @@ mod tests {
             1, 1, 1, 1, 1,
             1, 1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_2d(&original_array, 4, 5);
+        let prefix_sum_array: PrefixSumArray2D<i32> = PrefixSumArray2D::new(&original_array, 4, 5);
 
-        range_sum_2d(&prefix_sum_array, 4, 5, (1, 3), (2, 2));
+        prefix_sum_array.range_sum((1, 3), (2, 2));
     }
 
     #[test]
