@@ -86,6 +86,65 @@ where
             None // Graph contains a cycle
         }
     }
+    
+    // Floyd’s cycle finding algorithm (two pointers)
+    pub fn has_cycle(&self) -> (bool, Option<T>, usize) {
+        if !self.is_directed {
+            panic!("Unable to detect cycles in undirected graph")
+        }
+
+        let mut has_cycle: bool = false;
+        let mut cycle_start: Option<T> = None;
+        let mut cycle_length: usize = 0;
+
+        let mut visited: HashSet<T> = HashSet::new();
+        for node in self.adjacency_list.keys() {
+            if visited.contains(node) {
+                continue;
+            }
+            visited.insert(*node);
+
+            let mut slow: T = node.clone();
+            let mut fast: T = node.clone();
+
+            loop {
+                if let Some(next_slow) = self.adjacency_list.get(&slow).and_then(|neighbors| neighbors.get(0)) {
+                    if let Some(next_fast) = self.adjacency_list.get(&fast).and_then(|neighbors| neighbors.get(0)).and_then(|next| self.adjacency_list.get(next).and_then(|neighbors| neighbors.get(0))) {
+                        slow = next_slow.clone();
+                        fast = next_fast.clone();
+
+                        visited.insert(slow);
+                        visited.insert(fast);
+
+                        if slow == fast {
+                            has_cycle = true;
+                            cycle_start = Some(slow.clone());
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            if has_cycle {
+                let mut cycle_node: Option<T> = cycle_start.clone();
+                while let Some(node) = cycle_node {
+                    if node == cycle_start.unwrap() && cycle_length > 1 {
+                        break;
+                    }
+                    cycle_length += 1;
+                    cycle_node = self.adjacency_list.get(&node).and_then(|neighbors| neighbors.get(0)).cloned();
+                }
+
+                break;
+            }
+        }
+
+        (has_cycle, cycle_start, cycle_length)
+    }
 }
 
 pub struct AdjacencyListGraphDfsIterator<'a, T> {
@@ -297,6 +356,71 @@ where
         } else {
             None // Graph contains a cycle
         }
+    }
+
+    // Floyd’s cycle finding algorithm (two pointers)
+    pub fn has_cycle(&self) -> (bool, Option<T>, usize) {
+        if !self.is_directed {
+            panic!("Unable to detect cycles in undirected graph")
+        }
+
+        let mut has_cycle: bool = false;
+        let mut cycle_start: Option<T> = None;
+        let mut cycle_length: usize = 0;
+
+        let mut visited: HashSet<T> = HashSet::new();
+        for node in self.adjacency_list.keys() {
+            if visited.contains(node) {
+                continue;
+            }
+            visited.insert(*node);
+
+            let mut slow: T = node.clone();
+            let mut fast: T = node.clone();
+
+            loop {
+                if let Some(next_slow) = self.adjacency_list.get(&slow).and_then(|neighbors| neighbors.get(0)) {
+                    if let Some(next_fast) = self.adjacency_list.get(&fast)
+                        .and_then(|neighbors| neighbors.get(0))
+                        .and_then(|next| self.adjacency_list.get(&next.0)
+                        .and_then(|neighbors| neighbors.get(0))) 
+                    {
+                        slow = next_slow.0.clone();
+                        fast = next_fast.0.clone();
+
+                        visited.insert(slow);
+                        visited.insert(fast);
+
+                        if slow == fast {
+                            has_cycle = true;
+                            cycle_start = Some(slow.clone());
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            if has_cycle {
+                let mut cycle_node: Option<T> = cycle_start.clone();
+                while let Some(node) = cycle_node {
+                    if node == cycle_start.unwrap() && cycle_length > 1 {
+                        break;
+                    }
+                    cycle_length += 1;
+                    cycle_node = self.adjacency_list.get(&node)
+                        .and_then(|neighbors| neighbors.get(0))
+                        .and_then(|t| Some(t.0));
+                }
+
+                break;
+            }
+        }
+
+        (has_cycle, cycle_start, cycle_length)
     }
 }
 
@@ -1034,6 +1158,61 @@ mod tests {
     }
 
     #[test]
+    fn test_adjacency_list_graph_directed_has_cycle() {
+        let graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        assert_eq!(graph.has_cycle(), (false, None, 0));
+
+
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(0, 1);
+        assert_eq!(graph.has_cycle(), (false, None, 0));
+
+
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(0, 1);
+        graph.add_edge(1, 0);
+        let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
+        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1));
+        assert_eq!(has_cycle.2, 2);
+
+
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(0, 1);
+        graph.add_edge(2, 0);
+        graph.add_edge(1, 2);
+        let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
+        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1) || has_cycle.1 == Some(2));
+        assert_eq!(has_cycle.2, 3);
+
+
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(3, 32);
+        graph.add_edge(0, 1);
+        graph.add_edge(2, 3);
+        graph.add_edge(1, 2);
+        graph.add_edge(3, 30);
+        graph.add_edge(30, 31);
+
+        graph.add_edge(4, 5);
+        graph.add_edge(6, 4);
+        graph.add_edge(5, 6);
+        graph.add_edge(5, 7);
+        let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
+        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.1 == Some(4) || has_cycle.1 == Some(5) || has_cycle.1 == Some(6));
+        assert_eq!(has_cycle.2, 3);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_adjacency_list_graph_undirected_has_cycle() {
+        let graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.has_cycle();
+    }
+
+    #[test]
     fn test_adjacency_list_weighed_undirected_graph() {
         let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(0, 1, 0.5);
@@ -1176,6 +1355,61 @@ mod tests {
         assert_eq!(distances[&'B'], 10.0);
         assert_eq!(distances[&'C'], 5.0);
         assert_eq!(distances[&'D'], 35.0);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_directed_has_cycle() {
+        let graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        assert_eq!(graph.has_cycle(), (false, None, 0));
+
+
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(0, 1, 100);
+        assert_eq!(graph.has_cycle(), (false, None, 0));
+
+
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(0, 1, 100);
+        graph.add_edge(1, 0, 100);
+        let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
+        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1));
+        assert_eq!(has_cycle.2, 2);
+
+
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(0, 1, 100);
+        graph.add_edge(2, 0, 100);
+        graph.add_edge(1, 2, 100);
+        let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
+        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1) || has_cycle.1 == Some(2));
+        assert_eq!(has_cycle.2, 3);
+
+
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(0, 1, 100);
+        graph.add_edge(2, 3, 100);
+        graph.add_edge(1, 2, 100);
+        graph.add_edge(3, 30, 100);
+        graph.add_edge(3, 32, 100);
+        graph.add_edge(30, 31, 100);
+
+        graph.add_edge(4, 5, 100);
+        graph.add_edge(6, 4, 100);
+        graph.add_edge(5, 6, 100);
+        graph.add_edge(5, 7, 100);
+        let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
+        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.1 == Some(4) || has_cycle.1 == Some(5) || has_cycle.1 == Some(6));
+        assert_eq!(has_cycle.2, 3);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_adjacency_list_weighted_graph_undirected_has_cycle() {
+        let graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        graph.has_cycle();
     }
 
     #[test]
