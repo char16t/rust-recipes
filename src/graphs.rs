@@ -422,6 +422,53 @@ where
 
         (has_cycle, cycle_start, cycle_length)
     }
+
+    pub fn minimum_spanning_tree_kruskal(&self) -> (W, Self)
+    where
+        W: Ord + std::ops::AddAssign
+    {
+        let mut edges: Vec<(&T, &T, W)> = 
+            self.adjacency_list.iter()
+            .flat_map(|(from, neighbors)| {
+                neighbors.iter().map(move |(to, weight)| {
+                    (from, to, *weight)
+                })
+            }).collect();
+        let mut cost: W = W::default();
+
+        edges.sort_by_key(|edge| edge.2);
+        
+
+        let mut mst_graph: AdjacencyListWightedGraph<T, W> = AdjacencyListWightedGraph::new_undirected();
+        let mut forest: HashMap<T, T> = HashMap::new();
+        for (from, to, weight) in edges {
+            let root_from: T = self.find_root(&forest, from);
+            let root_to: T = self.find_root(&forest, to);
+            if root_from != root_to {
+                mst_graph.add_edge(*from, *to, weight);
+                cost += weight;
+                self.union(&mut forest, root_from, root_to);
+            }
+        }
+
+        (cost, mst_graph)
+    }
+
+    fn find_root(&self, forest: &HashMap<T, T>, node: &T) -> T {
+        // match forest.get(node) {
+        //     Some(parent) => self.find_root(forest, parent),
+        //     None => node.clone(),
+        // }
+        let mut current: &T = node;
+        while let Some(parent) = forest.get(&current) {
+            current = parent;
+        }
+        current.clone()
+    }
+
+    fn union(&self, forest: &mut HashMap<T, T>, root1: T, root2: T) {
+        forest.insert(root2, root1);
+    }
 }
 
 pub struct AdjacencyListWightedGraphDfsIterator<'a, T, W> {
@@ -1410,6 +1457,57 @@ mod tests {
     fn test_adjacency_list_weighted_graph_undirected_has_cycle() {
         let graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
         graph.has_cycle();
+    }
+
+    #[test]
+    fn test_adjacency_list_wighted_graph_undirected_minimum_spanning_tree_kruskal() {
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        
+        graph.add_edge(0, 1, 3);
+        graph.add_edge(1, 0, 3);
+        
+        graph.add_edge(0, 4, 5);
+        graph.add_edge(4, 0, 5);
+        
+        graph.add_edge(1, 2, 5);
+        graph.add_edge(2, 1, 5);
+        
+        graph.add_edge(1, 4, 6);
+        graph.add_edge(4, 1, 6);
+        
+        graph.add_edge(2, 3, 9);
+        graph.add_edge(3, 2, 9);
+        
+        graph.add_edge(2, 5, 3);
+        graph.add_edge(5, 2, 3);
+        
+        graph.add_edge(3, 5, 7);
+        graph.add_edge(5, 3, 7);
+        
+        graph.add_edge(4, 5, 2);
+        graph.add_edge(5, 4, 2);
+        
+        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) = graph.minimum_spanning_tree_kruskal();
+        
+        assert_eq!(cost, 20);
+    }
+
+    #[test]
+    fn test_adjacency_list_wighted_graph_directed_minimum_spanning_tree_kruskal() {
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        
+        graph.add_edge(0, 1, 3);
+        graph.add_edge(0, 4, 5);
+        graph.add_edge(1, 2, 5);
+        graph.add_edge(1, 4, 6);
+        graph.add_edge(2, 3, 9);
+        graph.add_edge(2, 5, 3);
+        graph.add_edge(3, 5, 7);
+        graph.add_edge(4, 5, 2);
+        
+        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) = graph.minimum_spanning_tree_kruskal();
+        
+        assert_eq!(cost, 20);
     }
 
     #[test]
