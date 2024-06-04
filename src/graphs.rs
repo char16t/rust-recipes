@@ -40,8 +40,20 @@ where
         AdjacencyListGraphBfsIterator::new(&self.adjacency_list, start_node)
     }
     pub fn is_connected(&self) -> bool {
-        if let Some((key, _value)) = self.adjacency_list.iter().next() {
-            let visited: Vec<T> = self.iter_dfs(*key).collect();
+        if let Some((start_node, _)) = self.adjacency_list.iter().next() {
+            let mut stack: VecDeque<T> = VecDeque::new();
+            stack.push_front(*start_node);
+            let mut visited: HashSet<T> = HashSet::new();
+            visited.insert(*start_node);
+
+            while let Some(node) = stack.pop_front() {
+                for neighbor in &self.adjacency_list[&node] {
+                    if !visited.contains(&neighbor) {
+                        stack.push_front(*neighbor);
+                        visited.insert(*neighbor);
+                    }
+                }
+            }
             return visited.len() == self.adjacency_list.len();
         }
         true // empty graph is connected
@@ -178,7 +190,18 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        while let Some(node) = self.stack.pop_front() {
+        // add next connected component
+        if self.stack.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.stack.push_front(node);
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.stack.pop_front() {
             for &neighbor in &self.adjacency_list[&node] {
                 if !self.visited.contains(&neighbor) {
                     self.stack.push_front(neighbor);
@@ -222,7 +245,18 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        while let Some(node) = self.queue.pop_front() {
+        // add next connected component
+        if self.queue.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.queue.push_back(node);
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.queue.pop_front() {
             for &neighbor in &self.adjacency_list[&node] {
                 if !self.visited.contains(&neighbor) {
                     self.queue.push_back(neighbor);
@@ -262,8 +296,20 @@ where
         }
     }
     pub fn is_connected(&self) -> bool {
-        if let Some((key, _value)) = self.adjacency_list.iter().next() {
-            let visited: Vec<(T, W)> = self.iter_dfs(*key).collect();
+        if let Some((start_node, _value)) = self.adjacency_list.iter().next() {
+            let mut stack: VecDeque<(T, W)> = VecDeque::new();
+            stack.push_front((*start_node, W::default()));
+            let mut visited: HashSet<T> = HashSet::new();
+            visited.insert(*start_node);
+
+            while let Some((node, _)) = stack.pop_front() {
+                for neighbor in &self.adjacency_list[&node] {
+                    if !visited.contains(&neighbor.0) {
+                        stack.push_front(*neighbor);
+                        visited.insert(neighbor.0);
+                    }
+                }
+            }
             return visited.len() == self.adjacency_list.len();
         }
         true // empty graph is connected
@@ -530,12 +576,23 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy
+    W: Copy + Default
 {
     type Item = (T, W);
 
     fn next(&mut self) -> Option<(T, W)> {
-        while let Some(node) = self.stack.pop_front() {
+        // add next connected component
+        if self.stack.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.stack.push_front((node, W::default()));
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.stack.pop_front() {
             for &neighbor in &self.adjacency_list[&node.0] {
                 if !self.visited.contains(&neighbor.0) {
                     self.stack.push_front(neighbor);
@@ -576,12 +633,23 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy
+    W: Copy + Default
 {
     type Item = (T, W);
 
     fn next(&mut self) -> Option<(T, W)> {
-        while let Some(node) = self.queue.pop_front() {
+        // add next connected component
+        if self.queue.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.queue.push_back((node, W::default()));
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.queue.pop_front() {
             for &neighbor in &self.adjacency_list[&node.0] {
                 if !self.visited.contains(&neighbor.0) {
                     self.queue.push_back(neighbor);
@@ -622,12 +690,23 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphAscDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Ord
+    W: Copy + Default + Ord
 {
     type Item = (T, W);
 
     fn next(&mut self) -> Option<(T, W)> {
-        while let Some(node) = self.stack.pop_front() {
+        // add next connected component
+        if self.stack.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.stack.push_front((node, W::default()));
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.stack.pop_front() {
             let mut neighbors: Vec<(T, W)> = self.adjacency_list[&node.0].clone();
             neighbors.sort_by(|a, b| { b.1.cmp(&a.1) });
             for neighbor in neighbors {
@@ -670,12 +749,23 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphAscBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Ord
+    W: Copy + Default + Ord
 {
     type Item = (T, W);
 
     fn next(&mut self) -> Option<(T, W)> {
-        while let Some(node) = self.queue.pop_front() {
+        // add next connected component
+        if self.queue.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.queue.push_back((node, W::default()));
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.queue.pop_front() {
             let mut neighbors: Vec<(T, W)> = self.adjacency_list[&node.0].clone();
             neighbors.sort_by_key(|k| { k.1 });
             for neighbor in neighbors {
@@ -718,12 +808,23 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphDescDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Ord
+    W: Copy + Default + Ord
 {
     type Item = (T, W);
 
     fn next(&mut self) -> Option<(T, W)> {
-        while let Some(node) = self.stack.pop_front() {
+        // add next connected component
+        if self.stack.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.stack.push_front((node, W::default()));
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.stack.pop_front() {
             let mut neighbors: Vec<(T, W)> = self.adjacency_list[&node.0].clone();
             neighbors.sort_by(|a, b| a.1.cmp(&b.1));
             for neighbor in neighbors {
@@ -766,12 +867,23 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphDescBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Ord
+    W: Copy + Default + Ord
 {
     type Item = (T, W);
 
     fn next(&mut self) -> Option<(T, W)> {
-        while let Some(node) = self.queue.pop_front() {
+        // add next connected component
+        if self.queue.is_empty() {
+            for (&node, _) in self.adjacency_list {
+                if !self.visited.contains(&node) {
+                    self.queue.push_back((node, W::default()));
+                    self.visited.insert(node);
+                    break;
+                }
+            }
+        }
+
+        if let Some(node) = self.queue.pop_front() {
             let mut neighbors: Vec<(T, W)> = self.adjacency_list[&node.0].clone();
             neighbors.sort_by(|a, b| b.1.cmp(&a.1));
             for neighbor in neighbors {
@@ -1830,6 +1942,31 @@ mod tests {
     }
 
     #[test]
+    fn test_adjacency_list_graph_dfs_iterator_2() {
+        let mut g: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        g.add_edge(0, 1);
+        g.add_edge(0, 2);
+        g.add_edge(1, 0);
+        g.add_edge(1, 3);
+        g.add_edge(1, 4);
+        g.add_edge(2, 0);
+        g.add_edge(2, 5);
+        g.add_edge(3, 1);
+        g.add_edge(4, 1);
+        g.add_edge(5, 2);
+
+        g.add_edge(10, 22);
+        g.add_edge(22, 32);
+        g.add_edge(22, 42);
+        g.add_edge(32, 52);
+
+        let expected_order: Vec<i32> = vec![0, 2, 5, 1, 4, 3];
+        let actual_order: Vec<i32> = g.iter_dfs(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
+    }
+
+    #[test]
     fn test_adjacency_list_graph_bfs_iterator() {
         let mut g: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         g.add_edge(0, 1);
@@ -1850,6 +1987,31 @@ mod tests {
         let expected_order: Vec<i32> = vec![0, 1, 2, 3, 4, 5];
         let actual_order: Vec<i32> = g.iter_bfs(0).collect();
         assert_eq!(actual_order, expected_order);
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_bfs_iterator_2() {
+        let mut g: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        g.add_edge(0, 1);
+        g.add_edge(0, 2);
+        g.add_edge(1, 0);
+        g.add_edge(1, 3);
+        g.add_edge(1, 4);
+        g.add_edge(2, 0);
+        g.add_edge(2, 5);
+        g.add_edge(3, 1);
+        g.add_edge(4, 1);
+        g.add_edge(5, 2);
+
+        g.add_edge(10, 22);
+        g.add_edge(22, 32);
+        g.add_edge(22, 42);
+        g.add_edge(32, 52);
+
+        let expected_order: Vec<i32> = vec![0, 1, 2, 3, 4, 5];
+        let actual_order: Vec<i32> = g.iter_bfs(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
     }
 
     #[test]
@@ -1877,7 +2039,33 @@ mod tests {
     }
 
     #[test]
-    fn ttest_adjacency_list_weighted_bfs_iterator() {
+    fn test_adjacency_list_weighted_graph_dfs_iterator_2() {
+
+        let mut g: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
+        g.add_edge(0, 1, 0.1);
+        g.add_edge(0, 2, 0.2);
+        g.add_edge(1, 0, 0.3);
+        g.add_edge(1, 3, 0.4);
+        g.add_edge(1, 4, 0.5);
+        g.add_edge(2, 0, 0.6);
+        g.add_edge(2, 5, 0.7);
+        g.add_edge(3, 1, 0.8);
+        g.add_edge(4, 1, 0.9);
+        g.add_edge(5, 2, 0.25);
+
+        g.add_edge(10, 22, 0.3);
+        g.add_edge(22, 32, 0.4);
+        g.add_edge(22, 42, 0.5);
+        g.add_edge(32, 52, 0.6);
+
+        let expected_order: Vec<(i32, f64)> = vec![(0, 0.0), (2, 0.2), (5, 0.7), (1, 0.1), (4, 0.5), (3, 0.4)];
+        let actual_order: Vec<(i32, f64)> = g.iter_dfs(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_bfs_iterator() {
         let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
         g.add_edge(0, 1, 10);
         g.add_edge(0, 2, 20);
@@ -1897,6 +2085,31 @@ mod tests {
         let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs(0).collect();
         assert_eq!(actual_order, expected_order);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_bfs_iterator_2() {
+        let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
+        g.add_edge(0, 1, 10);
+        g.add_edge(0, 2, 20);
+        g.add_edge(1, 0, 30);
+        g.add_edge(1, 3, 40);
+        g.add_edge(1, 4, 50);
+        g.add_edge(2, 0, 60);
+        g.add_edge(2, 5, 70);
+        g.add_edge(3, 1, 80);
+        g.add_edge(4, 1, 90);
+        g.add_edge(5, 2, 25);
+
+        g.add_edge(10, 22, 30);
+        g.add_edge(22, 32, 40);
+        g.add_edge(22, 42, 50);
+        g.add_edge(32, 52, 60);
+
+        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
+        let actual_order: Vec<(i32, i64)> = g.iter_bfs(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
     }
 
     #[test]
@@ -1923,6 +2136,31 @@ mod tests {
     }
 
     #[test]
+    fn test_adjacency_list_weighted_graph_asc_dfs_iterator_2() {
+        let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
+        g.add_edge(0, 1, 10);
+        g.add_edge(0, 2, 20);
+        g.add_edge(1, 0, 30);
+        g.add_edge(1, 3, 40);
+        g.add_edge(1, 4, 50);
+        g.add_edge(2, 0, 60);
+        g.add_edge(2, 5, 70);
+        g.add_edge(3, 1, 80);
+        g.add_edge(4, 1, 90);
+        g.add_edge(5, 2, 25);
+
+        g.add_edge(10, 22, 30);
+        g.add_edge(22, 32, 40);
+        g.add_edge(22, 42, 50);
+        g.add_edge(32, 52, 60);
+
+        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (3, 40), (4, 50), (2, 20), (5, 70)];
+        let actual_order: Vec<(i32, i64)> = g.iter_dfs_asc(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
+    }
+
+    #[test]
     fn test_adjacency_list_weighted_asc_bfs_iterator() {
         let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
         g.add_edge(0, 1, 10);
@@ -1943,6 +2181,31 @@ mod tests {
         let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs_asc(0).collect();
         assert_eq!(actual_order, expected_order);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_asc_bfs_iterator_2() {
+        let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
+        g.add_edge(0, 1, 10);
+        g.add_edge(0, 2, 20);
+        g.add_edge(1, 0, 30);
+        g.add_edge(1, 3, 40);
+        g.add_edge(1, 4, 50);
+        g.add_edge(2, 0, 60);
+        g.add_edge(2, 5, 70);
+        g.add_edge(3, 1, 80);
+        g.add_edge(4, 1, 90);
+        g.add_edge(5, 2, 25);
+
+        g.add_edge(10, 22, 30);
+        g.add_edge(22, 32, 40);
+        g.add_edge(22, 42, 50);
+        g.add_edge(32, 52, 60);
+
+        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
+        let actual_order: Vec<(i32, i64)> = g.iter_bfs_asc(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
     }
 
     #[test]
@@ -1969,6 +2232,31 @@ mod tests {
     }
 
     #[test]
+    fn test_adjacency_list_weighted_graph_desc_dfs_iterator_2() {
+        let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
+        g.add_edge(0, 1, 10);
+        g.add_edge(0, 2, 20);
+        g.add_edge(1, 0, 30);
+        g.add_edge(1, 3, 40);
+        g.add_edge(1, 4, 50);
+        g.add_edge(2, 0, 60);
+        g.add_edge(2, 5, 70);
+        g.add_edge(3, 1, 80);
+        g.add_edge(4, 1, 90);
+        g.add_edge(5, 2, 25);
+
+        g.add_edge(10, 22, 30);
+        g.add_edge(22, 32, 40);
+        g.add_edge(22, 42, 50);
+        g.add_edge(32, 52, 60);
+
+        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (2, 20), (5, 70), (1, 10), (4, 50), (3, 40)];
+        let actual_order: Vec<(i32, i64)> = g.iter_dfs_desc(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
+    }
+
+    #[test]
     fn test_adjacency_list_weighted_desc_bfs_iterator() {
         let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
         g.add_edge(0, 1, 10);
@@ -1989,6 +2277,31 @@ mod tests {
         let expected_order: Vec<(i32, i64)> = vec![(0, 0), (2, 20), (1, 10), (5, 70), (4, 50), (3, 40)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs_desc(0).collect();
         assert_eq!(actual_order, expected_order);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_desc_bfs_iterator_2() {
+        let mut g: AdjacencyListWightedGraph<i32, i64> = AdjacencyListWightedGraph::new_directed();
+        g.add_edge(0, 1, 10);
+        g.add_edge(0, 2, 20);
+        g.add_edge(1, 0, 30);
+        g.add_edge(1, 3, 40);
+        g.add_edge(1, 4, 50);
+        g.add_edge(2, 0, 60);
+        g.add_edge(2, 5, 70);
+        g.add_edge(3, 1, 80);
+        g.add_edge(4, 1, 90);
+        g.add_edge(5, 2, 25);
+
+        g.add_edge(10, 22, 30);
+        g.add_edge(22, 32, 40);
+        g.add_edge(22, 42, 50);
+        g.add_edge(32, 52, 60);
+
+        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (2, 20), (1, 10), (5, 70), (4, 50), (3, 40)];
+        let actual_order: Vec<(i32, i64)> = g.iter_bfs_desc(0).collect();
+        assert_eq!(actual_order[0..6], expected_order);
+        assert_eq!(actual_order.len(), 11);
     }
 
     #[test]
