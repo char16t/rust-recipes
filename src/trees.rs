@@ -111,12 +111,91 @@ where
     }
 }
 
+pub struct Node<T> {
+    value: T,
+    children: Vec<Node<T>>
+}
+
+impl<T> Node<T> {
+    pub fn new(value: T) -> Self {
+        Node {
+            value,
+            children: Vec::new()
+        }
+    }
+
+    pub fn add_child(&mut self, child: Node<T>) {
+        self.children.push(child);
+    }
+
+    pub fn dfs_iter(&self) -> DfsIterator<T> {
+        DfsIterator::new(self)
+    }
+
+    pub fn bfs_iter(&self) -> BfsIterator<T> {
+        BfsIterator::new(self)
+    }
+}
+
+pub struct DfsIterator<'a, T> {
+    stack: Vec<&'a Node<T>>,
+}
+
+impl<'a, T> DfsIterator<'a, T> {
+    fn new(node: &'a Node<T>) -> Self {
+        let mut stack: Vec<&Node<T>> = Vec::new();
+        stack.push(node);
+        DfsIterator { stack }
+    }
+}
+
+impl<'a, T> Iterator for DfsIterator<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(node) = self.stack.pop() {
+            for child in node.children.iter().rev() {
+                self.stack.push(child);
+            }
+            return Some(&node.value);
+        }
+        None
+    }
+}
+
+pub struct BfsIterator<'a, T> {
+    queue: VecDeque<&'a Node<T>>,
+}
+
+impl<'a, T> BfsIterator<'a, T> {
+    fn new(node: &'a Node<T>) -> Self {
+        let mut queue = VecDeque::new();
+        queue.push_back(node);
+        BfsIterator { queue }
+    }
+}
+
+impl<'a, T> Iterator for BfsIterator<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(node) = self.queue.pop_front() {
+            for child in &node.children {
+                self.queue.push_back(child);
+            }
+            Some(&node.value)
+        } else {
+            None
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_1() {
+    fn test_adjacency_list_tree_dfs() {
         let mut tree: AdjacencyListTree<i32> = AdjacencyListTree::new();
         tree.adjacency_list.insert(0, vec![1, 2, 3]);
         tree.adjacency_list.insert(1, vec![11, 12, 13]);
@@ -130,7 +209,7 @@ mod tests {
     }
 
     #[test]
-    fn test_2() {
+    fn test_adjacency_list_tree_bfs() {
         let mut tree: AdjacencyListTree<i32> = AdjacencyListTree::new();
         tree.adjacency_list.insert(0, vec![1, 2, 3]);
         tree.adjacency_list.insert(1, vec![11, 12, 13]);
@@ -140,6 +219,49 @@ mod tests {
 
         let actual: Vec<i32> = tree.iter_bfs(0).collect();
         let expected: Vec<i32> = vec![0, 1, 2, 3, 11, 12, 13, 21, 22, 23, 31, 32, 33, 221, 222, 223];
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_node_dfs() {
+        let mut root: Node<i32> = Node::new(1);
+        let mut child1: Node<i32> = Node::new(2);
+        let mut child2: Node<i32> = Node::new(3);
+        let child11: Node<i32> = Node::new(4);
+        let child12: Node<i32> = Node::new(5);
+        let child21: Node<i32> = Node::new(6);
+    
+        child1.add_child(child11);
+        child1.add_child(child12);
+        child2.add_child(child21);
+    
+        root.add_child(child1);
+        root.add_child(child2);
+    
+        let actual: Vec<&i32> = root.dfs_iter().collect();
+        let expected: Vec<&i32> = vec![&1, &2, &4, &5, &3, &6];
+        println!("{:?}", actual);
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_node_bfs() {
+        let mut root: Node<i32> = Node::new(1);
+        let mut child1: Node<i32> = Node::new(2);
+        let mut child2: Node<i32> = Node::new(3);
+        let child11: Node<i32> = Node::new(4);
+        let child12: Node<i32> = Node::new(5);
+        let child21: Node<i32> = Node::new(6);
+    
+        child1.add_child(child11);
+        child1.add_child(child12);
+        child2.add_child(child21);
+    
+        root.add_child(child1);
+        root.add_child(child2);
+    
+        let actual: Vec<&i32> = root.bfs_iter().collect();
+        let expected: Vec<&i32> = vec![&1, &2, &3, &4, &5, &6];
         assert_eq!(actual, expected);
     }
 }
