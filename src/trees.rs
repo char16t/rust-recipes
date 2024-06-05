@@ -11,6 +11,9 @@ where
     pub fn new() -> Self {
         Self { adjacency_list: HashMap::new() }
     }
+    pub fn add_child(&mut self, parent: T, child: T) {
+        self.adjacency_list.entry(parent).or_insert(Vec::new()).push(child);
+    }
     pub fn iter_dfs(&self, start_node: T) -> AdjacencyListTreeDfsIterator<T> {
         AdjacencyListTreeDfsIterator::new(&self.adjacency_list, start_node)
     }
@@ -118,24 +121,17 @@ pub struct Node<T> {
 
 impl<T> Node<T> {
     pub fn new(value: T) -> Self {
-        Node {
-            value,
-            children: Vec::new()
-        }
+        Self { value, children: Vec::new() }
     }
-
     pub fn add_child(&mut self, child: Node<T>) {
         self.children.push(child);
     }
-
     pub fn dfs_iter(&self) -> DfsIterator<T> {
         DfsIterator::new(self)
     }
-
     pub fn bfs_iter(&self) -> BfsIterator<T> {
         BfsIterator::new(self)
     }
-
     pub fn diameter(&self) -> usize {
         let mut max_diameter: usize = 0;
 
@@ -146,12 +142,10 @@ impl<T> Node<T> {
             if height > max_diameter {
                 max_diameter = height;
             }
-
             for child in &node.children {
                 stack.push_back((child, height + 1));
             }
         }
-
         max_diameter
     }
 }
@@ -164,7 +158,7 @@ impl<'a, T> DfsIterator<'a, T> {
     fn new(node: &'a Node<T>) -> Self {
         let mut stack: Vec<&Node<T>> = Vec::new();
         stack.push(node);
-        DfsIterator { stack }
+        Self { stack }
     }
 }
 
@@ -216,11 +210,11 @@ mod tests {
     #[test]
     fn test_adjacency_list_tree_dfs() {
         let mut tree: AdjacencyListTree<i32> = AdjacencyListTree::new();
-        tree.adjacency_list.insert(0, vec![1, 2, 3]);
-        tree.adjacency_list.insert(1, vec![11, 12, 13]);
-        tree.adjacency_list.insert(2, vec![21, 22, 23]);
-        tree.adjacency_list.insert(3, vec![31, 32, 33]);
-        tree.adjacency_list.insert(22, vec![221, 222, 223]);
+        tree.add_child(0, 1); tree.add_child(0, 2); tree.add_child(0, 3);
+        tree.add_child(1, 11); tree.add_child(1, 12); tree.add_child(1, 13);
+        tree.add_child(2, 21); tree.add_child(2, 22); tree.add_child(2, 23);
+        tree.add_child(3, 31); tree.add_child(3, 32); tree.add_child(3, 33);
+        tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_dfs(0).collect();
         let expected: Vec<i32> = vec![0, 3, 33, 32, 31, 2, 23, 22, 223, 222, 221, 21, 1, 13, 12, 11];
@@ -230,11 +224,11 @@ mod tests {
     #[test]
     fn test_adjacency_list_tree_bfs() {
         let mut tree: AdjacencyListTree<i32> = AdjacencyListTree::new();
-        tree.adjacency_list.insert(0, vec![1, 2, 3]);
-        tree.adjacency_list.insert(1, vec![11, 12, 13]);
-        tree.adjacency_list.insert(2, vec![21, 22, 23]);
-        tree.adjacency_list.insert(3, vec![31, 32, 33]);
-        tree.adjacency_list.insert(22, vec![221, 222, 223]);
+        tree.add_child(0, 1); tree.add_child(0, 2); tree.add_child(0, 3);
+        tree.add_child(1, 11); tree.add_child(1, 12); tree.add_child(1, 13);
+        tree.add_child(2, 21); tree.add_child(2, 22); tree.add_child(2, 23);
+        tree.add_child(3, 31); tree.add_child(3, 32); tree.add_child(3, 33);
+        tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_bfs(0).collect();
         let expected: Vec<i32> = vec![0, 1, 2, 3, 11, 12, 13, 21, 22, 23, 31, 32, 33, 221, 222, 223];
@@ -259,7 +253,6 @@ mod tests {
     
         let actual: Vec<&i32> = root.dfs_iter().collect();
         let expected: Vec<&i32> = vec![&1, &2, &4, &5, &3, &6];
-        println!("{:?}", actual);
         assert_eq!(actual, expected);
     }
 
