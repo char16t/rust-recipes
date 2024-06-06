@@ -172,22 +172,6 @@ impl<T> Node<T> {
     pub fn bfs_iter(&self) -> BfsIterator<T> {
         BfsIterator::new(self)
     }
-    pub fn diameter(&self) -> usize {
-        let mut max_diameter: usize = 0;
-
-        let mut stack: VecDeque<(&Node<T>, usize)> = VecDeque::new();
-        stack.push_back((self, 0));
-
-        while let Some((node, height)) = stack.pop_back() {
-            if height > max_diameter {
-                max_diameter = height;
-            }
-            for child in &node.children {
-                stack.push_back((child, height + 1));
-            }
-        }
-        max_diameter
-    }
 }
 
 pub struct DfsIterator<'a, T> {
@@ -350,26 +334,5 @@ mod tests {
         let actual: Vec<&i32> = root.bfs_iter().collect();
         let expected: Vec<&i32> = vec![&1, &2, &3, &4, &5, &6];
         assert_eq!(actual, expected);
-    }
-
-    #[test]
-    fn test_node_diameter() {
-        let mut root: Node<i32> = Node::new(1);
-        let mut child1: Node<i32> = Node::new(2);
-        let mut child2: Node<i32> = Node::new(3);
-        let child11: Node<i32> = Node::new(4);
-        let child12: Node<i32> = Node::new(5);
-        let child21: Node<i32> = Node::new(6);
-
-        child1.add_child(child11);
-        child1.add_child(child12);
-        child2.add_child(child21);
-    
-        root.add_child(child1);
-        root.add_child(child2);
-        
-
-        let diameter: usize = root.diameter();
-        assert_eq!(diameter, 2);
     }
 }
