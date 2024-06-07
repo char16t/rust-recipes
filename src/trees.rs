@@ -100,7 +100,7 @@ where
 
     fn next(&mut self) -> Option<T> {
         if let Some(node) = self.stack.pop_front() {
-            for &neighbor in &self.adjacency_list[&node] {
+            for &neighbor in self.adjacency_list[&node].iter().rev() {
                 if !self.visited.contains(&neighbor) {
                     self.stack.push_front(neighbor);
                     self.visited.insert(neighbor);
@@ -308,6 +308,220 @@ where
     }
 }
 
+#[repr(transparent)]
+pub struct KeyValueTree<K, V> {
+    adjacency_list: HashMap<K, (V, Vec<K>)>,
+}
+impl<K, V> KeyValueTree<K, V>
+where
+    K: Copy + Eq + std::hash::Hash,
+    V: Default + Copy
+{
+    pub fn new() -> Self {
+        Self { adjacency_list: HashMap::new() }
+    }
+    pub fn add_root(&mut self, parent: K, parent_value: V) {
+        self.adjacency_list.entry(parent).or_insert((parent_value, Vec::new())).0 = parent_value;
+    }
+    pub fn add_child(&mut self, parent: K, child: K, child_value: V) {
+        self.adjacency_list.entry(parent).or_insert((V::default(), Vec::new())).1.push(child);
+
+        let c: &mut (V, Vec<K>) = self.adjacency_list.entry(child).or_insert((child_value, Vec::new()));
+        c.1.push(parent);
+        c.0 = child_value;
+    }
+    pub fn iter_dfs(&self, start_node: K) -> KeyValueTreeDfsIterator<K, V> {
+        KeyValueTreeDfsIterator::new(&self.adjacency_list, start_node)
+    }
+    pub fn iter_bfs(&self, start_node: K) -> KeyValueTreeBfsIterator<K, V> {
+        KeyValueTreeBfsIterator::new(&self.adjacency_list, start_node)
+    }
+    pub fn diameter(&self) -> usize {
+        if let Some(start_node) = self.adjacency_list.keys().next() {
+            let v: &K = start_node;
+            let mut u: &K = start_node;
+            let mut w: &K = start_node;
+
+            let distances: HashMap<K, usize> = self.bfs_distances(v);
+            for i in self.adjacency_list.keys() {
+                if distances[i] > distances[u] {
+                    u = i;
+                }
+            }
+
+            let distances: HashMap<K, usize> = self.bfs_distances(u);
+            for i in self.adjacency_list.keys() {
+                if distances[i] > distances[w] {
+                    w = i;
+                }
+            }
+
+            return distances[w]
+        }
+        0
+    }
+
+    /// Return tuple of: 1) Map<Node, Index in array>, 2) Vector of pair: (subtree size, value in node)
+    pub fn dfs_with_subtree_sizes(&self, start_node: K) -> (HashMap<K, usize>, Vec<(usize, V)>) {
+        let mut stack: Vec<(K, Option<K>)> = vec![(start_node, None)];
+        let mut visited: HashSet<K> = HashSet::new();
+        let mut subtree_sizes: HashMap<K, usize> = HashMap::new();
+        while let Some((node, parent)) = stack.pop() {
+            if visited.contains(&node) {
+                if let Some(parent_node) = parent {
+                    let sub_size: usize = *subtree_sizes.get(&node).unwrap_or(&1);
+                    subtree_sizes.entry(parent_node).and_modify(|x| *x += sub_size);
+
+                }
+            } else {
+                visited.insert(node);
+                stack.push((node, parent));
+                for &neighbor in self.adjacency_list.get(&node).and_then(|x| Some(&x.1)).unwrap_or(&vec![]).iter().rev() {
+                    if !visited.contains(&neighbor) {
+                        stack.push((neighbor, Some(node)));
+                    }
+                }
+                subtree_sizes.insert(node, 1);
+            }
+        }
+    
+        let mut result_key_ids: HashMap<K, usize> = HashMap::new();
+        let mut result: Vec<(usize, V)> = Vec::new(); // i
+        let mut stack: Vec<K> = Vec::new();
+        let mut visited: HashSet<K> = HashSet::new();
+        stack.push(start_node);
+        visited.insert(start_node);
+        let mut index: usize = 0;
+        while let Some(node) = stack.pop() {
+            if let Some((value, neighbors)) = self.adjacency_list.get(&node) {
+                for &neighbor in neighbors.iter().rev() {
+                    if !visited.contains(&neighbor) {
+                        stack.push(neighbor);
+                        visited.insert(neighbor);
+                    }
+                }
+                result_key_ids.insert(node, index);
+                result.push((subtree_sizes[&node], *value));
+                index += 1;
+            }
+        }
+        (result_key_ids, result)
+    }
+
+    #[inline]
+    fn bfs_distances(&self, start: &K) -> HashMap<K, usize> {
+        let mut distances: HashMap<K, usize> = HashMap::new();
+        let mut visited: HashSet<K> = HashSet::new();
+        let mut queue: VecDeque<K> = VecDeque::new();
+    
+        queue.push_back(*start);
+        visited.insert(*start);
+        distances.insert(*start, 0);
+    
+        while let Some(node) = queue.pop_front() {
+            for &neighbor in self.adjacency_list.get(&node).and_then(|x| Some(&x.1)).unwrap_or(&vec![]) {
+                if !visited.contains(&neighbor) {
+                    visited.insert(neighbor);
+                    distances.insert(neighbor, distances[&node] + 1);
+                    queue.push_back(neighbor);
+                }
+            }
+        }
+    
+        distances
+    }
+}
+
+pub struct KeyValueTreeDfsIterator<'a, K, V> {
+    adjacency_list: &'a HashMap<K, (V, Vec<K>)>,
+    stack: VecDeque<K>,
+    visited: HashSet<K>
+}
+impl<'a, K, V> KeyValueTreeDfsIterator<'a, K, V>
+where
+    K: Copy + Eq + std::hash::Hash
+{
+    fn new(adjacency_list: &'a HashMap<K, (V, Vec<K>)>, start_node: K) -> Self {
+        let mut stack: VecDeque<K> = VecDeque::new();
+        let mut visited: HashSet<K> = HashSet::new();
+        stack.push_front(start_node);
+        visited.insert(start_node);
+
+        KeyValueTreeDfsIterator {
+            adjacency_list,
+            stack,
+            visited
+        }
+    }
+}
+impl<'a, K, V> Iterator for KeyValueTreeDfsIterator<'a, K, V>
+where
+    K: Copy + Eq + std::hash::Hash,
+    V: Copy
+{
+    type Item = (K, V);
+
+    fn next(&mut self) -> Option<(K, V)> {
+        if let Some(node) = self.stack.pop_front() {
+            if let Some((value, neighbors)) = self.adjacency_list.get(&node) {
+                for &neighbor in neighbors.iter().rev() {
+                    if !self.visited.contains(&neighbor) {
+                        self.stack.push_front(neighbor);
+                        self.visited.insert(neighbor);
+                    }
+                }
+                return Some((node, *value));
+            }
+        }
+        None
+    }
+}
+
+pub struct KeyValueTreeBfsIterator<'a, K, V> {
+    adjacency_list: &'a HashMap<K, (V, Vec<K>)>,
+    queue: VecDeque<K>,
+    visited: HashSet<K>,
+}
+impl<'a, K, V> KeyValueTreeBfsIterator<'a, K, V>
+where
+    K: Copy + Eq + std::hash::Hash
+{
+    fn new(adjacency_list: &'a HashMap<K, (V, Vec<K>)>, start_node: K) -> Self {
+        let mut queue: VecDeque<K> = VecDeque::new();
+        let mut visited: HashSet<K> = HashSet::new();
+        queue.push_back(start_node);
+        visited.insert(start_node);
+
+        KeyValueTreeBfsIterator {
+            adjacency_list,
+            queue,
+            visited,
+        }
+    }
+}
+impl<'a, K, V> Iterator for KeyValueTreeBfsIterator<'a, K, V>
+where
+    K: Copy + Eq + std::hash::Hash,
+    V: Copy
+{
+    type Item = (K, V);
+
+    fn next(&mut self) -> Option<(K, V)> {
+        if let Some(node) = self.queue.pop_front() {
+            if let Some((value, neighbors)) = self.adjacency_list.get(&node) {
+                for &neighbor in neighbors {
+                    if !self.visited.contains(&neighbor) {
+                        self.queue.push_back(neighbor);
+                        self.visited.insert(neighbor);
+                    }
+                }
+                return Some((node, *value));
+            }
+        }
+        None
+    }
+}
+
 pub struct Node<T> {
     value: T,
     children: Vec<Node<T>>
@@ -395,7 +609,7 @@ mod tests {
         tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_dfs(0).collect();
-        let expected: Vec<i32> = vec![0, 3, 33, 32, 31, 2, 23, 22, 223, 222, 221, 21, 1, 13, 12, 11];
+        let expected: Vec<i32> = vec![0, 1, 11, 12, 13, 2, 21, 22, 221, 222, 223, 23, 3, 31, 32, 33];
         assert_eq!(actual, expected);
     }
 
@@ -458,7 +672,7 @@ mod tests {
         tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_dfs(0).collect();
-        let expected: Vec<i32> = vec![0, 3, 33, 32, 31, 2, 23, 22, 223, 222, 221, 21, 1, 13, 12, 11];
+        let expected: Vec<i32> = vec![0, 1, 11, 12, 13, 2, 21, 22, 221, 222, 223, 23, 3, 31, 32, 33];
         assert_eq!(actual, expected);
     }
 
@@ -588,5 +802,99 @@ mod tests {
         let actual: Vec<&i32> = root.bfs_iter().collect();
         let expected: Vec<&i32> = vec![&1, &2, &3, &4, &5, &6];
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_key_value_tree_bfs() {
+        let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        tree.add_root(1, 2);
+        tree.add_child(1, 2, 3);
+        tree.add_child(1, 3, 5);
+        tree.add_child(1, 4, 3);
+        tree.add_child(1, 5, 1);
+        tree.add_child(2, 6, 4);
+        tree.add_child(4, 7, 4);
+        tree.add_child(4, 8, 3);
+        tree.add_child(4, 9, 1);
+
+        let res: Vec<(i32, usize)> = tree.iter_bfs(1).collect();
+        assert_eq!(res, vec![(1, 2), (2, 3), (3, 5), (4, 3), (5, 1), (6, 4), (7, 4), (8, 3), (9, 1)]);
+    }
+
+    #[test]
+    fn test_key_value_tree_dfs() {
+        let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        tree.add_root(1, 2);
+        tree.add_child(1, 2, 3);
+        tree.add_child(1, 3, 5);
+        tree.add_child(1, 4, 3);
+        tree.add_child(1, 5, 1);
+        tree.add_child(2, 6, 4);
+        tree.add_child(4, 7, 4);
+        tree.add_child(4, 8, 3);
+        tree.add_child(4, 9, 1);
+
+        let res: Vec<(i32, usize)> = tree.iter_dfs(1).collect();
+        assert_eq!(res, vec![(1, 2), (2, 3), (6, 4), (3, 5), (4, 3), (7, 4), (8, 3), (9, 1), (5, 1)]);
+    }
+
+    #[test]
+    fn test_key_value_tree_diameter() {
+        let tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        let diameter: usize = tree.diameter();
+        assert_eq!(diameter, 0);
+
+        let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        tree.add_child(0, 1, 1);
+        let diameter: usize = tree.diameter();
+        assert_eq!(diameter, 1);
+
+        let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        tree.add_child(0, 1, 1);
+        tree.add_child(0, 2, 1);
+        let diameter: usize = tree.diameter();
+        assert_eq!(diameter, 2);
+
+        let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        tree.add_child(0, 1, 1);
+        tree.add_child(0, 2, 1);
+        tree.add_child(0, 3, 1);
+        let diameter: usize = tree.diameter();
+        assert_eq!(diameter, 2);
+
+        let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        tree.add_child(0, 1, 1);
+        tree.add_child(0, 2, 1);
+        tree.add_child(2, 4, 1);
+        tree.add_child(4, 5, 1);
+        tree.add_child(0, 3, 1);
+        tree.add_child(3, 6, 1);
+        let diameter: usize = tree.diameter();
+        assert_eq!(diameter, 5);
+    }
+
+    #[test]
+    fn test_key_value_tree_range_query() {
+        let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
+        tree.add_root(1, 2);
+        tree.add_child(1, 2, 3);
+        tree.add_child(1, 3, 5);
+        tree.add_child(1, 4, 3);
+        tree.add_child(1, 5, 1);
+        tree.add_child(2, 6, 4);
+        tree.add_child(4, 7, 4);
+        tree.add_child(4, 8, 3);
+        tree.add_child(4, 9, 1);
+
+        let b:(HashMap<i32, usize>, Vec<(usize, usize)>) = tree.dfs_with_subtree_sizes(1);
+        let values_in_nodes: Vec<usize> = b.1.iter().map(|&(_, values)| values).collect();
+        let segment_tree: Vec<usize> = crate::ranges::build_segment_tree_sum(&values_in_nodes);
+        
+        let q: i32 = 4;
+        let left: usize = b.0[&q];
+        let right: usize = left + b.1[left].0 - 1;
+        let res: usize = crate::ranges::query_segment_tree_sum(&segment_tree, left, right);
+
+        assert_eq!(res, 11);
     }
 }
