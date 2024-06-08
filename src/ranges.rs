@@ -133,145 +133,163 @@ impl<T> std::ops::Index<usize> for PrefixSumArray2D<T> {
     }
 }
 
-pub fn build_prefix_sum_array_3d<T>(arr: &[T], rows: usize, cols: usize, depth: usize) -> Vec<T>
-where 
-    T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy 
-{
-    let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
-    let xy = coordinates::create_coordinate_function_3d!(rows, cols, depth);
-    
-    // Filling first row, first col, first depth
-    prefix_sum[xy(0, 0, 0)] = arr[xy(0, 0, 0)];
-    for i in 1..rows {
-        prefix_sum[xy(i, 0, 0)] = prefix_sum[xy(i - 1, 0, 0)] + arr[xy(i, 0, 0)]
-    }
-    for i in 1..cols {
-        prefix_sum[xy(0, i, 0)] = prefix_sum[xy(0, i-1, 0)] + arr[xy(0, i, 0)]
-    }
-    for i in 1..depth {
-        prefix_sum[xy(0, 0, i)] = prefix_sum[xy(0, 0, i-1)] + arr[xy(0, 0, i)]
-    }
-
-    // Filling the cells of sides
-    for j in 1..cols {
-        for k in 1..depth {
-            prefix_sum[xy(0, j, k)] = arr[xy(0, j, k)]
-                + prefix_sum[xy(0, j-1, k)]
-                + prefix_sum[xy(0, j, k-1)]
-                - prefix_sum[xy(0, j-1, k-1)]
-        }
-    }
-    for i in 1..rows {
-        for k in 1..depth {
-            prefix_sum[xy(i, 0, k)] = arr[xy(i, 0, k)]
-                + prefix_sum[xy(i-1, 0, k)]
-                + prefix_sum[xy(i, 0, k-1)]
-                - prefix_sum[xy(i-1, 0, k-1)]
-        }
-    }
-    for i in 1..rows {
-        for j in 1..cols {
-            prefix_sum[xy(i, j, 0)] = arr[xy(i, j, 0)]
-                + prefix_sum[xy(i-1, j, 0)]
-                + prefix_sum[xy(i, j-1, 0)]
-                - prefix_sum[xy(i-1, j-1, 0)]
-        }
-    }
-
-    // Fill rest
-    for i in 1..rows {
-        for j in 1..cols {
-            for k in 1..depth {
-                prefix_sum[xy(i, j, k)] = arr[xy(i, j, k)]
-                    + prefix_sum[xy(i-1, j, k)]
-                    + prefix_sum[xy(i, j-1, k)]
-                    + prefix_sum[xy(i, j, k-1)]
-                    - prefix_sum[xy(i-1, j-1, k)]
-                    - prefix_sum[xy(i, j-1, k-1)]
-                    - prefix_sum[xy(i-1, j, k-1)]
-                    + prefix_sum[xy(i-1, k-1, j-1)] 
-            }
-        }
-    }
-    prefix_sum
+#[allow(dead_code)]
+pub struct PrefixSumArray3D<T> {
+    prefix_sum: Vec<T>,
+    rows: usize, 
+    cols: usize,
+    depth: usize
 }
-
-///
-/// Point: (x = rows, y = cols, z = depth)
-/// 
-/// TL - top left
-/// BR - bottom right
-/// 
-//        +---------+
-//       /|        /|
-//      / |       / |
-//  TL •--|------+  |
-//     |  +------|--• BR 
-//     | /       | /
-//     |/        |/
-//     +--------+
-//
-pub fn range_sum_3d<T>(arr: &[T], _rows: usize, cols: usize, depth: usize, top_left: (usize, usize, usize), bottom_right: (usize, usize, usize)) -> T 
+impl<T> PrefixSumArray3D<T>
 where 
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy
 {
-    if top_left.0 > bottom_right.0 {
-        panic!(
-            "Coordinate X of top left point ({}, {}, {}) should be less or equals of bottom right's coordinate X ({}, {}, {})",
-            top_left.0, top_left.1, top_left.2,
-            bottom_right.0, bottom_right.1, bottom_right.2
-        );
-    }
-    if top_left.1 > bottom_right.1 {
-        panic!(
-            "Coordinate Y of top left point ({}, {}, {}) should be less or equals of bottom right's coordinate Y ({}, {}, {})",
-            top_left.0, top_left.1, top_left.2,
-            bottom_right.0, bottom_right.1, bottom_right.2
-        );
-    }
-    if top_left.2 > bottom_right.2 {
-        panic!(
-            "Coordinate Z of top left point ({}, {}, {}) should be less or equals of bottom right's coordinate Z ({}, {}, {})",
-            top_left.0, top_left.1, top_left.2,
-            bottom_right.0, bottom_right.1, bottom_right.2
-        );
+    pub fn new(arr: &[T], rows: usize, cols: usize, depth: usize) -> Self {
+        let mut prefix_sum: Vec<T> = vec![T::default(); arr.len()];
+        let xy = coordinates::create_coordinate_function_3d!(rows, cols, depth);
+        
+        // Filling first row, first col, first depth
+        prefix_sum[xy(0, 0, 0)] = arr[xy(0, 0, 0)];
+        for i in 1..rows {
+            prefix_sum[xy(i, 0, 0)] = prefix_sum[xy(i - 1, 0, 0)] + arr[xy(i, 0, 0)]
+        }
+        for i in 1..cols {
+            prefix_sum[xy(0, i, 0)] = prefix_sum[xy(0, i-1, 0)] + arr[xy(0, i, 0)]
+        }
+        for i in 1..depth {
+            prefix_sum[xy(0, 0, i)] = prefix_sum[xy(0, 0, i-1)] + arr[xy(0, 0, i)]
+        }
+
+        // Filling the cells of sides
+        for j in 1..cols {
+            for k in 1..depth {
+                prefix_sum[xy(0, j, k)] = arr[xy(0, j, k)]
+                    + prefix_sum[xy(0, j-1, k)]
+                    + prefix_sum[xy(0, j, k-1)]
+                    - prefix_sum[xy(0, j-1, k-1)]
+            }
+        }
+        for i in 1..rows {
+            for k in 1..depth {
+                prefix_sum[xy(i, 0, k)] = arr[xy(i, 0, k)]
+                    + prefix_sum[xy(i-1, 0, k)]
+                    + prefix_sum[xy(i, 0, k-1)]
+                    - prefix_sum[xy(i-1, 0, k-1)]
+            }
+        }
+        for i in 1..rows {
+            for j in 1..cols {
+                prefix_sum[xy(i, j, 0)] = arr[xy(i, j, 0)]
+                    + prefix_sum[xy(i-1, j, 0)]
+                    + prefix_sum[xy(i, j-1, 0)]
+                    - prefix_sum[xy(i-1, j-1, 0)]
+            }
+        }
+
+        // Fill rest
+        for i in 1..rows {
+            for j in 1..cols {
+                for k in 1..depth {
+                    prefix_sum[xy(i, j, k)] = arr[xy(i, j, k)]
+                        + prefix_sum[xy(i-1, j, k)]
+                        + prefix_sum[xy(i, j-1, k)]
+                        + prefix_sum[xy(i, j, k-1)]
+                        - prefix_sum[xy(i-1, j-1, k)]
+                        - prefix_sum[xy(i, j-1, k-1)]
+                        - prefix_sum[xy(i-1, j, k-1)]
+                        + prefix_sum[xy(i-1, k-1, j-1)] 
+                }
+            }
+        }
+        Self { prefix_sum, cols, rows, depth }
     }
 
-    let xy = coordinates::create_coordinate_function_3d!(rows, cols, depth);
-    let (x1, y1, z1): (usize, usize, usize) = top_left;
-    let (x2, y2, z2): (usize, usize, usize) = bottom_right;
-    if x1 == 0 && y1 == 0 && z1 == 0 {
-        return arr[xy(x2, y2, z2)];
-    } else if x1 == 0 && y1 == 0 {
-        return arr[xy(x2, y2, z2)] - arr[xy(x2, y2, z1-1)]
-    } else if x1 == 0 && z1 == 0 {
-        return arr[xy(x2, y2, z2)] - arr[xy(x2, y1-1, z2)]; 
-    } else if y1 == 0 && z1 == 0 {
-        return arr[xy(x2, y2, z2)] - arr[xy(x1-1, y2, z2)];
-    } else if x1 == 0 {
-        return arr[xy(x2, y2, z2)] 
-            - arr[xy(x2, y1-1, z2)] 
-            - arr[xy(x2, y2, z1-1)]
-            + arr[xy(x2, y1-1, z1-1)];
-    } else if y1 == 0 {
-        return arr[xy(x2, y2, z2)] 
-            - arr[xy(x1-1, y2, z2)] 
-            - arr[xy(x2, y2, z1-1)]
-            + arr[xy(x1-1, y2, z1-1)];
-    } else if z1 == 0 {
-        return arr[xy(x2, y2, z2)] 
-            - arr[xy(x1-1, y2, z2)] 
-            - arr[xy(x2, y1-1, z2)] 
-            + arr[xy(x1-1, y1-1, z2)];
-    } else {
-        return arr[xy(x2, y2, z2)] 
-            - arr[xy(x1-1, y2, z2)] 
-            - arr[xy(x2, y1-1, z2)] 
-            - arr[xy(x2, y2, z1-1)]
-            + arr[xy(x1-1, y1-1, z2)] 
-            + arr[xy(x1-1, y2, z1-1)] 
-            + arr[xy(x2, y1-1, z1-1)] 
-            - arr[xy(x1-1, y1-1, z1-1)];
+    ///
+    /// Point: (x = rows, y = cols, z = depth)
+    /// 
+    /// TL - top left
+    /// BR - bottom right
+    /// 
+    //        +---------+
+    //       /|        /|
+    //      / |       / |
+    //  TL •--|------+  |
+    //     |  +------|--• BR 
+    //     | /       | /
+    //     |/        |/
+    //     +--------+
+    //
+    pub fn range_sum(&self, top_left: (usize, usize, usize), bottom_right: (usize, usize, usize)) -> T {
+        if top_left.0 > bottom_right.0 {
+            panic!(
+                "Coordinate X of top left point ({}, {}, {}) should be less or equals of bottom right's coordinate X ({}, {}, {})",
+                top_left.0, top_left.1, top_left.2,
+                bottom_right.0, bottom_right.1, bottom_right.2
+            );
+        }
+        if top_left.1 > bottom_right.1 {
+            panic!(
+                "Coordinate Y of top left point ({}, {}, {}) should be less or equals of bottom right's coordinate Y ({}, {}, {})",
+                top_left.0, top_left.1, top_left.2,
+                bottom_right.0, bottom_right.1, bottom_right.2
+            );
+        }
+        if top_left.2 > bottom_right.2 {
+            panic!(
+                "Coordinate Z of top left point ({}, {}, {}) should be less or equals of bottom right's coordinate Z ({}, {}, {})",
+                top_left.0, top_left.1, top_left.2,
+                bottom_right.0, bottom_right.1, bottom_right.2
+            );
+        }
+
+        let xy = coordinates::create_coordinate_function_3d!(self.rows, self.cols, self.depth);
+        let (x1, y1, z1): (usize, usize, usize) = top_left;
+        let (x2, y2, z2): (usize, usize, usize) = bottom_right;
+        if x1 == 0 && y1 == 0 && z1 == 0 {
+            return self.prefix_sum[xy(x2, y2, z2)];
+        } else if x1 == 0 && y1 == 0 {
+            return self.prefix_sum[xy(x2, y2, z2)] - self.prefix_sum[xy(x2, y2, z1-1)]
+        } else if x1 == 0 && z1 == 0 {
+            return self.prefix_sum[xy(x2, y2, z2)] - self.prefix_sum[xy(x2, y1-1, z2)]; 
+        } else if y1 == 0 && z1 == 0 {
+            return self.prefix_sum[xy(x2, y2, z2)] - self.prefix_sum[xy(x1-1, y2, z2)];
+        } else if x1 == 0 {
+            return self.prefix_sum[xy(x2, y2, z2)] 
+                - self.prefix_sum[xy(x2, y1-1, z2)] 
+                - self.prefix_sum[xy(x2, y2, z1-1)]
+                + self.prefix_sum[xy(x2, y1-1, z1-1)];
+        } else if y1 == 0 {
+            return self.prefix_sum[xy(x2, y2, z2)] 
+                - self.prefix_sum[xy(x1-1, y2, z2)] 
+                - self.prefix_sum[xy(x2, y2, z1-1)]
+                + self.prefix_sum[xy(x1-1, y2, z1-1)];
+        } else if z1 == 0 {
+            return self.prefix_sum[xy(x2, y2, z2)] 
+                - self.prefix_sum[xy(x1-1, y2, z2)] 
+                - self.prefix_sum[xy(x2, y1-1, z2)] 
+                + self.prefix_sum[xy(x1-1, y1-1, z2)];
+        } else {
+            return self.prefix_sum[xy(x2, y2, z2)] 
+                - self.prefix_sum[xy(x1-1, y2, z2)] 
+                - self.prefix_sum[xy(x2, y1-1, z2)] 
+                - self.prefix_sum[xy(x2, y2, z1-1)]
+                + self.prefix_sum[xy(x1-1, y1-1, z2)] 
+                + self.prefix_sum[xy(x1-1, y2, z1-1)] 
+                + self.prefix_sum[xy(x2, y1-1, z1-1)] 
+                - self.prefix_sum[xy(x1-1, y1-1, z1-1)];
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.prefix_sum.len()
+    }
+}
+
+impl<T> std::ops::Index<usize> for PrefixSumArray3D<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.prefix_sum[index]
     }
 }
 
@@ -619,7 +637,7 @@ mod tests {
             1, 1, 1, 1,
             1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_3d(&original_array, 4, 4, 4);
+        let prefix_sum_array: PrefixSumArray3D<i32> = PrefixSumArray3D::new(&original_array, 4, 4, 4);
         /*
             1 2 3 4 
             2 4 6 8 
@@ -735,36 +753,36 @@ mod tests {
             1, 1, 1, 1,
             1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_3d(&original_array, 4, 4, 4);
+        let prefix_sum_array: PrefixSumArray3D<i32> = PrefixSumArray3D::new(&original_array, 4, 4, 4);
         
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 0, 0), (0, 0, 0));
+        let sum: i32 = prefix_sum_array.range_sum((0, 0, 0), (0, 0, 0));
         assert_eq!(sum, 1);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 0, 1), (0, 0, 3));
+        let sum: i32 = prefix_sum_array.range_sum((0, 0, 1), (0, 0, 3));
         assert_eq!(sum, 3);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 1, 0), (0, 1, 3));
+        let sum: i32 = prefix_sum_array.range_sum((0, 1, 0), (0, 1, 3));
         assert_eq!(sum, 4);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (1, 0, 0), (1, 1, 3));
+        let sum: i32 = prefix_sum_array.range_sum((1, 0, 0), (1, 1, 3));
         assert_eq!(sum, 8);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (1, 1, 0), (1, 1, 3));
+        let sum: i32 = prefix_sum_array.range_sum((1, 1, 0), (1, 1, 3));
         assert_eq!(sum, 4);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (1, 0, 1), (2, 0, 3));
+        let sum: i32 = prefix_sum_array.range_sum( (1, 0, 1), (2, 0, 3));
         assert_eq!(sum, 6);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 1, 1), (2, 1, 3));
+        let sum: i32 = prefix_sum_array.range_sum((0, 1, 1), (2, 1, 3));
         assert_eq!(sum, 9);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (1, 1, 1), (1, 1, 1));
+        let sum: i32 = prefix_sum_array.range_sum((1, 1, 1), (1, 1, 1));
         assert_eq!(sum, 1);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (1, 1, 1), (3, 3, 3));
+        let sum: i32 = prefix_sum_array.range_sum((1, 1, 1), (3, 3, 3));
         assert_eq!(sum, 27);
 
-        let sum: i32 = range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 0, 0), (3, 3, 3));
+        let sum: i32 = prefix_sum_array.range_sum((0, 0, 0), (3, 3, 3));
         assert_eq!(sum, 64);
     }
 
@@ -792,9 +810,9 @@ mod tests {
             1, 1, 1, 1,
             1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_3d(&original_array, 4, 4, 4);
+        let prefix_sum_array: PrefixSumArray3D<i32> = PrefixSumArray3D::new(&original_array, 4, 4, 4);
         
-        range_sum_3d(&prefix_sum_array, 4, 4, 4, (1, 0, 0), (0, 0, 0));
+        prefix_sum_array.range_sum((1, 0, 0), (0, 0, 0));
     }
 
     #[test]
@@ -821,9 +839,9 @@ mod tests {
             1, 1, 1, 1,
             1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_3d(&original_array, 4, 4, 4);
+        let prefix_sum_array: PrefixSumArray3D<i32> = PrefixSumArray3D::new(&original_array, 4, 4, 4);
         
-        range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 1, 0), (0, 0, 0));
+        prefix_sum_array.range_sum((0, 1, 0), (0, 0, 0));
     }
 
     #[test]
@@ -850,9 +868,9 @@ mod tests {
             1, 1, 1, 1,
             1, 1, 1, 1,
         ];
-        let prefix_sum_array: Vec<i32> = build_prefix_sum_array_3d(&original_array, 4, 4, 4);
+        let prefix_sum_array: PrefixSumArray3D<i32> = PrefixSumArray3D::new(&original_array, 4, 4, 4);
         
-        range_sum_3d(&prefix_sum_array, 4, 4, 4, (0, 0, 1), (0, 0, 0));
+        prefix_sum_array.range_sum((0, 0, 1), (0, 0, 0));
     }
 
     #[test]
