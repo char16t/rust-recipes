@@ -293,37 +293,55 @@ impl<T> std::ops::Index<usize> for PrefixSumArray3D<T> {
     }
 }
 
-pub fn build_sparse_table<T>(arr: &[T]) -> Vec<T>
+pub struct SparseTable<T> {
+    sparse_table: Vec<T>,
+    length: usize
+}
+impl<T> SparseTable<T> 
 where 
     T: Default + Copy + Ord
 {
-    let n: usize = arr.len();
-    let logn: usize = (n as f64).log2() as usize + 1;
-    let mut table: Vec<T> = vec![T::default(); n * logn];
-    let xy = coordinates::create_coordinate_function_2d!(logn, n);
-
-    for i in 0..n {
-        table[xy(0, i)] = arr[i];
-    }
-
-    let mut j: usize = 1;
-    while (1 << j) <= n {
-        let mut i: usize = 0;
-        while i + (1 << j) <= n {
-            table[xy(j, i)] = cmp::min(table[xy(j-1, i)], table[xy(j-1, i + (1 << (j-1)))]);
-            i += 1;
+    pub fn new(arr: &[T]) -> Self {
+        let n: usize = arr.len();
+        let logn: usize = (n as f64).log2() as usize + 1;
+        let mut table: Vec<T> = vec![T::default(); n * logn];
+        let xy = coordinates::create_coordinate_function_2d!(logn, n);
+    
+        for i in 0..n {
+            table[xy(0, i)] = arr[i];
         }
-        j += 1;
+    
+        let mut j: usize = 1;
+        while (1 << j) <= n {
+            let mut i: usize = 0;
+            while i + (1 << j) <= n {
+                table[xy(j, i)] = cmp::min(table[xy(j-1, i)], table[xy(j-1, i + (1 << (j-1)))]);
+                i += 1;
+            }
+            j += 1;
+        }
+    
+        Self { sparse_table: table, length: arr.len() }
     }
 
-    return table;
+    pub fn range_min(&self, left: usize, right: usize) -> T {
+        let _logn: usize = (self.length as f64).log2() as usize + 1;
+        let k: usize = ((right - left + 1) as f64).log2() as usize;
+        let xy = coordinates::create_coordinate_function_2d!(_logn, self.length);
+        cmp::min(self.sparse_table[xy(k ,left)], self.sparse_table[xy(k, right + 1 - (1 << k))])
+    }
+
+    pub fn len(&self) -> usize {
+        self.sparse_table.len()
+    }
 }
 
-pub fn range_min<T: Copy + Ord>(sparse_table: &[T], length: usize, left: usize, right: usize) -> T {
-    let _logn: usize = (length as f64).log2() as usize + 1;
-    let k: usize = ((right - left + 1) as f64).log2() as usize;
-    let xy = coordinates::create_coordinate_function_2d!(_logn, length);
-    cmp::min(sparse_table[xy(k ,left)], sparse_table[xy(k, right + 1 - (1 << k))])
+impl<T> std::ops::Index<usize> for SparseTable<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.sparse_table[index]
+    }
 }
 
 pub fn build_fenwick_tree<T>(arr: &[T]) -> Vec<T> 
@@ -876,7 +894,7 @@ mod tests {
     #[test]
     fn test_build_sparse_table() {
         let arr: Vec<usize> = vec![1, 3, 4, 8, 6, 1, 4, 2];
-        let table: Vec<usize> = build_sparse_table(&arr);
+        let table: SparseTable<usize> = SparseTable::new(&arr);
         assert_eq!(table.len(), 32);
 
         assert_eq!(table[0], 1);
@@ -916,15 +934,15 @@ mod tests {
     #[test]
     fn test_range_min() {
         let arr: Vec<usize> = vec![1, 3, 4, 8, 6, 1, 4, 2];
-        let table: Vec<usize> = build_sparse_table(&arr);
+        let table: SparseTable<usize> = SparseTable::new(&arr);
 
-        let min: usize = range_min(&table, arr.len(), 1, 4);
+        let min: usize = table.range_min(1, 4);
         assert_eq!(min, 3);
 
-        let min: usize = range_min(&table, arr.len(), 1, 5);
+        let min: usize = table.range_min(1, 5);
         assert_eq!(min, 1);
 
-        let min: usize = range_min(&table, arr.len(), 0, 0);
+        let min: usize = table.range_min(0, 0);
         assert_eq!(min, 1);
     }
 
