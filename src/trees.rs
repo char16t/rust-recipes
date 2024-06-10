@@ -182,6 +182,47 @@ where
     pub fn ancestor(&mut self, node: T, steps: usize) -> Option<T> {
         self.ancestors.find_successor(node, steps)
     }
+    pub fn lowest_common_ancestor(&mut self, a: T, b: T) -> T {
+        let mut a_depth: usize = 0;
+        while let Some(_) = self.ancestor(a, a_depth) {
+            a_depth += 1;
+        }
+        a_depth -= 1;
+
+        let mut b_depth: usize = 0;
+        while let Some(_) = self.ancestor(b, b_depth) {
+            b_depth += 1;
+        }
+        b_depth -= 1;
+
+        let mut node_a: Option<T> = Some(a);
+        let mut node_b: Option<T> = Some(b);
+        if a_depth > b_depth {
+            node_a = self.ancestor(a, a_depth - b_depth);
+        } else if b_depth > a_depth {
+            node_b = self.ancestor(b, b_depth - a_depth);
+        }
+
+        let mut depth: usize = 1;
+        while depth <= a_depth {
+            if let (Some(aa), Some(bb)) = (node_a, node_b) {
+                if aa == bb {
+                    return aa;
+                }
+            }
+            node_a = match node_a {
+                Some(a) => self.ancestor(a, depth),
+                None => None
+            };
+            node_b = match node_b {
+                Some(b) => self.ancestor(b, depth),
+                None => None
+            };
+            depth += 1;
+        }
+
+        node_a.unwrap()
+    }
 }
 
 /// Successor Graph adoption for trees
@@ -231,7 +272,7 @@ where
         current_node
     }
     fn fill_table(&mut self) {
-        let steps: usize = self.find_max_power_of_two_not_exceeding(self.calculate_depth());
+        let steps: usize = self.find_max_power_of_two_not_exceeding(self.calculate_depth()) + 1;
         for vec in self.data.values_mut() {
             vec.resize(steps + 1, None);
         }
@@ -745,21 +786,83 @@ mod tests {
         assert_eq!(tree.ancestor(223, 4), None);
         assert_eq!(tree.ancestor(223, 5), None);
 
+        assert_eq!(tree.ancestors.data[&1], vec![Some(0), None, None, None]);
+        assert_eq!(tree.ancestors.data[&2], vec![Some(0), None, None, None]);
+        assert_eq!(tree.ancestors.data[&3], vec![Some(0), None, None, None]);
+        assert_eq!(tree.ancestors.data[&11], vec![Some(1), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&12], vec![Some(1), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&13], vec![Some(1), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&21], vec![Some(2), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&22], vec![Some(2), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&23], vec![Some(2), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&31], vec![Some(3), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&32], vec![Some(3), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&33], vec![Some(3), Some(0), None, None]);
+        assert_eq!(tree.ancestors.data[&221], vec![Some(22), Some(2), None, None]);
+        assert_eq!(tree.ancestors.data[&222], vec![Some(22), Some(2), None, None]);
+        assert_eq!(tree.ancestors.data[&223], vec![Some(22), Some(2), None, None]);
+    }
+
+    #[test]
+    fn test_adjacency_list_tree_2_ancestors_small_tree() {
+        let mut tree: AdjacencyListTree2<i32> = AdjacencyListTree2::new();
+
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(1, 11);
+        tree.add_child(2, 22);
+
+        assert_eq!(tree.ancestor(11, 0), Some(11));
+        assert_eq!(tree.ancestor(11, 1), Some(1));
+        assert_eq!(tree.ancestor(11, 2), Some(0));
+        assert_eq!(tree.ancestor(11, 3), None);
+        assert_eq!(tree.ancestor(11, 4), None);
+        assert_eq!(tree.ancestor(11, 5), None);
+
+        assert_eq!(tree.ancestor(22, 0), Some(22));
+        assert_eq!(tree.ancestor(22, 1), Some(2));
+        assert_eq!(tree.ancestor(22, 2), Some(0));
+        assert_eq!(tree.ancestor(22, 3), None);
+        assert_eq!(tree.ancestor(22, 4), None);
+        assert_eq!(tree.ancestor(22, 5), None);
+
         assert_eq!(tree.ancestors.data[&1], vec![Some(0), None, None]);
         assert_eq!(tree.ancestors.data[&2], vec![Some(0), None, None]);
-        assert_eq!(tree.ancestors.data[&3], vec![Some(0), None, None]);
         assert_eq!(tree.ancestors.data[&11], vec![Some(1), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&12], vec![Some(1), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&13], vec![Some(1), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&21], vec![Some(2), Some(0), None]);
         assert_eq!(tree.ancestors.data[&22], vec![Some(2), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&23], vec![Some(2), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&31], vec![Some(3), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&32], vec![Some(3), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&33], vec![Some(3), Some(0), None]);
-        assert_eq!(tree.ancestors.data[&221], vec![Some(22), Some(2), None]);
-        assert_eq!(tree.ancestors.data[&222], vec![Some(22), Some(2), None]);
-        assert_eq!(tree.ancestors.data[&223], vec![Some(22), Some(2), None]);
+    }
+
+    #[test]
+    fn test_adjacency_list_tree_2_lowest_common_ancestor() {
+        let mut tree: AdjacencyListTree2<i32> = AdjacencyListTree2::new();
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(1, 11);
+        tree.add_child(2, 22);
+
+        let lca: i32 = tree.lowest_common_ancestor(0, 0);
+        assert_eq!(lca, 0);
+
+        let lca: i32 = tree.lowest_common_ancestor(1, 2);
+        assert_eq!(lca, 0);
+
+        let lca: i32 = tree.lowest_common_ancestor(1, 0);
+        assert_eq!(lca, 0);
+
+        let lca: i32 = tree.lowest_common_ancestor(0, 2);
+        assert_eq!(lca, 0);
+
+        let lca: i32 = tree.lowest_common_ancestor(1, 11);
+        assert_eq!(lca, 1);
+
+        let lca: i32 = tree.lowest_common_ancestor(11, 1);
+        assert_eq!(lca, 1);
+
+        let lca: i32 = tree.lowest_common_ancestor(2, 11);
+        assert_eq!(lca, 0);
+
+        let lca: i32 = tree.lowest_common_ancestor(22, 0);
+        assert_eq!(lca, 0);
     }
 
     #[test]
