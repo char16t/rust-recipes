@@ -642,6 +642,24 @@ impl<T> Node<T> {
     pub fn bfs_iter(&self) -> BfsIterator<T> {
         BfsIterator::new(self)
     }
+    pub fn euler_tour(&self) -> Vec<T>
+    where
+        T: Copy
+    {
+        let mut result: Vec<T> = Vec::new();
+        self.eulerian_tree_traversal(&self, &mut result);
+        result
+    }
+    fn eulerian_tree_traversal(&self, root: &Node<T>, result: &mut Vec<T>)
+    where
+        T: Copy
+    {
+        result.push(root.value);
+        for child in &root.children {
+            self.eulerian_tree_traversal(child, result);
+            result.push(root.value);
+        }
+    }
 }
 
 pub struct DfsIterator<'a, T> {
@@ -962,7 +980,7 @@ mod tests {
         assert_eq!(dist, 0);
 
         let dist: usize = tree.distance(1, 11);
-        assert_eq!(dist, 0);
+        assert_eq!(dist, 1);
     }
 
     #[test]
@@ -1007,6 +1025,33 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
+    #[test]
+    fn test_node_euler() {
+
+        let mut n1: Node<i32> = Node::new(1);
+        let mut n2: Node<i32> = Node::new(2);
+        let n3: Node<i32> = Node::new(3);
+        let mut n4: Node<i32> = Node::new(4);
+        let n5: Node<i32> = Node::new(5);
+        let mut n6: Node<i32> = Node::new(6);
+        let n7: Node<i32> = Node::new(7);
+        let n8: Node<i32> = Node::new(8);
+        
+        n6.add_child(n8);
+
+        n2.add_child(n5);
+        n2.add_child(n6);
+        n4.add_child(n7);
+
+        n1.add_child(n2);
+        n1.add_child(n3);
+        n1.add_child(n4);
+
+
+        let actual: Vec<i32> = n1.euler_tour();
+        let expected: Vec<i32> = vec![1, 2, 5, 2, 6, 8, 6, 2, 1, 3, 1, 4, 7, 4, 1];
+        assert_eq!(actual, expected);
+    }
     #[test]
     fn test_key_value_tree_bfs() {
         let mut tree: KeyValueTree<i32, usize> = KeyValueTree::new();
