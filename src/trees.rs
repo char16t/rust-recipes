@@ -960,6 +960,9 @@ mod tests {
 
         let dist: usize = tree.distance(11, 11);
         assert_eq!(dist, 0);
+
+        let dist: usize = tree.distance(1, 11);
+        assert_eq!(dist, 0);
     }
 
     #[test]
