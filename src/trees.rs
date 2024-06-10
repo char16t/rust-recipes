@@ -223,6 +223,67 @@ where
 
         node_a.unwrap()
     }
+    pub fn distance(&mut self, a: T, b: T) -> usize {
+        let mut a_depth: usize = 0;
+        while let Some(_) = self.ancestor(a, a_depth) {
+            a_depth += 1;
+        }
+        a_depth -= 1;
+
+        let mut b_depth: usize = 0;
+        while let Some(_) = self.ancestor(b, b_depth) {
+            b_depth += 1;
+        }
+        b_depth -= 1;
+
+        let mut node_a: Option<T> = Some(a);
+        let mut node_b: Option<T> = Some(b);
+        if a_depth > b_depth {
+            node_a = self.ancestor(a, a_depth - b_depth);
+        } else if b_depth > a_depth {
+            node_b = self.ancestor(b, b_depth - a_depth);
+        }
+
+        let max_depth: usize = a_depth.max(b_depth);
+        let mut depth: usize = 0;
+        let mut lca: T = node_a.unwrap();
+        loop {
+            if let (Some(aa), Some(bb)) = (node_a, node_b) {
+                if aa == bb {
+                    lca = aa;
+                    break;
+                }
+            }
+            if depth > max_depth {
+                break;
+            }
+
+            node_a = match node_a {
+                Some(a) => self.ancestor(a, depth),
+                None => None
+            };
+            node_b = match node_b {
+                Some(b) => self.ancestor(b, depth),
+                None => None
+            };
+            depth += 1;
+        }
+        if depth > max_depth {
+            lca = if a_depth <= b_depth {
+                node_a.unwrap()
+            } else {
+                node_b.unwrap()
+            };
+        }
+
+        let mut lca_depth: usize = 0;
+        while let Some(_) = self.ancestor(lca, lca_depth) {
+            lca_depth += 1;
+        }
+        lca_depth -= 1;
+
+        a_depth + b_depth - 2*lca_depth
+    }
 }
 
 /// Successor Graph adoption for trees
@@ -863,6 +924,39 @@ mod tests {
 
         let lca: i32 = tree.lowest_common_ancestor(22, 0);
         assert_eq!(lca, 0);
+    }
+
+    #[test]
+    fn test_adjacency_list_tree_2_distance() {
+        let mut tree: AdjacencyListTree2<i32> = AdjacencyListTree2::new();
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(1, 11);
+        tree.add_child(2, 22);
+
+        let dist: usize = tree.distance(0, 0);
+        assert_eq!(dist, 0);
+
+        let dist: usize = tree.distance(0, 1);
+        assert_eq!(dist, 1);
+
+        let dist: usize = tree.distance(2, 0);
+        assert_eq!(dist, 1);
+
+        let dist: usize = tree.distance(1, 2);
+        assert_eq!(dist, 2);
+
+        let dist: usize = tree.distance(2, 11);
+        assert_eq!(dist, 3);
+
+        let dist: usize = tree.distance(22, 1);
+        assert_eq!(dist, 3);
+
+        let dist: usize = tree.distance(0, 11);
+        assert_eq!(dist, 2);
+
+        let dist: usize = tree.distance(22, 0);
+        assert_eq!(dist, 2);
     }
 
     #[test]
