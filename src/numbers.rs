@@ -32,13 +32,15 @@ pub fn prime_factors(mut n: usize) -> Vec<usize> {
     f
 }
 
-pub fn gcd(mut a: usize, mut b: usize) -> usize {
-    while b != 0 {
-        let temp = b;
-        b = a % b;
-        a = temp;
+pub fn gcd(a: usize, b: usize) -> usize {
+    let mut aa: usize = a;
+    let mut bb: usize = b;
+    while bb != 0 {
+        let temp: usize = bb;
+        bb = aa % bb;
+        aa = temp;
     }
-    a
+    aa
 }
 
 pub fn sieve_of_eratosthenes(n: usize) -> Vec<usize> {
@@ -112,6 +114,8 @@ mod tests {
     #[test]
     fn test_gcd() {
         assert_eq!(gcd(12, 18), 6);
+        assert_eq!(gcd(18, 12), 6);
+
         assert_eq!(gcd(17, 23), 1);
         assert_eq!(gcd(24, 36), 12);
         assert_eq!(gcd(1071, 462), 21);
