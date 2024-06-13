@@ -43,6 +43,30 @@ pub fn gcd(a: usize, b: usize) -> usize {
     aa
 }
 
+pub fn gcd_extended(a: i32, b: i32) -> (i32, i32, i32) {
+    let mut aa: i32 = a;
+    let mut bb: i32 = b;
+
+    let mut x: i32 = 1;
+    let mut y: i32 = 0;
+    let mut g: i32 = aa;
+
+    while bb != 0 {
+        let temp_a: i32 = aa;
+        let temp_b: i32 = bb;
+        aa = bb;
+        bb = temp_a % bb;
+
+        let temp_x: i32 = x;
+        let temp_y: i32 = y;
+        x = y;
+        y = temp_x - (temp_a / temp_b) * y;
+        g = temp_a * temp_x + temp_b * temp_y;
+    }
+
+    (x, y, g)
+}
+
 pub fn sieve_of_eratosthenes(n: usize) -> Vec<usize> {
     let mut primes: Vec<bool> = vec![true; n + 1];
     let mut p: usize = 2;
@@ -121,6 +145,11 @@ mod tests {
         assert_eq!(gcd(1071, 462), 21);
         assert_eq!(gcd(0, 5), 5);
         assert_eq!(gcd(0, 0), 0);
+    }
+
+    #[test]
+    fn test_gcd_extended() {
+        assert_eq!(gcd_extended(30, 12), (1, -2,  6));
     }
 
     #[test]
