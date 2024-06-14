@@ -67,6 +67,10 @@ pub fn gcd_extended(a: i32, b: i32) -> (i32, i32, i32) {
     (x, y, g)
 }
 
+pub fn lcm(a: usize, b: usize) -> usize {
+    a * b / gcd(a, b)
+}
+
 pub fn sieve_of_eratosthenes(n: usize) -> Vec<usize> {
     let mut primes: Vec<bool> = vec![true; n + 1];
     let mut p: usize = 2;
@@ -150,6 +154,12 @@ mod tests {
     #[test]
     fn test_gcd_extended() {
         assert_eq!(gcd_extended(30, 12), (1, -2,  6));
+    }
+
+    #[test]
+    fn test_lcm() {
+        assert_eq!(lcm(30, 12), 60);
+        assert_eq!(lcm(12, 30), 60);
     }
 
     #[test]
