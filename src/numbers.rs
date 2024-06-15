@@ -96,6 +96,24 @@ pub fn sieve_of_eratosthenes(n: usize) -> Vec<usize> {
     result
 }
 
+/// x^n mod m
+pub fn modpow(x: usize, n: usize, m: usize) -> usize {
+    let mut result: usize = 1;
+    let mut base: usize = x as usize;
+    let mut exp: usize = n as usize;
+    let modulo: usize = m as usize;
+
+    while exp > 0 {
+        if exp % 2 == 1 {
+            result = (result * base % modulo) as usize;
+        }
+        base = (base * base % modulo) as usize;
+        exp /= 2;
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -167,5 +185,11 @@ mod tests {
         let n: usize = 30;
         let primes: Vec<usize> = sieve_of_eratosthenes(n);
         assert_eq!(primes, vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29])
+    }
+
+    #[test]
+    fn test_modpow() {
+        let result: usize = modpow(23895, 15, 14189); // 23895^15 % 14189
+        assert_eq!(result, 344);
     }
 }
