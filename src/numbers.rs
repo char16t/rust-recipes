@@ -114,6 +114,29 @@ pub fn modpow(x: usize, n: usize, m: usize) -> usize {
     result
 }
 
+/// Euler's totient function
+fn euler_totient(n: u64) -> u64 {
+    let mut nn = n;
+    let mut result = n;
+    let mut i = 2;
+
+    while i * i <= nn {
+        if nn % i == 0 {
+            while nn % i == 0 {
+                nn /= i;
+            }
+            result -= result / i;
+        }
+        i += 1;
+    }
+
+    if nn > 1 {
+        result -= result / nn;
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -191,5 +214,13 @@ mod tests {
     fn test_modpow() {
         let result: usize = modpow(23895, 15, 14189); // 23895^15 % 14189
         assert_eq!(result, 344);
+    }
+
+    #[test]
+    fn test_euler_totient() {
+        assert_eq!(euler_totient(10), 4);
+        assert_eq!(euler_totient(6), 2);
+        assert_eq!(euler_totient(1), 1);
+        assert_eq!(euler_totient(0), 0);
     }
 }
