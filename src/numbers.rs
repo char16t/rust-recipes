@@ -137,6 +137,21 @@ fn euler_totient(n: u64) -> u64 {
     result
 }
 
+pub fn modinverse(x: usize, m: usize) -> Option<usize> {
+    if m == 0 {
+        return None;
+    }
+    if gcd(x, m) != 1 {
+        return None;
+    }
+
+    let phi_m: u64 = euler_totient(m as u64);
+
+    let x_inv: usize = modpow(x, phi_m as usize - 1, m);
+
+    Some(x_inv)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -222,5 +237,17 @@ mod tests {
         assert_eq!(euler_totient(6), 2);
         assert_eq!(euler_totient(1), 1);
         assert_eq!(euler_totient(0), 0);
+    }
+
+    #[test]
+    fn test_modinverse() {
+        assert_eq!(modinverse(3, 7), Some(5));
+        assert_eq!((3 * 5) % 7, 1);
+
+        assert_eq!(modinverse(6, 17), Some(3));
+        assert_eq!((6 * 3) % 17, 1);
+
+        assert_eq!(modinverse(2, 6), None);
+        assert_eq!(modinverse(2, 0), None);
     }
 }
