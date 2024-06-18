@@ -152,6 +152,20 @@ pub fn modinverse(x: usize, m: usize) -> Option<usize> {
     Some(x_inv)
 }
 
+pub fn diophantine_equation(a: i32, b: i32, c: i32) -> Option<(i32, i32)> {
+    let (x0, y0, gcd) = gcd_extended(a, b);
+
+    if c % gcd != 0 {
+        return None;
+    }
+
+    let k = c / gcd;
+    let x = x0 * k;
+    let y = y0 * k;
+
+    Some((x, y))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -249,5 +263,35 @@ mod tests {
 
         assert_eq!(modinverse(2, 6), None);
         assert_eq!(modinverse(2, 0), None);
+    }
+
+    #[test]
+    fn test_diophantine_equation() {
+        // 5x + 2y = 11
+        let solution: Option<(i32, i32)> = diophantine_equation(5, 2, 11);
+        assert_eq!(solution, Some((11, -22)));
+        assert_eq!(11, 5*11 + 2*(-22));
+
+        let mut x = 11;
+        let mut y = -22;
+        let gcd = gcd_extended(5, 2).2;
+
+        for i in 0..10 {
+            x += i * 2 / gcd;
+            y -= i * 5 / gcd;
+            assert_eq!(11, 5*x + 2*y);
+        }
+
+        for i in 0..10 {
+            x -= i * 2 / gcd;
+            y += i * 5 / gcd;
+            assert_eq!(11, 5*x + 2*y);
+        }
+
+
+        // a^n + b^n = c^n, a,b,c=3,4,5, n > 2
+        // 3^3*x + 4^3*y = 5^3
+        let solution: Option<(i32, i32)> = diophantine_equation(27, 64, 125);
+        assert_eq!(solution, None);
     }
 }
