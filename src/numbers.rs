@@ -166,6 +166,23 @@ pub fn diophantine_equation(a: i32, b: i32, c: i32) -> Option<(i32, i32)> {
     Some((x, y))
 }
 
+pub fn chinese_remainder_theorem(residues: &[usize], modulii: &[usize]) -> Option<usize> {
+    let product: usize = modulii.iter().product::<usize>();
+    let mut sum: usize = 0;
+
+    for (&residue, &modulus) in residues.iter().zip(modulii) {
+        let p: usize = product / modulus;
+
+        if let Some(inv) = modinverse(p, modulus) {
+            sum += residue * inv * p;
+        } else {
+            return None;
+        }
+    }
+
+    Some(sum % product)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -293,5 +310,25 @@ mod tests {
         // 3^3*x + 4^3*y = 5^3
         let solution: Option<(i32, i32)> = diophantine_equation(27, 64, 125);
         assert_eq!(solution, None);
+    }
+
+    #[test]
+    fn test_chinese_remainder_theorem() {
+        let residues: Vec<usize> = vec![3, 4, 2];
+        let modulii: Vec<usize> = vec![5, 7, 3];
+        let result: Option<usize> = chinese_remainder_theorem(&residues, &modulii);
+        assert_eq!(result, Some(53));
+
+        // other solutions
+        // 53 + 5 * 7 * 3
+        // 53 + 5 * 7 * 3 + 5 * 7 * 3
+        // ...
+
+        
+        // None because gcd(9, 3) != 1
+        let residues: Vec<usize> = vec![3, 4, 2];
+        let modulii: Vec<usize> = vec![5, 9, 3];
+        let result: Option<usize> = chinese_remainder_theorem(&residues, &modulii);
+        assert_eq!(result, None);
     }
 }
