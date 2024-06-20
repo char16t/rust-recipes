@@ -99,15 +99,15 @@ pub fn sieve_of_eratosthenes(n: usize) -> Vec<usize> {
 /// x^n mod m
 pub fn modpow(x: usize, n: usize, m: usize) -> usize {
     let mut result: usize = 1;
-    let mut base: usize = x as usize;
-    let mut exp: usize = n as usize;
-    let modulo: usize = m as usize;
+    let mut base: usize = x;
+    let mut exp: usize = n;
+    let modulo: usize = m;
 
     while exp > 0 {
         if exp % 2 == 1 {
-            result = (result * base % modulo) as usize;
+            result = result * base % modulo;
         }
-        base = (base * base % modulo) as usize;
+        base = base * base % modulo;
         exp /= 2;
     }
 
