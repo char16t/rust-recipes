@@ -183,6 +183,14 @@ pub fn chinese_remainder_theorem(residues: &[usize], modulii: &[usize]) -> Optio
     Some(sum % product)
 }
 
+pub fn fib(n: u32) -> u64 {
+    let sqrt5: f64 = 2.23606797749979_f64;
+    let phi: f64 = (1.0 + sqrt5) / 2.0;
+    let psi: f64 = (1.0 - sqrt5) / 2.0;
+
+    ((phi.powf(n as f64) - psi.powf(n as f64)) / sqrt5).round() as u64
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -330,5 +338,16 @@ mod tests {
         let modulii: Vec<usize> = vec![5, 9, 3];
         let result: Option<usize> = chinese_remainder_theorem(&residues, &modulii);
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_fib() {
+        assert_eq!(fib(0), 0);
+        assert_eq!(fib(1), 1);
+        assert_eq!(fib(2), 1);
+        assert_eq!(fib(3), 2);
+        assert_eq!(fib(9), 34);
+        assert_eq!(fib(10), 55);
+        assert_eq!(fib(14), 377);
     }
 }
