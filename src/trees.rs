@@ -715,6 +715,53 @@ impl<'a, T> Iterator for BfsIterator<'a, T> {
     }
 }
 
+pub fn prufer_code_encode(adj_list: &mut Vec<Vec<usize>>) -> Vec<usize> {
+    let n: usize = adj_list.len();
+    let mut degree: Vec<usize> = adj_list.iter().map(|x| x.len()).collect();
+    let mut prufer: Vec<usize> = Vec::new();
+
+    for _ in 0..n - 2 {
+        let min_leaf: usize = (0..n).find(|&i| degree[i] == 1).unwrap();
+        let neighbor: usize = adj_list[min_leaf][0];
+        prufer.push(neighbor);
+
+        degree[min_leaf] -= 1;
+        degree[neighbor] -= 1;
+        let index: usize = adj_list[neighbor].iter().position(|&x| x == min_leaf).unwrap();
+        adj_list[neighbor].remove(index);
+    }
+
+    prufer
+}
+
+pub fn prufer_code_decode(prufer: &Vec<usize>) -> Vec<(usize, usize)> {
+    let n: usize = prufer.len() + 2;
+    let mut degree: Vec<usize> = vec![1; n];
+
+    for &node in prufer.iter() {
+        degree[node] += 1;
+    }
+
+    let mut tree: Vec<(usize, usize)> = Vec::new();
+    let mut leaves: Vec<usize> = (0..n).filter(|&i| degree[i] == 1).collect();
+
+    for &node in prufer.iter() {
+        let leaf: usize = leaves.iter().min().unwrap().clone();
+        tree.push((node, leaf));
+        degree[node] -= 1;
+        degree[leaf] -= 1;
+        leaves.retain(|&x| x != leaf);
+    }
+
+    let last_leaf1: usize = (0..n).find(|&i| degree[i] == 1).unwrap();
+    let last_leaf2: usize = (0..n).find(|&i| degree[i] == 1 && i != last_leaf1).unwrap();
+
+    tree.push((last_leaf1, last_leaf2));
+
+    tree
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1144,5 +1191,24 @@ mod tests {
         let res: usize = crate::ranges::query_segment_tree_sum(&segment_tree, left, right);
 
         assert_eq!(res, 11);
+    }
+
+    #[test]
+    fn test_prufer_code_encode() {
+        let mut adj_list: Vec<Vec<usize>> = vec![vec![1], vec![0, 2, 3], vec![1], vec![1]];
+        assert_eq!(prufer_code_encode(&mut adj_list), vec![1, 1]);
+
+        let mut adj_list: Vec<Vec<usize>> = vec![vec![3], vec![3, 4], vec![3], vec![0, 1, 2], vec![1]];
+        assert_eq!(prufer_code_encode(&mut adj_list), vec![3, 3, 1]);
+    }
+
+    #[test]
+    fn test_prufer_code_decode() {
+        let mut prufer: Vec<usize> = vec![1, 1];
+        assert_eq!(prufer_code_decode(&mut prufer), vec![(1, 0), (1, 2), (1, 3)]);
+
+
+        let mut prufer: Vec<usize> = vec![3, 3, 1];
+        assert_eq!(prufer_code_decode(&mut prufer), vec![(3, 0), (3, 2), (1, 4), (1, 3)]);
     }
 }
