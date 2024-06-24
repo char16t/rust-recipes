@@ -12,6 +12,19 @@ pub fn binomial_coefficient(n: usize, k: usize) -> usize {
     result
 }
 
+pub fn factorial(n: usize) -> usize {
+    if n <= 1 {
+        return 1;
+    }
+    
+    let mut result: usize = 1;
+    for i in 2..=n {
+        result *= i;
+    }
+    
+    result
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -33,5 +46,14 @@ mod tests {
         let k: usize = 5;
         let r: usize = binomial_coefficient(n, k);
         assert_eq!(r, 0);
+    }
+
+    #[test]
+    fn test_factorial() {
+        assert_eq!(factorial(0), 1);
+        assert_eq!(factorial(1), 1);
+        assert_eq!(factorial(2), 2);
+        assert_eq!(factorial(3), 6);
+        assert_eq!(factorial(10), 3628800);
     }
 }
