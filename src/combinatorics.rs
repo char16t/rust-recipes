@@ -25,6 +25,15 @@ pub fn factorial(n: usize) -> usize {
     result
 }
 
+pub fn multinomial_coefficient(n: usize, k: &[usize]) -> usize {
+    let mut denominator: usize = 1;
+    for &x in k {
+        denominator *= factorial(x);
+    }
+    
+    factorial(n) / denominator
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -55,5 +64,14 @@ mod tests {
         assert_eq!(factorial(2), 2);
         assert_eq!(factorial(3), 6);
         assert_eq!(factorial(10), 3628800);
+    }
+
+    #[test]
+    fn test_multinomial_coefficient() {
+        let r: usize = multinomial_coefficient(3, &vec![2, 0, 1]);
+        assert_eq!(r, 3);
+
+        let r: usize = multinomial_coefficient(3, &vec![1, 1, 1]);
+        assert_eq!(r, 6);
     }
 }
