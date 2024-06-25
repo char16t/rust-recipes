@@ -34,6 +34,19 @@ pub fn multinomial_coefficient(n: usize, k: &[usize]) -> usize {
     factorial(n) / denominator
 }
 
+pub fn catalan_number(n: usize) -> usize {
+    let mut catalan: Vec<usize> = vec![0; n + 1];
+    catalan[0] = 1;
+
+    for i in 1..=n {
+        for j in 0..i {
+            catalan[i] += catalan[j] * catalan[i - 1 - j];
+        }
+    }
+
+    catalan[n]
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -73,5 +86,11 @@ mod tests {
 
         let r: usize = multinomial_coefficient(3, &vec![1, 1, 1]);
         assert_eq!(r, 6);
+    }
+
+    #[test]
+    fn test_catalan_number() {
+        assert_eq!(catalan_number(0), 1);
+        assert_eq!(catalan_number(3), 5);
     }
 }
