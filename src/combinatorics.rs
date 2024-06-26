@@ -47,6 +47,27 @@ pub fn catalan_number(n: usize) -> usize {
     catalan[n]
 }
 
+pub fn combinations<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
+where 
+    T: Copy
+{
+    let mut result: Vec<Vec<T>> = Vec::new();
+    let mut stack: Vec<(Vec<T>, usize, usize)> = Vec::new();
+    stack.push((Vec::new(), 0, 0));
+    while let Some((mut s, range_start, count)) = stack.pop() {
+        if count == k {
+            result.push(s);
+        } else {
+            for i in range_start..elements.len() {
+                s.push(elements[i]);
+                stack.push((s.clone(), i + 1, count + 1));
+                s.pop();
+            }
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -92,5 +113,40 @@ mod tests {
     fn test_catalan_number() {
         assert_eq!(catalan_number(0), 1);
         assert_eq!(catalan_number(3), 5);
+    }
+
+    #[test]
+    fn test_combinations() {
+        let r: Vec<Vec<char>> = combinations(&vec!['A', 'B', 'C'], 2);
+        assert_eq!(r, vec![vec!['B', 'C'], vec!['A', 'C'], vec!['A', 'B']]);
+
+        let r: Vec<Vec<i16>> = combinations(&vec![1, 2, 3, 4, 5, 6], 3);
+        assert_eq!(r, 
+            vec![
+                vec![4, 5, 6], 
+                vec![3, 5, 6], 
+                vec![3, 4, 6], 
+                vec![3, 4, 5],
+                vec![2, 5, 6], 
+                vec![2, 4, 6], 
+                vec![2, 4, 5], 
+                vec![2, 3, 6], 
+                vec![2, 3, 5], 
+                vec![2, 3, 4], 
+                vec![1, 5, 6], 
+                vec![1, 4, 6], 
+                vec![1, 4, 5], 
+                vec![1, 3, 6], 
+                vec![1, 3, 5], 
+                vec![1, 3, 4], 
+                vec![1, 2, 6], 
+                vec![1, 2, 5], 
+                vec![1, 2, 4], 
+                vec![1, 2, 3]
+            ]
+        );
+
+        let r: Vec<Vec<char>> = combinations(&vec!['A', 'B', 'C'], 3);
+        assert_eq!(r, vec![vec!['A', 'B', 'C']]);
     }
 }
