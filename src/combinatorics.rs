@@ -68,6 +68,27 @@ where
     result
 }
 
+pub fn combinations_with_repetitions<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
+where 
+    T: Copy
+{
+    let mut result: Vec<Vec<T>> = Vec::new();
+    let mut stack: Vec<(Vec<T>, usize, usize)> = Vec::new();
+    stack.push((Vec::new(), 0, 0));
+    while let Some((mut s, range_start, count)) = stack.pop() {
+        if count == k {
+            result.push(s);
+        } else {
+            for i in range_start..elements.len() {
+                s.push(elements[i]);
+                stack.push((s.clone(), i, count + 1)); // Allow repetitions by passing i instead of i + 1
+                s.pop();
+            }
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -148,5 +169,18 @@ mod tests {
 
         let r: Vec<Vec<char>> = combinations(&vec!['A', 'B', 'C'], 3);
         assert_eq!(r, vec![vec!['A', 'B', 'C']]);
+    }
+
+    #[test]
+    fn test_combinations_with_repetitions() {
+        let r: Vec<Vec<char>> = combinations_with_repetitions(&vec!['A', 'B', 'C'], 2);
+        assert_eq!(r, vec![
+            vec!['C', 'C'], 
+            vec!['B', 'C'], 
+            vec!['B', 'B'], 
+            vec!['A', 'C'], 
+            vec!['A', 'B'], 
+            vec!['A', 'A']
+        ]);
     }
 }
