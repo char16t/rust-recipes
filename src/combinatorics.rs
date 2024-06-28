@@ -12,7 +12,7 @@ pub fn binomial_coefficient(n: usize, k: usize) -> usize {
     result
 }
 
-pub fn factorial(n: usize) -> usize {
+pub fn factorial_usize(n: usize) -> usize {
     if n <= 1 {
         return 1;
     }
@@ -25,13 +25,26 @@ pub fn factorial(n: usize) -> usize {
     result
 }
 
+pub fn factorial_i128(n: i128) -> i128 {
+    if n <= 1 {
+        return 1;
+    }
+    
+    let mut result: i128 = 1;
+    for i in 2..=n {
+        result *= i;
+    }
+    
+    result
+}
+
 pub fn multinomial_coefficient(n: usize, k: &[usize]) -> usize {
     let mut denominator: usize = 1;
     for &x in k {
-        denominator *= factorial(x);
+        denominator *= factorial_usize(x);
     }
     
-    factorial(n) / denominator
+    factorial_usize(n) / denominator
 }
 
 pub fn catalan_number(n: usize) -> usize {
@@ -89,6 +102,31 @@ where
     result
 }
 
+pub fn placements<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
+where 
+    T: Copy
+{
+    let mut result: Vec<Vec<T>> = Vec::new();
+    let mut stack: Vec<(Vec<T>, Vec<bool>)> = Vec::new();
+    stack.push((Vec::new(), vec![false; elements.len()]));
+    while let Some((mut s, used)) = stack.pop() {
+        if s.len() == k {
+            result.push(s);
+        } else {
+            for i in 0..elements.len() {
+                if !used[i] {
+                    let mut new_used: Vec<bool> = used.clone();
+                    new_used[i] = true;
+                    s.push(elements[i]);
+                    stack.push((s.clone(), new_used));
+                    s.pop();
+                }
+            }
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -113,12 +151,21 @@ mod tests {
     }
 
     #[test]
-    fn test_factorial() {
-        assert_eq!(factorial(0), 1);
-        assert_eq!(factorial(1), 1);
-        assert_eq!(factorial(2), 2);
-        assert_eq!(factorial(3), 6);
-        assert_eq!(factorial(10), 3628800);
+    fn test_factorial_usize() {
+        assert_eq!(factorial_usize(0), 1);
+        assert_eq!(factorial_usize(1), 1);
+        assert_eq!(factorial_usize(2), 2);
+        assert_eq!(factorial_usize(3), 6);
+        assert_eq!(factorial_usize(10), 3628800);
+    }
+
+    #[test]
+    fn test_factorial_i128() {
+        assert_eq!(factorial_i128(0), 1);
+        assert_eq!(factorial_i128(1), 1);
+        assert_eq!(factorial_i128(2), 2);
+        assert_eq!(factorial_i128(3), 6);
+        assert_eq!(factorial_i128(10), 3628800);
     }
 
     #[test]
@@ -181,6 +228,29 @@ mod tests {
             vec!['A', 'C'], 
             vec!['A', 'B'], 
             vec!['A', 'A']
+        ]);
+    }
+
+    #[test]
+    fn test_placements() {
+        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 2);
+        assert_eq!(r, vec![
+            vec!['C', 'B'], 
+            vec!['C', 'A'], 
+            vec!['B', 'C'], 
+            vec!['B', 'A'], 
+            vec!['A', 'C'], 
+            vec!['A', 'B']
+        ]);
+
+        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 3);
+        assert_eq!(r, vec![
+            vec!['C', 'B', 'A'], 
+            vec!['C', 'A', 'B'], 
+            vec!['B', 'C', 'A'], 
+            vec!['B', 'A', 'C'], 
+            vec!['A', 'C', 'B'], 
+            vec!['A', 'B', 'C']
         ]);
     }
 }
