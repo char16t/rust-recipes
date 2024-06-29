@@ -127,6 +127,27 @@ where
     result
 }
 
+pub fn placements_with_repetitions<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
+where 
+    T: Copy
+{
+    let mut result: Vec<Vec<T>> = Vec::new();
+    let mut stack: Vec<Vec<T>> = Vec::new();
+    stack.push(Vec::new());
+    while let Some(mut s) = stack.pop() {
+        if s.len() == k {
+            result.push(s);
+        } else {
+            for i in 0..elements.len() {
+                s.push(elements[i]);
+                stack.push(s.clone());
+                s.pop();
+            }
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -251,6 +272,22 @@ mod tests {
             vec!['B', 'A', 'C'], 
             vec!['A', 'C', 'B'], 
             vec!['A', 'B', 'C']
+        ]);
+    }
+
+    #[test]
+    fn test_placements_with_repetitions() {
+        let r: Vec<Vec<char>> = placements_with_repetitions(&vec!['A', 'B', 'C'], 2);
+        assert_eq!(r, vec![
+            vec!['C', 'C'], 
+            vec!['C', 'B'], 
+            vec!['C', 'A'], 
+            vec!['B', 'C'], 
+            vec!['B', 'B'], 
+            vec!['B', 'A'], 
+            vec!['A', 'C'], 
+            vec!['A', 'B'], 
+            vec!['A', 'A']
         ]);
     }
 }
