@@ -148,6 +148,13 @@ where
     result
 }
 
+pub fn permutations<T>(elements: &[T]) -> Vec<Vec<T>>
+where 
+    T: Copy
+{
+    placements(elements, elements.len())
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -288,6 +295,19 @@ mod tests {
             vec!['A', 'C'], 
             vec!['A', 'B'], 
             vec!['A', 'A']
+        ]);
+    }
+
+    #[test]
+    fn test_permutations() {
+        let p: Vec<Vec<char>> = permutations(&vec!['A', 'B', 'C']);
+        assert_eq!(p, vec![
+            vec!['C', 'B', 'A'], 
+            vec!['C', 'A', 'B'], 
+            vec!['B', 'C', 'A'], 
+            vec!['B', 'A', 'C'], 
+            vec!['A', 'C', 'B'], 
+            vec!['A', 'B', 'C']
         ]);
     }
 }
