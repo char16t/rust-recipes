@@ -155,6 +155,13 @@ where
     placements(elements, elements.len())
 }
 
+pub fn permutations_with_repetitions<T>(elements: &[T]) -> Vec<Vec<T>>
+where 
+    T: Copy
+{
+    placements_with_repetitions(elements, elements.len())
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -308,6 +315,40 @@ mod tests {
             vec!['B', 'A', 'C'], 
             vec!['A', 'C', 'B'], 
             vec!['A', 'B', 'C']
+        ]);
+    }
+
+    #[test]
+    fn test_permutations_with_repetitions() {
+        let p: Vec<Vec<char>> = permutations_with_repetitions(&vec!['A', 'B', 'C']);
+        assert_eq!(p, vec![
+            vec!['C', 'C', 'C'], 
+            vec!['C', 'C', 'B'], 
+            vec!['C', 'C', 'A'], 
+            vec!['C', 'B', 'C'], 
+            vec!['C', 'B', 'B'], 
+            vec!['C', 'B', 'A'], 
+            vec!['C', 'A', 'C'], 
+            vec!['C', 'A', 'B'], 
+            vec!['C', 'A', 'A'], 
+            vec!['B', 'C', 'C'], 
+            vec!['B', 'C', 'B'], 
+            vec!['B', 'C', 'A'], 
+            vec!['B', 'B', 'C'], 
+            vec!['B', 'B', 'B'], 
+            vec!['B', 'B', 'A'], 
+            vec!['B', 'A', 'C'], 
+            vec!['B', 'A', 'B'], 
+            vec!['B', 'A', 'A'], 
+            vec!['A', 'C', 'C'], 
+            vec!['A', 'C', 'B'], 
+            vec!['A', 'C', 'A'], 
+            vec!['A', 'B', 'C'], 
+            vec!['A', 'B', 'B'], 
+            vec!['A', 'B', 'A'], 
+            vec!['A', 'A', 'C'], 
+            vec!['A', 'A', 'B'], 
+            vec!['A', 'A', 'A']
         ]);
     }
 }
