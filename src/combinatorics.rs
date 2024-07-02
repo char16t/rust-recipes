@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 pub fn binomial_coefficient(n: usize, k: usize) -> usize {
     if k > n {
         return 0;
@@ -160,6 +162,32 @@ where
     T: Copy
 {
     placements_with_repetitions(elements, elements.len())
+}
+
+pub fn inclusion_exclusion<R>(unions: &[HashSet<R>]) -> isize
+where
+    R: Copy + Eq + std::hash::Hash
+{
+    let mut result: isize = 0;
+    let mut sign: isize = 1;
+    for ki in 1..=unions.len() {
+        let mut stack: Vec<(Vec<HashSet<R>>, usize, usize)> = Vec::new();
+        stack.push((Vec::new(), 0, 0));
+        while let Some((mut s, range_start, count)) = stack.pop() {
+            if count == ki {
+                let union: HashSet<R> = s.iter().flat_map(|set| set.iter()).cloned().collect();
+                result += sign * (union.len() as isize);
+            } else {
+                for i in range_start..unions.len() {
+                    s.push(unions[i].clone());
+                    stack.push((s.clone(), i + 1, count + 1));
+                    s.pop();
+                }
+            }
+        }
+        sign *= -1;
+    }
+    result
 }
 
 #[cfg(test)]
@@ -350,5 +378,33 @@ mod tests {
             vec!['A', 'A', 'B'], 
             vec!['A', 'A', 'A']
         ]);
+    }
+
+    #[test]
+    fn test_inclusion_exclusion() {
+
+        let a: HashSet<i32> = HashSet::from_iter(vec![4]);
+        let b: HashSet<i32> = HashSet::from_iter(vec![2]);
+        let c: HashSet<i32> = HashSet::from_iter(vec![3]);
+        let r = inclusion_exclusion(&vec![a, b, c]);
+        assert_eq!(r, 0);
+
+        let a: HashSet<i32> = HashSet::from_iter(vec![1, 4]);
+        let b: HashSet<i32> = HashSet::from_iter(vec![1, 2]);
+        let c: HashSet<i32> = HashSet::from_iter(vec![1, 3]);
+        let r = inclusion_exclusion(&vec![a, b, c]);
+        assert_eq!(r, 1);
+
+        let a: HashSet<i32> = HashSet::from_iter(vec![2, 7]);
+        let b: HashSet<i32> = HashSet::from_iter(vec![2, 3]);
+        let c: HashSet<i32> = HashSet::from_iter(vec![3, 4]);
+        let r = inclusion_exclusion(&vec![a, b, c]);
+        assert_eq!(r, 0);
+
+        let a: HashSet<i32> = HashSet::from_iter(vec![1, 2, 3]);
+        let b: HashSet<i32> = HashSet::from_iter(vec![2, 3, 4]);
+        let c: HashSet<i32> = HashSet::from_iter(vec![3, 4, 5]);
+        let r = inclusion_exclusion(&vec![a, b, c]);
+        assert_eq!(r, 1);
     }
 }
