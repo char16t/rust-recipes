@@ -190,6 +190,25 @@ where
     result
 }
 
+pub fn count_derangements(n: usize) -> usize {
+    match n {
+        1 => 0,
+        2 => 1,
+        _ => {
+            let mut prev = 0;
+            let mut current = 1;
+
+            for _ in 3..=n {
+                let next = (n - 1) * (prev + current);
+                prev = current;
+                current = next;
+            }
+
+            current
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -406,5 +425,12 @@ mod tests {
         let c: HashSet<i32> = HashSet::from_iter(vec![3, 4, 5]);
         let r = inclusion_exclusion(&vec![a, b, c]);
         assert_eq!(r, 1);
+    }
+
+    #[test]
+    fn test_count_derangements() {
+        assert_eq!(count_derangements(1), 0);
+        assert_eq!(count_derangements(2), 1);
+        assert_eq!(count_derangements(3), 2);
     }
 }
