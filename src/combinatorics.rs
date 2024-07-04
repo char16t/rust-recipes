@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use crate::numbers;
 
 pub fn binomial_coefficient(n: usize, k: usize) -> usize {
     if k > n {
@@ -207,6 +208,19 @@ pub fn count_derangements(n: usize) -> usize {
             current
         }
     }
+}
+
+pub fn burnsides_lemma(n: usize, m: usize) -> usize {
+    let mut sum: usize = 0;
+    for k in 0..n {
+        let gcd: usize = numbers::gcd(k, n);
+        let mut pow: usize = 1;
+        for _ in 0..gcd {
+            pow *= m;
+        }
+        sum += pow;
+    }
+    sum / n
 }
 
 #[cfg(test)]
@@ -432,5 +446,10 @@ mod tests {
         assert_eq!(count_derangements(1), 0);
         assert_eq!(count_derangements(2), 1);
         assert_eq!(count_derangements(3), 2);
+    }
+
+    #[test]
+    fn test_burnsides_lemma() {
+        assert_eq!(burnsides_lemma(4, 3), 24);
     }
 }
