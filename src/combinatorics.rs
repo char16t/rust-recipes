@@ -67,6 +67,10 @@ pub fn count_combinations(n: usize, k: usize) -> usize {
     binomial_coefficient(n, k)
 }
 
+pub fn count_combinations_with_repetitions(n: usize, k: usize) -> usize {
+    binomial_coefficient(n + k - 1, k)
+}
+
 pub fn combinations<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
 where 
     T: Copy
@@ -479,5 +483,28 @@ mod tests {
         let comb: Vec<Vec<i32>> = combinations(&vec![1, 2, 3], 5);
         assert_eq!(r, 0);
         assert_eq!(r, comb.len());
+    }
+
+    #[test]
+    fn test_count_combinations_with_repetitions() {
+        let n: usize = 5;
+        let k: usize = 3;
+        let r: usize = count_combinations_with_repetitions(n, k);
+        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&vec![1, 2, 3, 4, 5], 3);
+        assert_eq!(r, 35);
+        assert_eq!(r, combinations.len());
+
+        let n: usize = 3;
+        let k: usize = 3;
+        let r: usize = count_combinations_with_repetitions(n, k);
+        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&vec![1, 2, 3], 3);
+        assert_eq!(r, combinations.len());
+        assert_eq!(r, 10);
+
+        let n: usize = 3;
+        let k: usize = 5;
+        let r: usize = count_combinations_with_repetitions(n, k);
+        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&vec![1, 2, 3], 5);
+        assert_eq!(r, combinations.len());
     }
 }
