@@ -71,6 +71,10 @@ pub fn count_combinations_with_repetitions(n: usize, k: usize) -> usize {
     binomial_coefficient(n + k - 1, k)
 }
 
+pub fn count_placements(n: usize, k: usize) -> usize {
+    factorial_usize(n) / factorial_usize(n - k)
+}
+
 pub fn combinations<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
 where 
     T: Copy
@@ -506,5 +510,18 @@ mod tests {
         let r: usize = count_combinations_with_repetitions(n, k);
         let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&vec![1, 2, 3], 5);
         assert_eq!(r, combinations.len());
+    }
+
+    #[test]
+    fn test_count_placements() {
+        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 2);
+        let c: usize = count_placements(3, 2);
+        assert_eq!(c, 6);
+        assert_eq!(c, r.len());
+
+        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 3);
+        let c: usize = count_placements(3, 3);
+        assert_eq!(c, 6);
+        assert_eq!(c, r.len());
     }
 }
