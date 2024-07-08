@@ -75,6 +75,14 @@ pub fn count_placements(n: usize, k: usize) -> usize {
     factorial_usize(n) / factorial_usize(n - k)
 }
 
+pub fn count_placements_with_repetitions(n: usize, k: usize) -> usize {
+    let mut result: usize = 1;
+    for _i in 0..k {
+        result *= n;
+    }
+    result
+}
+
 pub fn combinations<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
 where 
     T: Copy
@@ -522,6 +530,19 @@ mod tests {
         let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 3);
         let c: usize = count_placements(3, 3);
         assert_eq!(c, 6);
+        assert_eq!(c, r.len());
+    }
+
+    #[test]
+    fn test_count_placements_with_repetitions() {
+        let r: Vec<Vec<char>> = placements_with_repetitions(&vec!['A', 'B', 'C'], 2);
+        let c: usize = count_placements_with_repetitions(3, 2);
+        assert_eq!(c, 9);
+        assert_eq!(c, r.len());
+
+        let r: Vec<Vec<char>> = placements_with_repetitions(&vec!['A', 'B', 'C'], 3);
+        let c: usize = count_placements_with_repetitions(3, 3);
+        assert_eq!(c, 27);
         assert_eq!(c, r.len());
     }
 }
