@@ -87,6 +87,10 @@ pub fn count_permutations(n: usize) -> usize {
     factorial_usize(n)
 }
 
+pub fn count_permutations_with_repetitions(n: usize) -> usize {
+    count_placements_with_repetitions(n, n)
+}
+
 pub fn combinations<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
 where 
     T: Copy
@@ -555,6 +559,14 @@ mod tests {
         let c: usize = count_permutations(3);
         let p: Vec<Vec<char>> = permutations(&vec!['A', 'B', 'C']);
         assert_eq!(c, 6);
+        assert_eq!(c, p.len());
+    }
+
+    #[test]
+    fn test_count_permutations_with_repetitions() {
+        let c: usize = count_permutations_with_repetitions(3);
+        let p: Vec<Vec<char>> = permutations_with_repetitions(&vec!['A', 'B', 'C']);
+        assert_eq!(c, 27);
         assert_eq!(c, p.len());
     }
 }
