@@ -9,7 +9,7 @@ pub struct AdjacencyListGraph<T> {
 
 impl<T> AdjacencyListGraph<T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Clone + Eq + std::hash::Hash
 {
     pub fn new_undirected() -> Self {
         Self { adjacency_list: HashMap::new(), is_directed: false }
@@ -21,8 +21,8 @@ where
         self.adjacency_list.entry(a).or_insert(Vec::new());
     }
     pub fn add_edge(&mut self, a: T, b: T) {
-        self.adjacency_list.entry(a).or_insert(Vec::new()).push(b);
-        self.adjacency_list.entry(b).or_insert(Vec::new());
+        self.adjacency_list.entry(a.clone()).or_insert(Vec::new()).push(b.clone());
+        self.adjacency_list.entry(b.clone()).or_insert(Vec::new());
         if !self.is_directed {
             self.adjacency_list.entry(b).or_insert(Vec::new()).push(a);
         }
@@ -42,15 +42,15 @@ where
     pub fn is_connected(&self) -> bool {
         if let Some((start_node, _)) = self.adjacency_list.iter().next() {
             let mut stack: VecDeque<T> = VecDeque::new();
-            stack.push_front(*start_node);
+            stack.push_front(start_node.clone());
             let mut visited: HashSet<T> = HashSet::new();
-            visited.insert(*start_node);
+            visited.insert(start_node.clone());
 
             while let Some(node) = stack.pop_front() {
                 for neighbor in &self.adjacency_list[&node] {
                     if !visited.contains(&neighbor) {
-                        stack.push_front(*neighbor);
-                        visited.insert(*neighbor);
+                        stack.push_front(neighbor.clone());
+                        visited.insert(neighbor.clone());
                     }
                 }
             }
@@ -114,19 +114,19 @@ where
             if visited.contains(node) {
                 continue;
             }
-            visited.insert(*node);
+            visited.insert(node.clone());
 
-            let mut slow: T = node.clone();
-            let mut fast: T = node.clone();
+            let mut slow: &T = &node.clone();
+            let mut fast: &T = &node.clone();
 
             loop {
-                if let Some(next_slow) = self.adjacency_list.get(&slow).and_then(|neighbors| neighbors.get(0)) {
-                    if let Some(next_fast) = self.adjacency_list.get(&fast).and_then(|neighbors| neighbors.get(0)).and_then(|next| self.adjacency_list.get(next).and_then(|neighbors| neighbors.get(0))) {
-                        slow = next_slow.clone();
-                        fast = next_fast.clone();
+                if let Some(next_slow) = self.adjacency_list.get(slow).and_then(|neighbors| neighbors.get(0)) {
+                    if let Some(next_fast) = self.adjacency_list.get(fast).and_then(|neighbors| neighbors.get(0)).and_then(|next| self.adjacency_list.get(next).and_then(|neighbors| neighbors.get(0))) {
+                        slow = &next_slow;
+                        fast = &next_fast;
 
-                        visited.insert(slow);
-                        visited.insert(fast);
+                        visited.insert(slow.clone());
+                        visited.insert(fast.clone());
 
                         if slow == fast {
                             has_cycle = true;
@@ -144,7 +144,7 @@ where
             if has_cycle {
                 let mut cycle_node: Option<T> = cycle_start.clone();
                 while let Some(node) = cycle_node {
-                    if node == cycle_start.unwrap() && cycle_length > 1 {
+                    if node == cycle_start.clone().unwrap() && cycle_length > 1 {
                         break;
                     }
                     cycle_length += 1;
@@ -157,6 +157,84 @@ where
 
         (has_cycle, cycle_start, cycle_length)
     }
+
+    // Kosaraju's algorithm
+    pub fn strongly_connected_components(&self) -> Vec<Vec<T>> {
+        if !self.is_directed {
+            panic!("Kosaraju's algorithm defined only for directed graphs");
+        }
+
+        let mut visited: HashSet<T> = HashSet::new();
+        let mut stack: Vec<T> = Vec::new();
+
+        for node in self.adjacency_list.keys() {
+            if !visited.contains(node) {
+                Self::reversed_dfs(&self.adjacency_list, node, &mut visited, &mut stack);
+            }
+        }
+        let reversed_adjacency_list: HashMap<T, Vec<T>> = self.reverse_graph();
+
+        visited.clear();
+        let mut result: Vec<Vec<T>> = Vec::new();
+
+        while let Some(node) = stack.pop() {
+            if !visited.contains(&node) {
+                let mut component: Vec<T> = Vec::new();
+                Self::reversed_dfs(&reversed_adjacency_list, &node, &mut visited, &mut component);
+                result.push(component);
+            }
+        }
+
+        result
+    }
+
+    fn reversed_dfs(adjacency_list: &HashMap<T, Vec<T>>, node: &T, visited: &mut HashSet<T>, stack: &mut Vec<T>) {
+        visited.insert(node.clone());
+        if let Some(neighbors) = adjacency_list.get(node) {
+            for neighbor in neighbors {
+                if !visited.contains(neighbor) {
+                    Self::reversed_dfs(adjacency_list, neighbor, visited, stack);
+                }
+            }
+        }
+        stack.push(node.clone());
+    }
+
+    fn reverse_graph(&self) -> HashMap<T, Vec<T>> {
+        let mut reversed_adjacency_list: HashMap<T, Vec<T>> = HashMap::new();
+        for (node, neighbors) in self.adjacency_list.iter() {
+            for neighbor in neighbors {
+                reversed_adjacency_list
+                    .entry(neighbor.clone())
+                    .or_insert(Vec::new())
+                    .push(node.clone());
+            }
+        }
+        reversed_adjacency_list
+    }
+
+    pub fn eulerian_path_for_connected_graphs(&mut self) -> Vec<T> {
+        let mut path: Vec<T> = Vec::new();
+        let mut stack: Vec<T> = Vec::new();
+    
+        if let Some(start_node) = self.adjacency_list.keys().next().cloned() {
+            stack.push(start_node.clone());
+    
+            while let Some(node) = stack.last().cloned() {
+                if let Some(neighbors) = self.adjacency_list.get_mut(&node) {
+                    if !neighbors.is_empty() {
+                        let next_node: T = neighbors.remove(0);
+                        stack.push(next_node.clone());
+                    } else {
+                        path.push(stack.pop().unwrap());
+                    }
+                }
+            }
+        }
+    
+        path.reverse();
+        path
+    }
 }
 
 pub struct AdjacencyListGraphDfsIterator<'a, T> {
@@ -167,11 +245,11 @@ pub struct AdjacencyListGraphDfsIterator<'a, T> {
 
 impl<'a, T> AdjacencyListGraphDfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Clone + Eq + std::hash::Hash
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
         let mut stack: VecDeque<T> = VecDeque::new();
-        stack.push_front(start_node);
+        stack.push_front(start_node.clone());
         let mut visited: HashSet<T> = HashSet::new();
         visited.insert(start_node);
 
@@ -222,11 +300,11 @@ pub struct AdjacencyListGraphBfsIterator<'a, T> {
 
 impl<'a, T> AdjacencyListGraphBfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Clone + Eq + std::hash::Hash
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
         let mut queue: VecDeque<T> = VecDeque::new();
-        queue.push_back(start_node);
+        queue.push_back(start_node.clone());
         let mut visited: HashSet<T> = HashSet::new();
         visited.insert(start_node);
 
@@ -545,6 +623,85 @@ where
 
     fn union(&self, forest: &mut HashMap<T, T>, root1: T, root2: T) {
         forest.insert(root2, root1);
+    }
+
+    // Kosaraju's algorithm
+    pub fn strongly_connected_components(&self) -> Vec<Vec<T>> {
+        if !self.is_directed {
+            panic!("Kosaraju's algorithm defined only for directed graphs");
+        }
+
+        let mut visited: HashMap<T, bool> = HashMap::new();
+        let mut stack: Vec<T> = Vec::new();
+
+        for node in self.adjacency_list.keys() {
+            if !visited.get(node).cloned().unwrap_or(false) {
+                Self::reversed_dfs(&self.adjacency_list, node, &mut visited, &mut stack);
+            }
+        }
+
+        let reversed_adjacency_list: HashMap<T, Vec<(T, W)>> = self.reverse_graph();
+
+        visited.clear();
+        let mut result: Vec<Vec<T>> = Vec::new();
+
+        while let Some(node) = stack.pop() {
+            if !visited.get(&node).cloned().unwrap_or(false) {
+                let mut component: Vec<T> = Vec::new();
+                Self::reversed_dfs(&reversed_adjacency_list, &node, &mut visited, &mut component);
+                result.push(component);
+            }
+        }
+
+        result
+    }
+
+    fn reversed_dfs(adjacency_list: &HashMap<T, Vec<(T, W)>>, node: &T, visited: &mut HashMap<T, bool>, stack: &mut Vec<T>) {
+        visited.insert(node.clone(), true);
+        if let Some(neighbors) = adjacency_list.get(node) {
+            for (neighbor, _) in neighbors {
+                if !visited.get(neighbor).cloned().unwrap_or(false) {
+                    Self::reversed_dfs(adjacency_list, neighbor, visited, stack);
+                }
+            }
+        }
+        stack.push(node.clone());
+    }
+
+    fn reverse_graph(&self) -> HashMap<T, Vec<(T, W)>> {
+        let mut reversed_adjacency_list: HashMap<T, Vec<(T, W)>> = HashMap::new();
+        for (node, neighbors) in self.adjacency_list.iter() {
+            for (neighbor, weight) in neighbors {
+                reversed_adjacency_list
+                    .entry(neighbor.clone())
+                    .or_insert(Vec::new())
+                    .push((node.clone(), weight.clone()));
+            }
+        }
+        reversed_adjacency_list
+    }
+
+    pub fn eulerian_path_for_connected_graphs(&mut self) -> Vec<T> {
+        let mut path: Vec<T> = Vec::new();
+        let mut stack: Vec<T> = Vec::new();
+    
+        if let Some(start_node) = self.adjacency_list.keys().next().cloned() {
+            stack.push(start_node.clone());
+    
+            while let Some(node) = stack.last().cloned() {
+                if let Some(neighbors) = self.adjacency_list.get_mut(&node) {
+                    if !neighbors.is_empty() {
+                        let next_node: (T, W) = neighbors.remove(0);
+                        stack.push(next_node.0.clone());
+                    } else {
+                        path.push(stack.pop().unwrap());
+                    }
+                }
+            }
+        }
+    
+        path.reverse();
+        path
     }
 }
 
@@ -1212,6 +1369,43 @@ where
     }
 }
 
+pub struct TwoSatSolver {
+    graph: AdjacencyListGraph<isize>
+}
+impl TwoSatSolver {
+    pub fn new() -> Self {
+        Self { graph: AdjacencyListGraph::new_directed() }
+    }
+    pub fn add_disjunction(&mut self, a: isize, na: bool, b: isize, nb: bool) {
+        let aa: isize = a * if na { 1 } else { -1 };
+        let bb: isize = b * if nb { 1 } else { -1 };
+        let neg_a: isize = aa * -1;
+        let neg_b: isize = bb * -1;
+
+        self.graph.add_edge(neg_a, bb);
+        self.graph.add_edge(neg_b, aa);
+    }
+    pub fn solve(&self) -> Option<HashMap<isize, bool>> {
+        let components: Vec<Vec<isize>> = self.graph.strongly_connected_components();
+
+        let mut solution: HashMap<isize, bool> = HashMap::new();
+        for component in components.iter().rev() {
+            let mut used: HashSet<isize> = HashSet::new();
+            for e in component {
+                if used.contains(&e.abs()) {
+                    return None;
+                }
+                used.insert(e.abs());
+                if !solution.contains_key(&e.abs()) {
+                    let v = if *e < 0 { false } else { true };
+                    solution.insert(e.abs(), v);
+                }
+            }
+        }
+        return Some(solution);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1395,6 +1589,78 @@ mod tests {
         assert_eq!(has_cycle.2, 3);
     }
 
+    #[test]
+    #[should_panic]
+    fn test_adjacency_list_graph_undirected_strongly_connected_components() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+        graph.add_edge(2, 1);
+        graph.add_edge(2, 5);
+        graph.add_edge(3, 2);
+        graph.add_edge(3, 7);
+        graph.add_edge(5, 4);
+        graph.add_edge(6, 3);
+        graph.add_edge(6, 5);
+        graph.add_edge(7, 6);
+
+        graph.strongly_connected_components();
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_directed_strongly_connected_components() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+        graph.add_edge(2, 1);
+        graph.add_edge(2, 5);
+        graph.add_edge(3, 2);
+        graph.add_edge(3, 7);
+        graph.add_edge(5, 4);
+        graph.add_edge(6, 3);
+        graph.add_edge(6, 5);
+        graph.add_edge(7, 6);
+
+        let r: Vec<Vec<i32>> = graph.strongly_connected_components();
+        
+        assert_eq!(r.len(), 4);
+        assert_eq!(r[0].len(), 3);
+        assert_eq!(r[1].len(), 2);
+        assert_eq!(r[2].len(), 1);
+        assert_eq!(r[3].len(), 1);
+
+        assert!(r[0].contains(&6));
+        assert!(r[0].contains(&3));
+        assert!(r[0].contains(&7));
+
+        assert!(r[1].contains(&1));
+        assert!(r[1].contains(&2));
+
+        assert!(r[2].contains(&5));
+
+        assert!(r[3].contains(&4));
+    }
+
+
+    #[test]
+    fn test_adjacency_list_graph_undirected_eulerian_path_for_connected_graphs() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+
+        let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
+        assert!(path == [2, 1, 4, 1, 2] || path == [4, 1, 2, 1, 4] || path == [1, 2, 1, 4, 1]);  
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_directed_eulerian_path_for_connected_graphs() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+        let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
+        assert!(path == [1, 4, 2] || path == [2] || path == [4]);
+    }
+    
     #[test]
     #[should_panic]
     fn test_adjacency_list_graph_undirected_has_cycle() {
@@ -1702,6 +1968,77 @@ mod tests {
         let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) = graph.maximum_spanning_tree_kruskal();
         
         assert_eq!(cost, 32);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_adjacency_list_weighted_graph_undirected_strongly_connected_components() {
+        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_edge(1, 2, 41);
+        graph.add_edge(1, 4, 41);
+        graph.add_edge(2, 1, 41);
+        graph.add_edge(2, 5, 41);
+        graph.add_edge(3, 2, 41);
+        graph.add_edge(3, 7, 41);
+        graph.add_edge(5, 4, 41);
+        graph.add_edge(6, 3, 41);
+        graph.add_edge(6, 5, 41);
+        graph.add_edge(7, 6, 41);
+
+        graph.strongly_connected_components();
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_directed_strongly_connected_components() {
+        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(1, 2, 41);
+        graph.add_edge(1, 4, 42);
+        graph.add_edge(2, 1, 43);
+        graph.add_edge(2, 5, 44);
+        graph.add_edge(3, 2, 45);
+        graph.add_edge(3, 7, 46);
+        graph.add_edge(5, 4, 47);
+        graph.add_edge(6, 3, 48);
+        graph.add_edge(6, 5, 49);
+        graph.add_edge(7, 6, 50);
+
+        let r: Vec<Vec<i32>> = graph.strongly_connected_components();
+        
+        assert_eq!(r.len(), 4);
+        assert_eq!(r[0].len(), 3);
+        assert_eq!(r[1].len(), 2);
+        assert_eq!(r[2].len(), 1);
+        assert_eq!(r[3].len(), 1);
+
+        assert!(r[0].contains(&6));
+        assert!(r[0].contains(&3));
+        assert!(r[0].contains(&7));
+
+        assert!(r[1].contains(&1));
+        assert!(r[1].contains(&2));
+
+        assert!(r[2].contains(&5));
+
+        assert!(r[3].contains(&4));
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_undirected_eulerian_path_for_connected_graphs() {
+        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_edge(1, 2, 0);
+        graph.add_edge(1, 4, 0);
+
+        let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
+        assert!(path == [2, 1, 4, 1, 2] || path == [4, 1, 2, 1, 4] || path == [1, 2, 1, 4, 1]);  
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_directed_eulerian_path_for_connected_graphs() {
+        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(1, 2, 0);
+        graph.add_edge(1, 4, 0);
+        let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
+        assert!(path == [1, 4, 2] || path == [2] || path == [4]);
     }
 
     #[test]
@@ -2396,5 +2733,32 @@ mod tests {
         assert_eq!(g.data[&6], vec![0, 2, 0, 2]);
         assert_eq!(g.data[&7], vec![5, 1, 1, 1]);
         assert_eq!(g.data[&8], vec![2, 6, 2, 6]);
+    }
+
+    #[test]
+    fn test_2sat() {
+        // L1 = (x2 ∨ ¬x1) ∧ (¬x1 ∨ ¬x2) ∧ (x1 ∨ x3) ∧ (¬x2 ∨ ¬x3) ∧ (x1 ∨ x4)
+        let mut twosat: TwoSatSolver = TwoSatSolver::new();
+        twosat.add_disjunction(2, true, 1, false);
+        twosat.add_disjunction(1, false, 2, false);
+        twosat.add_disjunction(1, true, 3, true);
+        twosat.add_disjunction(2, false, 3, false);
+        twosat.add_disjunction(1, true, 4, true);
+        let solution: HashMap<isize, bool> = twosat.solve().unwrap();
+        assert_eq!(solution[&1], false);
+        assert_eq!(solution[&2], false);
+        assert_eq!(solution[&3], true);
+        assert_eq!(solution[&4], true);
+
+        let rr: Option<HashMap<isize, bool>> = twosat.solve();
+        println!("{:?}", rr);
+
+        // L2 = (x1 ∨ x2) ∧ (x1 ∨ ¬x2) ∧ (¬x1 ∨ x3) ∧ (¬x1 ∨ ¬x3)
+        let mut twosat: TwoSatSolver = TwoSatSolver::new();
+        twosat.add_disjunction(1, true, 2, true);
+        twosat.add_disjunction(1, true, 2, false);
+        twosat.add_disjunction(1, false, 3, true);
+        twosat.add_disjunction(1, false, 3, false);
+        assert_eq!(twosat.solve(), None);
     }
 }
