@@ -114,6 +114,27 @@ pub fn modpow(x: usize, n: usize, m: usize) -> usize {
     result
 }
 
+/// x^n
+pub fn pow<T1, T2>(x: T1, n: T2) -> T1
+where
+    T1: Copy + PartialEq + std::ops::Mul<Output = T1> + std::ops::Div<Output = T1> + std::ops::Rem<Output = T1> + From<u8>,
+    T2: Copy + PartialEq + std::ops::Mul<Output = T2> + std::ops::Div<Output = T2> + std::ops::Rem<Output = T2> + From<u8>,
+{
+    let mut result: T1 = T1::from(1);
+    let mut base: T1 = x;
+    let mut exp: T2 = n;
+
+    while exp != T2::from(0) {
+        if exp % T2::from(2) == T2::from(1) {
+            result = result * base;
+        }
+        base = base * base;
+        exp = exp / T2::from(2);
+    }
+
+    result
+}
+
 /// Euler's totient function
 fn euler_totient(n: u64) -> u64 {
     let mut nn = n;
@@ -268,6 +289,14 @@ mod tests {
     fn test_modpow() {
         let result: usize = modpow(23895, 15, 14189); // 23895^15 % 14189
         assert_eq!(result, 344);
+    }
+
+    #[test]
+    fn test_pow() {
+        assert_eq!(pow(2, 0), 1);
+        assert_eq!(pow(2, 4), 16);
+        assert_eq!(pow(2, 5), 32);
+        assert_eq!(pow(1, 17), 1);
     }
 
     #[test]
