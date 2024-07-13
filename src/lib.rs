@@ -10,3 +10,4 @@ pub mod bits;
 pub mod heaps;
 pub mod trees;
 pub mod combinatorics;
+pub mod matrices;
