@@ -48,6 +48,15 @@ where
             data
         }
     }
+    pub fn transpose(&self) -> Self {
+        let mut transposed: Matrix<T> = Matrix::new(self.cols, self.rows);
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                transposed.data[j * self.rows + i] = self.data[i * self.cols + j];
+            }
+        }
+        transposed
+    }
 }
 
 impl<T> Index<usize> for Matrix<T> {
@@ -138,5 +147,33 @@ mod tests {
         assert_eq!(m[1][0], 4);
         assert_eq!(m[1][1], 5);
         assert_eq!(m[1][2], 6);
+    }
+
+    #[test]
+    fn test_matrix_transpose() {
+        // 1 2 3 
+        // 4 5 6
+        let mut m: Matrix<usize> = Matrix::new(2, 3);
+        m[0][0] = 1;
+        m[0][1] = 2;
+        m[0][2] = 3;
+        m[1][0] = 4;
+        m[1][1] = 5;
+        m[1][2] = 6;
+        
+        // 1 4
+        // 2 5
+        // 3 6
+        let transposed: Matrix<usize> = m.transpose();
+        assert_eq!(transposed.rows, 3);
+        assert_eq!(transposed.cols, 2);
+        assert_eq!(transposed.data, vec![1, 4, 2, 5, 3, 6]);
+
+        assert_eq!(transposed[0][0], 1);
+        assert_eq!(transposed[0][1], 4);
+        assert_eq!(transposed[1][0], 2);
+        assert_eq!(transposed[1][1], 5);
+        assert_eq!(transposed[2][0], 3);
+        assert_eq!(transposed[2][1], 6);
     }
 }
