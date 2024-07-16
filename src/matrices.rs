@@ -75,6 +75,29 @@ impl<T> IndexMut<usize> for Matrix<T> {
     }
 }
 
+impl<T> Add for Matrix<T>
+where
+    T: Add<Output = T> + Clone
+{
+    type Output = Matrix<T>;
+
+    fn add(self, other: Matrix<T>) -> Matrix<T> {
+        if self.rows != other.rows || self.cols != other.cols {
+            panic!("Matrix dimensions must match for addition");
+        }
+
+        let data: Vec<T> = self.data.iter().zip(other.data.iter())
+            .map(|(a, b)| a.clone() + b.clone())
+            .collect();
+
+        Matrix {
+            rows: self.rows,
+            cols: self.cols,
+            data
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -175,5 +198,41 @@ mod tests {
         assert_eq!(transposed[1][1], 5);
         assert_eq!(transposed[2][0], 3);
         assert_eq!(transposed[2][1], 6);
+    }
+
+    #[test]
+    fn test_matrix_add() {
+        let a: Matrix<i32> = Matrix::new(2, 2);
+        let b: Matrix<i32> = Matrix::new(2, 2);
+        let c: Matrix<i32> = a + b;
+        assert_eq!(c.rows, 2);
+        assert_eq!(c.cols, 2);
+        assert_eq!(c.data, vec![0, 0, 0, 0]);
+
+        let mut a: Matrix<i32> = Matrix::new(2, 2);
+        a[0][0] = 1;
+        a[0][1] = 2;
+        a[1][0] = 3;
+        a[1][1] = 4;
+
+        let mut b: Matrix<i32> = Matrix::new(2, 2);
+        b[0][0] = 5;
+        b[0][1] = 6;
+        b[1][0] = 7;
+        b[1][1] = 8;
+
+        let c: Matrix<i32> = a + b;
+        assert_eq!(c[0][0], 6);
+        assert_eq!(c[0][1], 8);
+        assert_eq!(c[1][0], 10);
+        assert_eq!(c[1][1], 12);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_matrix_add_panic() {
+        let a: Matrix<i32> = Matrix::new(3, 2);
+        let b: Matrix<i32> = Matrix::new(2, 3);
+        let _: Matrix<i32> = a + b;
     }
 }
