@@ -2,6 +2,7 @@ use std::ops::Index;
 use std::ops::IndexMut;
 use std::ops::Add;
 use std::ops::Mul;
+use std::ops::Sub;
 
 #[allow(dead_code)]
 #[derive(Clone)]
@@ -88,6 +89,29 @@ where
 
         let data: Vec<T> = self.data.iter().zip(other.data.iter())
             .map(|(a, b)| a.clone() + b.clone())
+            .collect();
+
+        Matrix {
+            rows: self.rows,
+            cols: self.cols,
+            data
+        }
+    }
+}
+
+impl<T> Sub for Matrix<T>
+where
+    T: Sub<Output = T> + Clone
+{
+    type Output = Matrix<T>;
+
+    fn sub(self, other: Matrix<T>) -> Matrix<T> {
+        if self.rows != other.rows || self.cols != other.cols {
+            panic!("Matrix dimensions must match for substraction");
+        }
+
+        let data: Vec<T> = self.data.iter().zip(other.data.iter())
+            .map(|(a, b)| a.clone() - b.clone())
             .collect();
 
         Matrix {
@@ -234,5 +258,41 @@ mod tests {
         let a: Matrix<i32> = Matrix::new(3, 2);
         let b: Matrix<i32> = Matrix::new(2, 3);
         let _: Matrix<i32> = a + b;
+    }
+
+    #[test]
+    fn test_matrix_sub() {
+        let a: Matrix<i32> = Matrix::new(2, 2);
+        let b: Matrix<i32> = Matrix::new(2, 2);
+        let c: Matrix<i32> = a + b;
+        assert_eq!(c.rows, 2);
+        assert_eq!(c.cols, 2);
+        assert_eq!(c.data, vec![0, 0, 0, 0]);
+
+        let mut a: Matrix<i32> = Matrix::new(2, 2);
+        a[0][0] = 1;
+        a[0][1] = 2;
+        a[1][0] = 3;
+        a[1][1] = 4;
+
+        let mut b: Matrix<i32> = Matrix::new(2, 2);
+        b[0][0] = 5;
+        b[0][1] = 6;
+        b[1][0] = 7;
+        b[1][1] = 8;
+
+        let c: Matrix<i32> = a - b;
+        assert_eq!(c[0][0], -4);
+        assert_eq!(c[0][1], -4);
+        assert_eq!(c[1][0], -4);
+        assert_eq!(c[1][1], -4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_matrix_sub_panic() {
+        let a: Matrix<i32> = Matrix::new(3, 2);
+        let b: Matrix<i32> = Matrix::new(2, 3);
+        let _: Matrix<i32> = a - b;
     }
 }
