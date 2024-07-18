@@ -122,6 +122,57 @@ where
     }
 }
 
+impl<T> Mul for Matrix<T>
+where
+    T: Clone + Default + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Copy,
+{
+    type Output = Matrix<T>;
+
+    fn mul(self, other: Matrix<T>) -> Matrix<T> {
+        if self.cols != other.rows {
+            panic!(
+                "First matrix [{} x {}] rows number must match with second matrix [{} x {}] cols number for multiplication",
+                self.rows, self.cols,
+                other.rows, other.cols
+            );
+        }
+
+        let mut result_data: Vec<T> = vec![T::default(); self.rows * other.cols];
+
+        for i in 0..self.rows {
+            for j in 0..other.cols {
+                for k in 0..self.cols {
+                    result_data[i * other.cols + j] = result_data[i * other.cols + j]
+                        + self.data[i * self.cols + k] * other.data[k * other.cols + j];
+                }
+            }
+        }
+
+        Matrix {
+            rows: self.rows,
+            cols: other.cols,
+            data: result_data,
+        }
+    }
+}
+
+impl<T> Mul<T> for Matrix<T>
+where
+    T: Clone + std::ops::Mul<Output = T> + Copy,
+{
+    type Output = Matrix<T>;
+
+    fn mul(self, scalar: T) -> Matrix<T> {
+        let result_data: Vec<T> = self.data.iter().map(|&x| x * scalar).collect();
+
+        Matrix {
+            rows: self.rows,
+            cols: self.cols,
+            data: result_data,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -294,5 +345,59 @@ mod tests {
         let a: Matrix<i32> = Matrix::new(3, 2);
         let b: Matrix<i32> = Matrix::new(2, 3);
         let _: Matrix<i32> = a - b;
+    }
+
+    #[test]
+    fn test_matrix_mul() {
+        let mut a: Matrix<i32> = Matrix::new(2, 3);
+        a[0][0] = 1;
+        a[0][1] = 2;
+        a[0][2] = 3;
+        a[1][0] = 4;
+        a[1][1] = 5;
+        a[1][2] = 6;
+
+        let mut b: Matrix<i32> = Matrix::new(3, 2);
+        b[0][0] = 7;
+        b[0][1] = 8;
+        b[1][0] = 9;
+        b[1][1] = 10;
+        b[2][0] = 11;
+        b[2][1] = 12;
+
+        let c: Matrix<i32> = a * b;
+        assert_eq!(c.rows, 2);
+        assert_eq!(c.cols, 2);
+        assert_eq!(c[0][0], 58);
+        assert_eq!(c[0][1], 64);
+        assert_eq!(c[1][0], 139);
+        assert_eq!(c[1][1], 154);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_matrix_mul_panic() {
+        let a: Matrix<i32> = Matrix::new(2, 3);
+        let b: Matrix<i32> = Matrix::new(2, 3);
+        let _ = a * b;
+    }
+
+    #[test]
+    fn test_matrix_mul_scalar() {
+        let mut a: Matrix<i32> = Matrix::new(2, 3);
+        a[0][0] = 1;
+        a[0][1] = 2;
+        a[0][2] = 3;
+        a[1][0] = 4;
+        a[1][1] = 5;
+        a[1][2] = 6;
+
+        let b: Matrix<i32> = a * 3;
+        assert_eq!(b[0][0], 3);
+        assert_eq!(b[0][1], 6);
+        assert_eq!(b[0][2], 9);
+        assert_eq!(b[1][0], 12);
+        assert_eq!(b[1][1], 15);
+        assert_eq!(b[1][2], 18);
     }
 }
