@@ -173,6 +173,21 @@ where
     }
 }
 
+impl<T> std::fmt::Display for Matrix<T>
+where
+    T: std::fmt::Display
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                write!(f, "{:.2} ", self.data[i * self.cols + j])?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -399,5 +414,15 @@ mod tests {
         assert_eq!(b[1][0], 12);
         assert_eq!(b[1][1], 15);
         assert_eq!(b[1][2], 18);
+    }
+
+    #[test]
+    fn test_matrix_display() {
+        let mut a: Matrix<i32> = Matrix::new(2, 2);
+        a[0][0] = 1; a[0][1] = 2;
+        a[1][0] = 3; a[1][1] = 4;
+        let expected_output: &str = "1 2 \n3 4 \n";
+        let actual_output: String = format!("{}", a);
+        assert_eq!(expected_output, actual_output);
     }
 }
