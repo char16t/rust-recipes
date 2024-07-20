@@ -58,6 +58,28 @@ where
         }
         transposed
     }
+    pub fn pow(&self, n: usize) -> Self {
+        if self.rows != self.cols {
+            panic!("Matrix exponentiation available only for square matrices");
+        }
+        if n == 0 {
+            panic!("Raising the matrix to the zero degree is not implemented. Raising the matrix to the power of zero returns a unit of the same size.");
+        }
+
+        let mut result: Matrix<T> = self.clone();
+        let mut base: Matrix<T> = self.clone();
+        let mut exp: usize = n - 1;
+    
+        while exp > 0 {
+            if exp % 2 == 1 {
+                result = result.clone() * base.clone();
+            }
+            base = base.clone() * base;
+            exp /= 2;
+        }
+    
+        result
+    }
 }
 
 impl<T> Index<usize> for Matrix<T> {
@@ -424,5 +446,52 @@ mod tests {
         let expected_output: &str = "1 2 \n3 4 \n";
         let actual_output: String = format!("{}", a);
         assert_eq!(expected_output, actual_output);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_matrix_pow_non_square() {
+        let a: Matrix<i32> = Matrix::new(2, 3);
+        a.pow(2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_matrix_pow_zero() {
+        let a: Matrix<i32> = Matrix::new(2, 2);
+        a.pow(0);
+    }
+
+    #[test]
+    fn test_matrix_pow() {
+        let mut a: Matrix<i32> = Matrix::new(2, 2);
+        a[0][0] = 2;
+        a[0][1] = 5;
+        a[1][0] = 1;
+        a[1][1] = 4;
+
+        let b: Matrix<i32> = a.pow(3);      
+        assert_eq!(b[0][0], 48);
+        assert_eq!(b[0][1], 165);
+        assert_eq!(b[1][0], 33);
+        assert_eq!(b[1][1], 114);
+
+        let c: Matrix<i32> = a.pow(5);      
+        assert_eq!(c[0][0], 1422);
+        assert_eq!(c[0][1], 4905);
+        assert_eq!(c[1][0], 981);
+        assert_eq!(c[1][1], 3384);
+
+        let d: Matrix<i32> = a.pow(4);      
+        assert_eq!(d[0][0], 261);
+        assert_eq!(d[0][1], 900);
+        assert_eq!(d[1][0], 180);
+        assert_eq!(d[1][1], 621);
+
+        let e: Matrix<i32> = a.pow(1);      
+        assert_eq!(e[0][0], 2);
+        assert_eq!(e[0][1], 5);
+        assert_eq!(e[1][0], 1);
+        assert_eq!(e[1][1], 4);
     }
 }
