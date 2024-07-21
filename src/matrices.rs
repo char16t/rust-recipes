@@ -210,6 +210,29 @@ where
     }
 }
 
+pub fn fib(n: usize) -> u128 {
+    if n == 0 {
+        return 0;
+    }
+    if n == 1 {
+        return 1;
+    }
+
+    let mut m: Matrix<u128> = Matrix::new(2, 2);
+    m[0][0] = 0;
+    m[0][1] = 1;
+    m[1][0] = 1;
+    m[1][1] = 1;
+
+    let mut v: Matrix<u128> = Matrix::new_vector(2);
+    v[0][0] = 0;
+    v[1][0] = 1;
+
+    let r: Matrix<u128> = m.pow(n) * v;
+
+    r[0][0]
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -493,5 +516,16 @@ mod tests {
         assert_eq!(e[0][1], 5);
         assert_eq!(e[1][0], 1);
         assert_eq!(e[1][1], 4);
+    }
+
+    #[test]
+    fn test_fib() {
+        assert_eq!(fib(0), 0);
+        assert_eq!(fib(1), 1);
+        assert_eq!(fib(2), 1);
+        assert_eq!(fib(3), 2);
+        assert_eq!(fib(10), 55);
+        assert_eq!(fib(14), 377);
+        assert_eq!(fib(100), 354224848179261915075);
     }
 }
