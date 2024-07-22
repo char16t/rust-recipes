@@ -233,6 +233,30 @@ pub fn fib(n: usize) -> u128 {
     r[0][0]
 }
 
+pub fn linear_recurrent_sequence(coefficients: &[i128], initial: &[i128], n: usize) -> i128 {
+    let k: usize = coefficients.len();
+    
+    let mut m: Matrix<i128> = Matrix::new(k, k);
+    for i in 0..k-1 {
+        for j in 0..k {
+            if i + 1 == j {
+                m[i][j] = 1;
+            }
+        }
+    }
+    for i in 0..k {
+        m[k - 1][i] = coefficients[k - i - 1];
+    }
+
+    let mut v: Matrix<i128> = Matrix::new_vector(k);
+    for i in 0..k {
+        v[i][0] = initial[i];
+    }
+
+    let r: Matrix<i128> = m.pow(n) * v;
+    r[0][0]
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -527,5 +551,14 @@ mod tests {
         assert_eq!(fib(10), 55);
         assert_eq!(fib(14), 377);
         assert_eq!(fib(100), 354224848179261915075);
+    }
+
+    #[test]
+    fn test_linear_recurrent_sequence() {
+        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 1), 1);
+        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 3), 2);
+        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 9), 34);
+        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 10), 55);
+        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 14), 377);
     }
 }
