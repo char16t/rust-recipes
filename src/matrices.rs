@@ -257,6 +257,12 @@ pub fn linear_recurrent_sequence(coefficients: &[i128], initial: &[i128], n: usi
     r[0][0]
 }
 
+/// Number of paths that start in A, end in B and consist of exactly N edges.
+/// Matrix is a adjacency matrix of the unweighted graph.
+pub fn number_of_paths_with_n_egdes(a: usize, b: usize, n: usize, adjacency_matrix: Matrix<usize>) -> usize {
+    adjacency_matrix.pow(n)[a][b]
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -560,5 +566,19 @@ mod tests {
         assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 9), 34);
         assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 10), 55);
         assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 14), 377);
+    }
+
+    #[test]
+    fn test_number_of_paths_with_n_egdes() {
+        let mut m: Matrix<usize> = Matrix::new(6, 6);
+        m[0][0] = 0; m[0][1] = 0; m[0][2] = 0; m[0][3] = 1; m[0][4] = 0; m[0][5] = 0;
+        m[1][0] = 1; m[1][1] = 0; m[1][2] = 0; m[1][3] = 0; m[1][4] = 1; m[1][5] = 1;
+        m[2][0] = 0; m[2][1] = 1; m[2][2] = 0; m[2][3] = 0; m[2][4] = 0; m[2][5] = 0;
+        m[3][0] = 0; m[3][1] = 1; m[3][2] = 0; m[3][3] = 0; m[3][4] = 0; m[3][5] = 0;
+        m[4][0] = 0; m[4][1] = 0; m[4][2] = 0; m[4][3] = 0; m[4][4] = 0; m[4][5] = 0;
+        m[5][0] = 0; m[5][1] = 0; m[5][2] = 1; m[5][3] = 0; m[5][4] = 1; m[5][5] = 0;
+
+        let r: usize = number_of_paths_with_n_egdes(1, 4, 4, m);
+        assert_eq!(r, 2);
     }
 }
