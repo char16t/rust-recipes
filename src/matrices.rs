@@ -263,6 +263,65 @@ pub fn number_of_paths_with_n_egdes(a: usize, b: usize, n: usize, adjacency_matr
     adjacency_matrix.pow(n)[a][b]
 }
 
+/// Shortest path length that start in A, end in B and consist of exactly N edges.
+/// Matrix is a adjacency matrix of the weighted graph.
+pub fn shortest_path_with_n_eges(a: usize, b: usize, n: usize, adjacency_matrix: Matrix<usize>) -> usize {
+    fn mul(first: Matrix<usize>, other: Matrix<usize>) -> Matrix<usize> {
+        if first.cols != first.rows {
+            panic!("First matrix rows number must match with second matrix cols number for multiplication");
+        }
+
+        let mut result_data: Vec<usize> = vec![0; first.rows * other.cols];
+
+        for i in 0..first.rows {
+            for j in 0..other.cols {
+                for k in 0..first.cols {
+                    let current: usize = result_data[i * other.cols + j];
+                    let next: usize= first.data[i * first.cols + k] * other.data[k * other.cols + j];
+                    if current == 0 {
+                        result_data[i * other.cols + j] = next;
+                    } else if next == 0 {
+                        result_data[i * other.cols + j] = current;
+                    } else {
+                        result_data[i * other.cols + j] = current.min(next);
+                    }
+                    // result_data[i * other.cols + j] = 
+                    //     result_data[i * other.cols + j].min(first.data[i * first.cols + k] * other.data[k * other.cols + j]);
+                }
+            }
+        }
+
+        Matrix {
+            rows: first.rows,
+            cols: other.cols,
+            data: result_data,
+        }
+    }
+    fn pow(m: Matrix<usize>, n: usize) -> Matrix<usize> {
+        if m.rows != m.cols {
+            panic!("Matrix exponentiation available only for square matrices");
+        }
+        if n == 0 {
+            panic!("Raising the matrix to the zero degree is not implemented. Raising the matrix to the power of zero returns a unit of the same size.");
+        }
+
+        let mut result: Matrix<usize> = m.clone();
+        let mut base: Matrix<usize> = m.clone();
+        let mut exp: usize = n - 1;
+    
+        while exp > 0 {
+            if exp % 2 == 1 {
+                result = mul(result.clone(),  base.clone());
+            }
+            base = mul(base.clone(), base);
+            exp /= 2;
+        }
+    
+        result
+    }
+    pow(adjacency_matrix, n)[a][b]
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -580,5 +639,19 @@ mod tests {
 
         let r: usize = number_of_paths_with_n_egdes(1, 4, 4, m);
         assert_eq!(r, 2);
+    }
+
+    #[test]
+    fn test_shortest_path_with_n_eges() {
+        let mut m: Matrix<usize> = Matrix::new(6, 6);
+        m[0][0] = 0; m[0][1] = 0; m[0][2] = 0; m[0][3] = 4; m[0][4] = 0; m[0][5] = 0;
+        m[1][0] = 2; m[1][1] = 0; m[1][2] = 0; m[1][3] = 0; m[1][4] = 1; m[1][5] = 2;
+        m[2][0] = 0; m[2][1] = 4; m[2][2] = 0; m[2][3] = 0; m[2][4] = 0; m[2][5] = 0;
+        m[3][0] = 0; m[3][1] = 1; m[3][2] = 0; m[3][3] = 0; m[3][4] = 0; m[3][5] = 0;
+        m[4][0] = 0; m[4][1] = 0; m[4][2] = 0; m[4][3] = 0; m[4][4] = 0; m[4][5] = 0;
+        m[5][0] = 0; m[5][1] = 0; m[5][2] = 3; m[5][3] = 0; m[5][4] = 2; m[5][5] = 0;
+
+        let r: usize = shortest_path_with_n_eges(1, 4, 4, m);
+        assert_eq!(r, 8);
     }
 }
