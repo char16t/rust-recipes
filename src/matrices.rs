@@ -322,6 +322,74 @@ pub fn shortest_path_with_n_eges(a: usize, b: usize, n: usize, adjacency_matrix:
     pow(adjacency_matrix, n)[a][b]
 }
 
+pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
+
+    fn swap_rows(system: &mut Matrix<f32>, a: usize, b: usize) {
+        if a == b { return; }
+        let length: usize = system.cols;
+        for i in 0..length {
+            let tmp: f32 = system[a][i];
+            system[a][i] = system[b][i];
+            system[b][i] = tmp;
+        }
+    }
+
+    // echelon form
+    for i in 0..system.rows {
+        if system[i][i] == 0.0 {
+            let mut swap_with: usize = i;
+            for l in i+1..system.rows {
+                if system[l][i] != 0f32 {
+                    swap_with = l;
+                    break;
+                }
+            }
+            swap_rows(system, i, swap_with);
+        }
+        for j in i+1..system.rows {
+            let factor = system[j][i] / system[i][i];
+            for k in i..system.cols {
+                system[j][k] -= factor * system[i][k];
+            }
+        }
+    }
+
+    // Process follows a similar pattern but this one reduces the upper triangular elements
+    for i in (1..system.rows).rev() {
+        if system[i][i] == 0f32 {
+            let mut swap_with: usize = i;
+            for l in (1..i+1).rev() {
+                if system[l][i] != 0f32 {
+                    swap_with = l;
+                    break;
+                }
+            }
+            swap_rows(system, i, swap_with);
+        }
+        for j in (1..i+1).rev() {
+            let factor = system[j - 1][i] as f32 / system[i][i] as f32;
+            for k in (0..system.cols).rev() {
+                system[j - 1][k] -= factor * system[i][k] as f32;
+            }
+        }
+    }
+
+    // produce solutions through back substitution
+    let mut solutions: Vec<f32> = vec![];
+    let n: usize = system.rows;
+    for i in 0..n {
+        if system[i][i] == 0f32 {
+            return None;
+        }
+        else {
+            system[i][n] /= system[i][i] as f32;
+            system[i][i] = 1f32;
+            solutions.push(system[i][n])
+        }
+    }
+    return Some(solutions);
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -653,5 +721,21 @@ mod tests {
 
         let r: usize = shortest_path_with_n_eges(1, 4, 4, m);
         assert_eq!(r, 8);
+    }
+
+    #[test]
+    fn test_gaussian_elimination() {
+        let mut m: Matrix<f32> = Matrix::new(3, 4);
+        m[0][0] = 2.0; m[0][1] = 4.0; m[0][2] = 1.0; m[0][3] = 16.0;
+        m[1][0] = 1.0; m[1][1] = 2.0; m[1][2] = 5.0; m[1][3] = 17.0;
+        m[2][0] = 3.0; m[2][1] = 1.0; m[2][2] = 1.0; m[2][3] = 8.0;
+        let solution: Option<Vec<f32>> = gaussian_elimination(&mut m);
+        assert_eq!(solution, Some(vec![1.0, 3.0, 2.0]));
+
+        let mut m: Matrix<f32> = Matrix::new(2, 3);
+        m[0][0] = 1.0; m[0][1] = 1.0; m[0][2] = 2.0;
+        m[1][0] = 2.0; m[1][1] = 2.0; m[1][2] = 4.0;
+        let solution: Option<Vec<f32>> = gaussian_elimination(&mut m);
+        assert_eq!(solution, None);
     }
 }
