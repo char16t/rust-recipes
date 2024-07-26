@@ -703,6 +703,126 @@ where
         path.reverse();
         path
     }
+
+    /// Max flow. Ford–Fulkerson algorithm
+    pub fn max_flow(&self, start: T, end: T) -> Option<W>
+    where
+        W: std::cmp::Ord + std::ops::Sub<Output = W>
+    {
+        if !self.is_directed {
+            panic!("Unable to calculate max flow for undirected graph.")
+        }
+
+        let result: (Option<W>, HashMap<T, Vec<(T, W)>>, Vec<Vec<(T, Option<W>)>>) = max_flow_internal(&self.adjacency_list, start, end);
+        result.0
+    }
+}
+
+/// Max flow. Ford–Fulkerson algorithm
+fn max_flow_internal<T1, W1>(adjacency_list: &HashMap<T1, Vec<(T1, W1)>>, start: T1, end: T1) -> (Option<W1>, HashMap<T1, Vec<(T1, W1)>>, Vec<Vec<(T1, Option<W1>)>>)
+where
+    T1: Default + Copy + Eq + std::hash::Hash,
+    W1: Copy + Default + std::ops::Add<Output = W1> + std::cmp::Ord + std::ops::Sub<Output = W1>
+{
+    // Create reverse edge (b, a, 0) for each edge (a, b, weight)
+    let mut flow: HashMap<T1, Vec<(T1, W1)>> = adjacency_list.clone();
+    for (&a, neighbors) in adjacency_list {
+        for &(b, _) in neighbors {
+            flow.entry(b).or_insert(Vec::new()).push((a, W1::default()));
+        }
+    }
+
+    let mut flow_value: Option<W1> = None;
+    let mut paths: Vec<Vec<(T1, Option<W1>)>> = Vec::new();
+    
+    loop {
+        let mut path_found: bool = false; 
+        let mut path: Vec<(T1, Option<W1>)> = Vec::new();
+        let mut min_weight: Option<W1> = None;
+
+        // Find path using DFS
+        let mut visited: HashSet<T1> = HashSet::new();
+        let mut stack: Vec<(T1, Option<W1>)> = Vec::new();
+        visited.insert(start);
+        stack.push((start, None));
+        while let Some((current, weight)) = stack.pop() {
+            visited.insert(current);
+
+            // Skip if weight is 0
+            if let Some(w) = weight {
+                if w == W1::default() {
+                    path.pop(); // remove last element from path
+                    continue;
+                }
+            }
+
+            // Update minimal weight
+            min_weight = match min_weight {
+                Some(w) => weight.min(Some(w)),
+                None => weight
+            };
+
+            // Add node to path
+            path.push((current, weight));
+
+            // Path from START to END was found
+            if current == end {
+                path_found = true;
+                break;
+            }
+
+            // Add neighbors to stack
+            if let Some(neighbors) = flow.get_mut(&current) {
+
+                // Sort ascending and then push to stack (actually sort descending)
+                neighbors.sort_by_key(|n| n.1);
+
+                for &mut (neighbor, neighbor_weight) in neighbors {
+                    if !visited.contains(&neighbor) {
+                        stack.push((neighbor, Some(neighbor_weight)));
+                    }
+                }
+            }
+        }
+
+        // If path from START to END not found, max flow was found
+        if !path_found {
+            return (flow_value, flow, paths);
+        }
+
+        // Update weights
+        let weight_difference: W1 = match min_weight {
+            Some(value) => value,
+            None => W1::default()
+        };
+        flow_value = match flow_value {
+            Some(w) => Some(w + weight_difference),
+            None => Some(weight_difference)
+        };
+
+        for i in 0..path.len()-1 {
+            let a: (T1, Option<W1>) = path[i];
+            let b: (T1, Option<W1>) = path[i+1];
+            
+            if let Some(neighbors) = flow.get_mut(&a.0) {
+                for neighbor in neighbors {
+                    if neighbor.0 == b.0 {
+                        neighbor.1 = neighbor.1 - weight_difference;
+                        break;
+                    }
+                }
+            }
+            if let Some(neighbors) = flow.get_mut(&b.0) {
+                for neighbor in neighbors {
+                    if neighbor.0 == a.0 {
+                        neighbor.1 = neighbor.1 + weight_difference;
+                        break;
+                    }
+                }
+            }
+        }
+        paths.push(path);
+    }
 }
 
 pub struct AdjacencyListWightedGraphDfsIterator<'a, T, W> {
@@ -2760,5 +2880,37 @@ mod tests {
         twosat.add_disjunction(1, false, 3, true);
         twosat.add_disjunction(1, false, 3, false);
         assert_eq!(twosat.solve(), None);
+    }
+
+    #[test]
+    fn test_adjacency_list_weighted_graph_max_flow() {
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        graph.add_edge(1, 2, 5);
+        graph.add_edge(1, 4, 4);
+        graph.add_edge(2, 3, 6);
+        graph.add_edge(3, 5, 8);
+        graph.add_edge(3, 6, 5);
+        graph.add_edge(4, 2, 3);
+        graph.add_edge(4, 5, 1);
+        graph.add_edge(5, 6, 2);
+
+        let max: Option<i32> = graph.max_flow(1, 6);
+        assert_eq!(max, Some(7));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_adjacency_list_weighted_graph_max_flow_panic() {
+        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        graph.add_edge(1, 2, 5);
+        graph.add_edge(1, 4, 4);
+        graph.add_edge(2, 3, 6);
+        graph.add_edge(3, 5, 8);
+        graph.add_edge(3, 6, 5);
+        graph.add_edge(4, 2, 3);
+        graph.add_edge(4, 5, 1);
+        graph.add_edge(5, 6, 2);
+
+        graph.max_flow(1, 6);
     }
 }
