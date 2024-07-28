@@ -235,6 +235,84 @@ where
         path.reverse();
         path
     }
+
+    pub fn edge_disjoint_paths(&self, start: T, end: T) -> Vec<Vec<T>>
+    where
+        T: Copy + Default
+    {
+        if !self.is_directed {
+            panic!("Unable to find edge-disjoint paths for undirected graph.")
+        }
+
+        let mut adj: HashMap<T, Vec<(T, i8)>> = HashMap::new();
+        for (key, values) in self.adjacency_list.iter() {
+            let new_values: Vec<(T, i8)> = values.iter().map(|k| (k.clone(), 1)).collect();
+            adj.insert(key.clone(), new_values);
+        }
+
+        let (_, _, paths) = max_flow_internal(&adj, start, end);
+
+        let result: Vec<Vec<T>> = paths
+            .iter()
+            .map(|path| {
+                path
+                    .iter()
+                    .map(|(t, _)| t.clone())
+                    .collect()
+            })
+            .collect();
+        result
+    }
+
+    pub fn node_disjoint_paths(&self, start: T, end: T) -> Vec<Vec<T>>
+    where 
+        T: Copy + Default
+    {
+        if !self.is_directed {
+            panic!("Unable to find node-disjoint paths for undirected graph.")
+        }
+
+        const IN: u8 = 0;
+        const OUT: u8 = 1;
+
+        let mut adj: HashMap<(T, u8), Vec<((T, u8), i8)>> = HashMap::new();
+        for (&node, neighbors) in self.adjacency_list.iter() {
+            for &neighbor in neighbors {
+                adj.entry((node, OUT)).or_insert(Vec::new()).push(((neighbor, IN), 1));
+            }
+        }
+        for (&node, _) in self.adjacency_list.iter() {
+            adj.entry((node, IN)).or_insert(Vec::new()).push(((node, OUT), 1));
+        }
+
+        let (_, _, paths) = max_flow_internal(&adj, (start, OUT), (end, IN));
+        let paths_in_out: Vec<Vec<(T, u8)>> = paths
+            .iter()
+            .map(|path| {
+                path
+                    .iter()
+                    .map(|(t, _)| *t)
+                    .collect()
+            })
+            .collect();
+        let mut result = Vec::new();
+        for path in paths_in_out {
+            let mut r = Vec::new();
+            let mut prev: Option<T> = None;
+            for (node, _) in path {
+                if let Some(previous) = prev {
+                    if node != previous {
+                        r.push(node)
+                    }
+                } else {
+                    r.push(node)
+                }
+                prev = Some(node);
+            }
+            result.push(r)
+        }
+        result
+    }
 }
 
 pub struct AdjacencyListGraphDfsIterator<'a, T> {
@@ -2996,6 +3074,77 @@ mod tests {
         twosat.add_disjunction(1, false, 3, true);
         twosat.add_disjunction(1, false, 3, false);
         assert_eq!(twosat.solve(), None);
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_edge_disjoint_paths() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+        graph.add_edge(2, 4);
+        graph.add_edge(3, 2);
+        graph.add_edge(3, 5);
+        graph.add_edge(3, 6);
+        graph.add_edge(4, 3);
+        graph.add_edge(4, 5);
+        graph.add_edge(5, 6);
+
+        let r: Vec<Vec<i32>> = graph.edge_disjoint_paths(1, 6);
+        assert_eq!(r.len(), 2);
+        assert!(r.contains(&vec![1, 4, 5, 6]));
+        assert!(r.contains(&vec![1, 2, 4, 3, 6]));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_adjacency_list_graph_edge_disjoint_paths_panic() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+        graph.add_edge(2, 4);
+        graph.add_edge(3, 2);
+        graph.add_edge(3, 5);
+        graph.add_edge(3, 6);
+        graph.add_edge(4, 3);
+        graph.add_edge(4, 5);
+        graph.add_edge(5, 6);
+
+        graph.edge_disjoint_paths(1, 6);
+    }
+
+    #[test]
+    fn test_adjacency_list_graph_node_disjoint_paths() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+        graph.add_edge(2, 4);
+        graph.add_edge(3, 2);
+        graph.add_edge(3, 5);
+        graph.add_edge(3, 6);
+        graph.add_edge(4, 3);
+        graph.add_edge(4, 5);
+        graph.add_edge(5, 6);
+
+        let r: Vec<Vec<i32>> = graph.node_disjoint_paths(1, 6);
+        assert_eq!(r.len(), 1);
+        assert!(r.contains(&vec![1, 4, 5, 6]));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_adjacency_list_graph_node_disjoint_paths_panic() {
+        let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
+        graph.add_edge(1, 2);
+        graph.add_edge(1, 4);
+        graph.add_edge(2, 4);
+        graph.add_edge(3, 2);
+        graph.add_edge(3, 5);
+        graph.add_edge(3, 6);
+        graph.add_edge(4, 3);
+        graph.add_edge(4, 5);
+        graph.add_edge(5, 6);
+
+        graph.node_disjoint_paths(1, 6);
     }
 
     #[test]
