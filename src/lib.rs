@@ -11,4 +11,5 @@ pub mod heaps;
 pub mod trees;
 pub mod combinatorics;
 pub mod matrices;
+pub mod probability;
 pub mod random;
