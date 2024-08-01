@@ -1,4 +1,5 @@
 use crate::random;
+use crate::matrices;
 use std::collections::HashMap;
 
 pub struct DiscreteRandomVariable {
@@ -32,6 +33,45 @@ impl DiscreteRandomVariable {
     
         // Return last key if for-loop ended without returning
         *self.distribution.keys().last().unwrap()
+    }
+}
+
+pub struct MarkovChain {
+    matrix: matrices::Matrix<f64>,
+    current: usize,
+    size: usize,
+    rng: random::Xoshiro256,
+}
+impl MarkovChain {
+    pub fn new(size: usize, current: usize) -> Self {
+        Self { matrix: matrices::Matrix::new(size, size), current, size, rng: random::Xoshiro256::new() }
+    }
+    pub fn add(&mut self, from: usize, to: usize, probability: f64) {
+        self.matrix[to][from] = probability;
+    }
+    pub fn add_bidirectional(&mut self, from: usize, to: usize, probability: f64) {
+        self.matrix[to][from] = probability;
+        self.matrix[from][to] = probability;
+    }
+    pub fn steps(&mut self, n: usize) {
+        let p: matrices::Matrix<f64> = self.matrix.pow(n);
+        let mut vec: Vec<f64> = vec![0.0; self.size];
+        vec[self.current] = 1.0;        
+        let result_matrix: matrices::Matrix<f64> = p * matrices::Matrix::from_vector(&vec);
+
+        // Choose random value from result matrix
+        let rand_num: f64 = self.rng.rand_float();
+        let mut cumulative_prob: f64 = 0.0;
+        for i in 0..self.size {
+            let prob: f64 = result_matrix[i][0];
+            cumulative_prob += prob;
+            if cumulative_prob >= rand_num {
+                self.current = i;
+                return;
+            }
+        }
+        // Return last key if for-loop ended without returning     
+        self.current = self.size - 1;
     }
 }
 
@@ -83,5 +123,19 @@ mod tests {
 
         assert!(mean_absolute_percentage_error < 0.04, "MAPE (Mean Absolute Percentage Error): {} should be < 4%", mean_absolute_percentage_error);
 
+    }
+
+    #[test]
+    fn test_markov_chain() {
+        let mut chain: MarkovChain = MarkovChain::new(5, 0);
+        chain.add(0, 1, 1.0);
+        chain.add(1, 0, 0.5);
+        chain.add_bidirectional(1, 2, 0.5);
+        chain.add_bidirectional(2, 3, 0.5);
+        chain.add(3, 4, 0.5);
+        chain.add(4, 3, 1.0);
+
+        chain.steps(1);
+        assert_eq!(chain.current, 1);
     }
 }
