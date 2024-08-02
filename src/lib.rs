@@ -13,3 +13,4 @@ pub mod combinatorics;
 pub mod matrices;
 pub mod probability;
 pub mod random;
+pub mod games;
