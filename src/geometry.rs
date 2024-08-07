@@ -24,6 +24,13 @@ pub fn cos<T: Into<f64> + Copy>(x: T) -> f64 {
     result
 }
 
+/// Calculates e^x
+pub fn exp<T: From<f64> + Copy>(x: f64) -> T {
+    let x_f64: f64 = Into::<f64>::into(x);
+    let result_f64 = x_f64.exp();
+    T::from(result_f64)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -43,5 +50,15 @@ mod tests {
         assert!(numbers::approx_equal(cos(std::f64::consts::PI / 2.0), 0.0, 0.0000001));
         assert!(numbers::approx_equal(cos(std::f64::consts::PI / 4.0), 0.70710678119, 0.0000001));
         assert!(numbers::approx_equal(cos(std::f64::consts::PI * 2.0), 1.0, 0.0000001));
+    }
+
+    #[test]
+    fn test_exp() {
+        assert!(numbers::approx_equal(exp::<f64>(1.0), 2.71828182846, 0.000000000001));
+        assert!(numbers::approx_equal(exp::<f64>(2.0), 7.38905609893065, 0.000000000001));
+        assert!(numbers::approx_equal(exp::<f64>(2.5), 12.182493960703473, 0.000000000001));
+        assert!(numbers::approx_equal(exp::<f64>(5.0), 148.4131591025766, 0.000000000001));
+        assert!(numbers::approx_equal(exp::<f64>(-5.0), 0.006737946999085467, 0.000000000001));
+        assert!(numbers::approx_equal(exp::<f64>(0.0), 1.0, 0.000000000001));
     }
 }
