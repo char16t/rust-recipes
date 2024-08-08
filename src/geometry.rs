@@ -27,8 +27,46 @@ pub fn cos<T: Into<f64> + Copy>(x: T) -> f64 {
 /// Calculates e^x
 pub fn exp<T: From<f64> + Copy>(x: f64) -> T {
     let x_f64: f64 = Into::<f64>::into(x);
-    let result_f64 = x_f64.exp();
+    let result_f64: f64 = x_f64.exp();
     T::from(result_f64)
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Complex<T> {
+    real: T,
+    imaginary: T
+}
+impl<T> Complex<T>
+where 
+    f64: From<T>,
+    T: Copy + std::convert::From<f64> + std::ops::Mul<Output = T> + std::ops::Neg<Output = T>
+{
+    pub fn new(real: T, imaginary: T) -> Self {
+        Self { real, imaginary }
+    }
+    pub fn from_polar(r: T, theta: T) -> Self {
+        Self {
+            real: r * cos(theta).into(),
+            imaginary: r * sin(theta).into()
+        }
+    }
+    pub fn re(&self) -> T {
+        self.real
+    }
+    pub fn im(&self) -> T {
+        self.imaginary
+    }
+    /// Calculates e^(self)
+    pub fn exp(&self) -> Self {
+        let re: T = exp::<T>(self.real.into()) * (cos(self.imaginary).into());
+        let im: T = exp::<T>(self.real.into()) * (sin(self.imaginary).into());
+
+        Complex::new(re, im)
+    }
+    /// Complex conjugate
+    pub fn conj(&self) -> Complex<T> {
+        Self { real: self.real, imaginary: -self.imaginary } 
+    }
 }
 
 #[cfg(test)]
@@ -60,5 +98,38 @@ mod tests {
         assert!(numbers::approx_equal(exp::<f64>(5.0), 148.4131591025766, 0.000000000001));
         assert!(numbers::approx_equal(exp::<f64>(-5.0), 0.006737946999085467, 0.000000000001));
         assert!(numbers::approx_equal(exp::<f64>(0.0), 1.0, 0.000000000001));
+    }
+
+    #[test]
+    fn test_conj() {
+        let c: Complex<f64> = Complex::new(2.0, 4.0);
+        let conj: Complex<f64> = c.conj();
+        assert_eq!(conj.real, 2.0);
+        assert_eq!(conj.imaginary, -4.0);
+
+        let c: Complex<f64> = Complex::new(2.0, -10.0);
+        let conj: Complex<f64> = c.conj();
+        assert_eq!(conj.real, 2.0);
+        assert_eq!(conj.imaginary, 10.0);
+
+        let c: Complex<f64> = Complex::new(2.0, 0.0);
+        let conj: Complex<f64> = c.conj();
+        assert_eq!(conj.real, 2.0);
+        assert_eq!(conj.imaginary, 0.0);
+    }
+
+    #[test]
+    fn test_re_im() {
+        let c: Complex<f64> = Complex::new(42.0, -15.0);
+        assert_eq!(c.re(), 42.0);
+        assert_eq!(c.im(), -15.0);
+    }
+
+    #[test]
+    fn test_polar() {
+        let c: Complex<f64> = Complex::from_polar(10.0, std::f64::consts::PI / 2.0);
+        
+        assert!(numbers::approx_equal(c.real, 0.0, 0.0000001));
+        assert!(numbers::approx_equal(c.imaginary, 10.0, 0.0000001));
     }
 }
