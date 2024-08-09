@@ -68,6 +68,19 @@ where
         Self { real: self.real, imaginary: -self.imaginary } 
     }
 }
+impl<T> std::ops::Neg for Complex<T>
+where
+    T: std::ops::Neg<Output = T>
+{
+    type Output = Complex<T>;
+
+    fn neg(self) -> Complex<T> {
+        Complex {
+            real: -self.real,
+            imaginary: -self.imaginary,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -131,5 +144,13 @@ mod tests {
         
         assert!(numbers::approx_equal(c.real, 0.0, 0.0000001));
         assert!(numbers::approx_equal(c.imaginary, 10.0, 0.0000001));
+    }
+
+    #[test]
+    fn test_neg() {
+        let c: Complex<f64> = Complex::new(1.0, 3.0);
+        let n: Complex<f64> = -c;
+        assert_eq!(n.real, -1.0);
+        assert_eq!(n.imaginary, -3.0);
     }
 }
