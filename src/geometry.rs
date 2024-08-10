@@ -3,7 +3,7 @@ use crate::combinatorics;
 /// Approximates the sine of an angle using the Taylor series expansion
 pub fn sin<T: Into<f64> + Copy>(x: T) -> f64 {
     let x = x.into();
-    let mut result = 0.0;
+    let mut result: f64 = 0.0;
     for n in 0..16 {
         let sign: f64 = if n % 2 == 0 { 1.0 } else { -1.0 };
         let term = sign * x.powi(2 * n + 1) / combinatorics::factorial_i128((2 * n + 1).into()) as f64;
@@ -82,6 +82,30 @@ where
     }
 }
 
+impl<T> std::ops::Add for Complex<T>
+where
+    T: std::ops::Add<Output = T>
+{
+    type Output = Complex<T>;
+
+    fn add(self, other: Complex<T>) -> Complex<T> {
+        Complex {
+            real: self.real + other.real,
+            imaginary: self.imaginary + other.imaginary,
+        }
+    }
+}
+
+impl<T> std::ops::AddAssign for Complex<T>
+where
+    T: Copy + std::ops::Add<Output = T>
+{
+    fn add_assign(&mut self, other: Complex<T>) {
+        self.real = self.real + other.real;
+        self.imaginary = self.imaginary + other.imaginary;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -152,5 +176,23 @@ mod tests {
         let n: Complex<f64> = -c;
         assert_eq!(n.real, -1.0);
         assert_eq!(n.imaginary, -3.0);
+    }
+
+    #[test]
+    fn test_add() {
+        let a: Complex<f64> = Complex::new(1.0, 2.0);
+        let b: Complex<f64> = Complex::new(-3.0, 4.0);
+        let c: Complex<f64> = a + b;
+        assert_eq!(c.real, -2.0);
+        assert_eq!(c.imaginary, 6.0);
+    }
+
+    #[test]
+    fn test_add_assign() {
+        let mut a: Complex<f64> = Complex::new(1.0, 2.0);
+        let b: Complex<f64> = Complex::new(-3.0, 4.0);
+        a += b;
+        assert_eq!(a.real, -2.0);
+        assert_eq!(a.imaginary, 6.0);
     }
 }
