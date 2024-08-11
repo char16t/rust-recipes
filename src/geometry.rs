@@ -106,6 +106,30 @@ where
     }
 }
 
+impl<T> std::ops::Sub for Complex<T>
+where
+    T: std::ops::Sub<Output = T>
+{
+    type Output = Complex<T>;
+
+    fn sub(self, other: Complex<T>) -> Complex<T> {
+        Complex {
+            real: self.real - other.real,
+            imaginary: self.imaginary - other.imaginary,
+        }
+    }
+}
+
+impl<T> std::ops::SubAssign for Complex<T>
+where
+    T: Copy + std::ops::Sub<Output = T>
+{
+    fn sub_assign(&mut self, other: Complex<T>) {
+        self.real = self.real - other.real;
+        self.imaginary = self.imaginary - other.imaginary;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -194,5 +218,23 @@ mod tests {
         a += b;
         assert_eq!(a.real, -2.0);
         assert_eq!(a.imaginary, 6.0);
+    }
+
+    #[test]
+    fn test_sub() {
+        let a: Complex<f64> = Complex::new(1.0, 2.0);
+        let b: Complex<f64> = Complex::new(-3.0, 4.0);
+        let c: Complex<f64> = a - b;
+        assert_eq!(c.real, 4.0);
+        assert_eq!(c.imaginary, -2.0);
+    }
+
+    #[test]
+    fn test_sub_assign() {
+        let mut a: Complex<f64> = Complex::new(1.0, 2.0);
+        let b: Complex<f64> = Complex::new(-3.0, 4.0);
+        a -= b;
+        assert_eq!(a.real, 4.0);
+        assert_eq!(a.imaginary, -2.0);
     }
 }
