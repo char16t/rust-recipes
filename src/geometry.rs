@@ -130,6 +130,36 @@ where
     }
 }
 
+impl<T> std::ops::Mul for Complex<T>
+where 
+    T: Copy + std::ops::Mul<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
+{
+    type Output = Complex<T>;
+
+    fn mul(self, other: Complex<T>) -> Complex<T> {
+        let new_real: T = self.real * other.real - self.imaginary * other.imaginary;
+        let new_imaginary: T = self.real * other.imaginary + self.imaginary * other.real;
+
+        Complex {
+            real: new_real,
+            imaginary: new_imaginary,
+        }
+    }
+}
+
+impl<T> std::ops::MulAssign for Complex<T>
+where
+    T: Copy + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + std::ops::Mul<Output = T>
+{
+    fn mul_assign(&mut self, other: Self) {
+        let new_real: T = self.real * other.real - self.imaginary * other.imaginary;
+        let new_imaginary: T = self.real * other.imaginary + self.imaginary * other.real;
+        
+        self.real = new_real;
+        self.imaginary = new_imaginary;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -236,5 +266,23 @@ mod tests {
         a -= b;
         assert_eq!(a.real, 4.0);
         assert_eq!(a.imaginary, -2.0);
+    }
+
+    #[test]
+    fn test_mul() {
+        let a: Complex<f64> = Complex::new(3.0, 4.0);
+        let b: Complex<f64> = Complex::new(1.0, 2.0);
+        let c: Complex<f64> = a * b;
+        assert_eq!(c.real, -5.0);
+        assert_eq!(c.imaginary, 10.0);
+    }
+
+    #[test]
+    fn test_mul_assign() {
+        let mut a: Complex<f64> = Complex::new(3.0, 4.0);
+        let b: Complex<f64> = Complex::new(1.0, 2.0);
+        a *= b;
+        assert_eq!(a.real, -5.0);
+        assert_eq!(a.imaginary, 10.0);
     }
 }
