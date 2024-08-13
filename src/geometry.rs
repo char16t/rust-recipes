@@ -160,6 +160,38 @@ where
     }
 }
 
+impl<T> std::ops::Div for Complex<T>
+where 
+    T: Copy + std::ops::Mul<Output = T> + std::ops::Div<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
+{
+    type Output = Complex<T>;
+
+    fn div(self, other: Complex<T>) -> Complex<T> {
+        let denominator: T = other.real * other.real + other.imaginary * other.imaginary;
+        let new_real: T = (self.real * other.real + self.imaginary * other.imaginary) / denominator;
+        let new_imaginary: T = (self.imaginary * other.real - self.real * other.imaginary) / denominator;
+
+        Complex {
+            real: new_real,
+            imaginary: new_imaginary,
+        }
+    }
+}
+
+impl<T> std::ops::DivAssign for Complex<T>
+where
+    T: Copy + std::ops::Mul<Output = T> + std::ops::Div<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
+{   
+    fn div_assign(&mut self, other: Complex<T>) {
+        let denominator: T = other.real * other.real + other.imaginary * other.imaginary;
+        let new_real: T = (self.real * other.real + self.imaginary * other.imaginary) / denominator;
+        let new_imaginary: T = (self.imaginary * other.real - self.real * other.imaginary) / denominator;
+
+        self.real = new_real;
+        self.imaginary = new_imaginary;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -284,5 +316,23 @@ mod tests {
         a *= b;
         assert_eq!(a.real, -5.0);
         assert_eq!(a.imaginary, 10.0);
+    }
+
+    #[test]
+    fn test_div() {
+        let a: Complex<f64> = Complex::new(3.0, 4.0);
+        let b: Complex<f64> = Complex::new(1.0, 2.0);
+        let c: Complex<f64> = a / b;
+        assert_eq!(c.real, 2.2);
+        assert_eq!(c.imaginary, -0.4);
+    }
+
+    #[test]
+    fn test_div_assign() {
+        let mut a: Complex<f64> = Complex::new(3.0, 4.0);
+        let b: Complex<f64> = Complex::new(1.0, 2.0);
+        a /= b;
+        assert_eq!(a.real, 2.2);
+        assert_eq!(a.imaginary, -0.4);
     }
 }
