@@ -44,6 +44,29 @@ pub fn fast_fourier_transform(a: Vec<Complex<f64>>, d: i32) -> Vec<Complex<f64>>
     r
 }
 
+pub fn multiply_polynomials(a: &[i64], b: &[i64]) -> Vec<i64> {
+    let mut aa: Vec<Complex<f64>> = a.iter().map(|&n| { Complex::new(n as f64, 0.0) }).collect();
+    let mut bb: Vec<Complex<f64>> = b.iter().map(|&n| { Complex::new(n as f64, 0.0) }).collect();
+    let n: usize =  2usize.pow(((aa.len() + bb.len() - 1) as f64).log2().ceil() as u32);
+
+    let zeros_to_append_a: usize = n - aa.len();
+    aa.extend(std::iter::repeat(Complex::new(0.0, 0.0)).take(zeros_to_append_a));
+
+    let zeros_to_append_b: usize = n - bb.len();
+    bb.extend(std::iter::repeat(Complex::new(0.0, 0.0)).take(zeros_to_append_b));
+
+    let ta: Vec<Complex<f64>> = fast_fourier_transform(aa, 1);
+    let tb: Vec<Complex<f64>> = fast_fourier_transform(bb, 1);
+
+    let mut tr: Vec<Complex<f64>> = vec![Complex::new(0.0, 0.0); n];
+    for i in 0..n {
+        tr[i] = ta[i] * tb[i];
+    }
+    let p: Vec<Complex<f64>> = fast_fourier_transform(tr,-1);
+    let r: Vec<i64> = p.iter().take(a.len() + b.len() - 1).map(|&c| { (c.re().signum() * (c.re().abs() + 0.5)) as i64}).collect();
+    r
+}
+
 #[cfg(test)]
 mod tests {
     use crate::numbers;
@@ -103,5 +126,21 @@ mod tests {
 
         let r: Vec<i64> = p.iter().map(|&c| { (c.re() + 0.5) as i64}).collect();
         assert_eq!(r, vec![3, 17, 10, 0])
+    }
+
+    #[test]
+    fn test_multiply_polynomials() {
+        // f(x) = 2x + 3
+        // g(x) = 5x + 1
+        let r: Vec<i64> = multiply_polynomials(&[3, 2], &[1, 5]);
+        // f(x) * g(x) = 10x^2 + 17x + 3
+        assert_eq!(r, vec![3, 17, 10]);
+
+
+        // f(x) = 4x^2 + 3x - 1
+        // g(x) = 5x - 1
+        let r: Vec<i64> = multiply_polynomials(&[-1, 3, 4], &[-1, 5]);
+        // f(x) * g(x) = 20x^3 + 11x^2 - 8x + 1 
+        assert_eq!(r, vec![1, -8, 11, 20]);
     }
 }
