@@ -67,6 +67,23 @@ pub fn multiply_polynomials(a: &[i64], b: &[i64]) -> Vec<i64> {
     r
 }
 
+pub fn signal_handle(signal: &[i64], mask: &[i64]) -> Vec<i64> {
+    let mut result: Vec<i64> = vec![0; signal.len() + mask.len() - 1];
+    let reversed_mask: Vec<i64> = mask.iter().rev().cloned().collect();
+    let size: usize = mask.len();
+
+    let mut i = 0;
+    while i < signal.len() {
+        let window: &[i64] = &signal[i..signal.len().min(i + size)];
+        let product_coeffs: Vec<i64> = multiply_polynomials(window, &reversed_mask);
+        for j in 0..product_coeffs.len() {
+            result[i + j] += product_coeffs[j];
+        }
+        i += size;
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use crate::numbers;
@@ -143,4 +160,29 @@ mod tests {
         // f(x) * g(x) = 20x^3 + 11x^2 - 8x + 1 
         assert_eq!(r, vec![1, -8, 11, 20]);
     }
+
+
+    #[test]
+    fn test_signal_handle() {
+        let a: Vec<i64> = vec![5, 1, 3, 4, 2, 1, 2];
+        let b: Vec<i64> = vec![1, 3, 2];
+        let b_reversed: Vec<_> = b.iter().rev().cloned().collect();
+        let mut expected: Vec<i64> = vec![0; a.len() + b.len() - 1];
+        for i in 0..a.len() {
+            for j in 0..b_reversed.len() {
+                expected[i + j] += a[i] * b_reversed[j];
+            }
+        }
+        let actual: Vec<i64> = signal_handle(&[5, 1, 3, 4, 2, 1, 2], &[1, 3, 2]);
+        assert_eq!(expected, actual);
+
+
+        // Test very short masks
+        let actual: Vec<i64> = signal_handle(&[5, 1, 3, 4, 2, 1, 2], &[2]);
+        assert_eq!(actual, vec![10, 2, 6, 8, 4, 2, 4]);
+
+        let actual: Vec<i64> = signal_handle(&[5, 1, 3, 4, 2, 1, 2], &[2, 4]);
+        assert_eq!(actual, vec![20, 14, 14, 22, 16, 8, 10, 4]);
+    }
+
 }
