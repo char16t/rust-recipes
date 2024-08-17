@@ -192,6 +192,24 @@ where
     }
 }
 
+impl<T> std::fmt::Display for Complex<T>
+where 
+    T: std::fmt::Display
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{} + {}i", self.real, self.imaginary)
+    }
+}
+
+impl<T> std::fmt::Debug for Complex<T>
+where 
+    T: std::fmt::Debug
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Complex {{ real: {:?}, imaginary: {:?} }}", self.real, self.imaginary)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -334,5 +352,17 @@ mod tests {
         a /= b;
         assert_eq!(a.real, 2.2);
         assert_eq!(a.imaginary, -0.4);
+    }
+
+    #[test]
+    fn test_display() {
+        let complex_number: Complex<f64> = Complex::new(3.15, 4.0);
+        assert_eq!(format!("{}", complex_number), "3.15 + 4i");
+    }
+
+    #[test]
+    fn test_debug() {
+        let complex_number: Complex<f64> = Complex::new(1.5f64, 2.5f64);
+        assert_eq!(format!("{:?}", complex_number), "Complex { real: 1.5, imaginary: 2.5 }");
     }
 }
