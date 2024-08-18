@@ -210,6 +210,12 @@ where
     }
 }
 
+pub fn cross_product(a: (f64, f64), b: (f64, f64)) -> f64 {
+    let c1: Complex<f64> = Complex::new(a.0, -a.1);
+    let c2: Complex<f64> = Complex::new(b.0, b.1);
+    (c1 * c2).imaginary
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -364,5 +370,11 @@ mod tests {
     fn test_debug() {
         let complex_number: Complex<f64> = Complex::new(1.5f64, 2.5f64);
         assert_eq!(format!("{:?}", complex_number), "Complex { real: 1.5, imaginary: 2.5 }");
+    }
+
+    #[test]
+    fn test_cross_product() {
+        let actual: f64 = cross_product((4.0, 2.0), (1.0, 2.0));
+        assert_eq!(actual, 6.0);
     }
 }
