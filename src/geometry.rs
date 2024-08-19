@@ -1,4 +1,4 @@
-use crate::combinatorics;
+use crate::{combinatorics, numbers::approx_equal};
 
 /// Approximates the sine of an angle using the Taylor series expansion
 pub fn sin<T: Into<f64> + Copy>(x: T) -> f64 {
@@ -216,6 +216,21 @@ pub fn cross_product(a: (f64, f64), b: (f64, f64)) -> f64 {
     (c1 * c2).imaginary
 }
 
+/// Point_position_relative_line
+/// The line passes through the points s1 and s2. We look from point s1 in the direction of s2.
+/// Returns 1 if point P left, and -1 if point P right
+pub fn point_position_relative_line(s1: (f64, f64), s2: (f64, f64), p: (f64, f64)) -> f64 {
+    let cs1: Complex<f64> = Complex::new(s1.0, s1.0);
+    let cs2: Complex<f64> = Complex::new(s2.0, s2.1);
+    let cp: Complex<f64> = Complex::new(p.0, p.1);
+
+    let a: Complex<f64> = cp - cs1;
+    let b: Complex<f64> = cp - cs2;
+
+    let r: f64 = cross_product((a.real, a.imaginary), (b.real, b.imaginary));
+    if approx_equal(r, 0.0, 0.00001) { 0.0 } else { r.signum() } 
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -376,5 +391,17 @@ mod tests {
     fn test_cross_product() {
         let actual: f64 = cross_product((4.0, 2.0), (1.0, 2.0));
         assert_eq!(actual, 6.0);
+    }
+
+    #[test]
+    fn test_point_position_relative_line() {
+        let actual: f64 = point_position_relative_line((2.0, 2.0), (5.0, 5.0), (1.0, 3.0));
+        assert_eq!(actual, 1.0);
+
+        let actual: f64 = point_position_relative_line((5.0, 5.0), (2.0, 2.0), (1.0, 3.0));
+        assert_eq!(actual, -1.0);
+
+        let actual: f64 = point_position_relative_line((5.0, 5.0), (2.0, 2.0), (3.0, 3.0));
+        assert_eq!(actual, 0.0);
     }
 }
