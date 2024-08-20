@@ -1,4 +1,4 @@
-use crate::{combinatorics, numbers::approx_equal};
+use crate::{combinatorics, numbers::{approx_equal, pow}};
 
 /// Approximates the sine of an angle using the Taylor series expansion
 pub fn sin<T: Into<f64> + Copy>(x: T) -> f64 {
