@@ -31,7 +31,7 @@ pub fn exp<T: From<f64> + Copy>(x: f64) -> T {
     T::from(result_f64)
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Complex<T> {
     real: T,
     imaginary: T
@@ -231,6 +231,20 @@ pub fn point_position_relative_line(s1: (f64, f64), s2: (f64, f64), p: (f64, f64
     if approx_equal(r, 0.0, 0.00001) { 0.0 } else { r.signum() } 
 }
 
+pub fn distance_from_point_to_line(s1: (f64, f64), s2: (f64, f64), p: (f64, f64)) -> f64 {
+    let cs1: Complex<f64> = Complex::new(s1.0, s1.1);
+    let cs2: Complex<f64> = Complex::new(s2.0, s2.1);
+    let cp: Complex<f64> = Complex::new(p.0, p.1);
+
+    let a: Complex<f64> = cs1 - cp;
+    let b: Complex<f64> = cs2 - cp;
+    let product: f64 = cross_product((a.real, a.imaginary), (b.real, b.imaginary));
+
+    let dist_s1_s2: f64 = f64::sqrt(pow(s2.0-s1.0, 2) + pow(s2.1-s1.1, 2));
+
+    (product / dist_s1_s2).abs() 
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -403,5 +417,14 @@ mod tests {
 
         let actual: f64 = point_position_relative_line((5.0, 5.0), (2.0, 2.0), (3.0, 3.0));
         assert_eq!(actual, 0.0);
+    }
+
+    #[test]
+    fn test_distance_from_point_to_line() {
+        let distance: f64 = distance_from_point_to_line((2.0, -1.0), (-2.0, 1.0), (2.0, 2.0));
+        assert!(approx_equal(distance, 2.6832815729997477, 0.000001));
+
+        let distance: f64 = distance_from_point_to_line((2.0, -1.0), (-2.0, 1.0), (10.0, 20.0));
+        assert!(approx_equal(distance, 22.360679774997898, 0.000001));
     }
 }
