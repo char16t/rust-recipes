@@ -16,3 +16,4 @@ pub mod random;
 pub mod games;
 pub mod fourier;
 pub mod geometry;
+pub mod strings;
