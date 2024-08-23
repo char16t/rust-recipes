@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{cmp, collections::{HashMap, VecDeque}};
 
-use crate::{combinatorics, graphs::AdjacencyListGraph};
+use crate::{combinatorics, coordinates, graphs::AdjacencyListGraph};
 
 pub fn de_bruijn_sequence(alphabet: &[char], length: usize) -> String {
     let vertices: Vec<Vec<char>> = combinatorics::placements_with_repetitions(alphabet, length - 1);
@@ -64,6 +64,50 @@ impl Trie {
     }
 }
 
+pub fn longest_common_subsequence(a: &str, b: &str) -> String {
+    let a_chars: &[u8] = a.as_bytes();
+    let b_chars: &[u8] = b.as_bytes();
+
+    let total_rows: usize = a_chars.len() + 1;
+    let total_columns: usize = b_chars.len() + 1;
+    let xy = coordinates::create_coordinate_function_2d!(total_rows, total_columns);
+
+
+
+    let mut table: Vec<usize> = vec![0; total_rows * total_columns];
+    for row in 1..total_rows {
+        for col in 1..total_columns {
+            if a_chars[row - 1] == b_chars[col - 1] {
+                table[xy(row, col)] = table[xy(row - 1, col - 1)] + 1;
+            } else {
+                table[xy(row, col)] = cmp::max(table[xy(row, col - 1)], table[xy(row - 1, col)]);
+            }
+        }
+    }
+
+    let mut common_seq: VecDeque<u8> = VecDeque::new();
+    let mut x: usize = total_rows - 1;
+    let mut y: usize = total_columns - 1;
+
+    while x != 0 && y != 0 {
+        // Check element above is equal
+        if table[xy(x, y)] == table[xy(x - 1, y)] {
+            x = x - 1;
+        }
+        // check element to the left is equal
+        else if table[xy(x, y)] == table[xy(x, y - 1)] {
+            y = y - 1;
+        }
+        else {
+            let char: u8 = a_chars[x - 1];
+            common_seq.push_front(char);
+            x = x - 1;
+            y = y - 1;
+        }
+    }
+    return String::from_utf8(common_seq.into()).unwrap();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -115,5 +159,17 @@ mod tests {
         assert!(trie.contains(w_emoji));
         assert!(!trie.contains("🙂🙃"));
         assert!(!trie.contains("🙂🙃😌🥲😁😡🤢🌚"));
+    }
+
+    #[test]
+    fn test_longest_common_subsequence() {
+        let r: String = longest_common_subsequence("abcdef", "fedcba");
+        assert_eq!("a", r);
+
+        let r: String = longest_common_subsequence("fedcba", "abcdef");
+        assert_eq!("f", r);
+
+        let r: String = longest_common_subsequence("tour", "opera");
+        assert_eq!("or", r);
     }
 }
