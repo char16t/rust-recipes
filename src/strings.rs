@@ -108,6 +108,34 @@ pub fn longest_common_subsequence(a: &str, b: &str) -> String {
     return String::from_utf8(common_seq.into()).unwrap();
 }
 
+pub fn levenshtein_distance(a: &str, b: &str) -> usize {
+    let (aa, bb): (&str, &str) = if a.len() > b.len() { (a, b) } else { (b, a) };
+    let w1: Vec<char> = aa.chars().collect::<Vec<char>>();
+    let w2: Vec<char> = bb.chars().collect::<Vec<char>>();
+
+    let word1_length: usize = w1.len() + 1;
+    let word2_length: usize = w2.len() + 1;
+
+    let mut matrix: Vec<usize> = vec![0; word1_length * word2_length];
+    let xy = coordinates::create_coordinate_function_2d!(word2_length, word1_length);
+
+    for i in 1..word1_length { matrix[xy(0, i)] = i; }
+    for j in 1..word2_length { matrix[xy(j, 0)] = j; }
+
+    for j in 1..word2_length {
+        for i in 1..word1_length {
+            let edit_j_i: usize = if w1[i-1] == w2[j-1] {
+                matrix[xy(j-1, i-1)]
+            } else {
+                1 + std::cmp::min(std::cmp::min(matrix[xy(j, i-1)], matrix[xy(j-1, i)]), matrix[xy(j-1, i-1)])
+            };
+            matrix[xy(j, i)] = edit_j_i;
+        }
+    }
+
+    matrix[xy(word2_length-1, word1_length-1)]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -171,5 +199,15 @@ mod tests {
 
         let r: String = longest_common_subsequence("tour", "opera");
         assert_eq!("or", r);
+    }
+
+    #[test]
+    fn test_levenshtein_distance() {
+        assert_eq!(levenshtein_distance("ABC", "ABCA"), 1);
+        assert_eq!(levenshtein_distance("ABC", "AC"), 1);
+        assert_eq!(levenshtein_distance("ABC", "ADC"), 1);
+
+        assert_eq!(levenshtein_distance("kitten", "sitting"), 3);
+        assert_eq!(levenshtein_distance("saturday", "sunday"), 3);
     }
 }
