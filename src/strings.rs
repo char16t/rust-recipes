@@ -136,6 +136,50 @@ pub fn levenshtein_distance(a: &str, b: &str) -> usize {
     matrix[xy(word2_length-1, word1_length-1)]
 }
 
+#[allow(dead_code)]
+pub struct PolynomialHash {
+    h: Vec<usize>, // array of prefix hash-codes
+    p: Vec<usize>, // array of A^k mod B
+    a: usize,      // const A
+    b: usize,      // const B
+}
+
+impl PolynomialHash {
+    pub fn new(string: &str, a: usize, b: usize) -> Self {
+        let bytes: &[u8] = string.as_bytes();
+        let n: usize = bytes.len();
+        
+        let mut h: Vec<usize> = vec![0; n];
+        let mut p: Vec<usize> = vec![0; n];
+        
+        // p[0] = A^0 mod B
+        p[0] = 1;
+
+        // h[0] = s[0]
+        h[0] = bytes[0] as usize;
+
+        for i in 1..n {
+            // h[k] = (h[k - 1] * A + s[k]) mod B
+            h[i] = (h[i - 1] * a + bytes[i] as usize) % b;
+
+            // p[k] = (p[k - 1] * A) mod B
+            p[i] = (p[i - 1] * a) % b;
+        }
+
+        PolynomialHash { h, p, a, b }
+    }
+
+    pub fn hash_substring(&self, a: usize, b: usize) -> usize {
+        if a == 0 {
+            return self.h[b];
+        }
+        
+        let hash_value: usize = (self.h[b] + self.b - (self.h[a - 1] * self.p[b - a + 1] % self.b)) % self.b;
+
+        hash_value
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -209,5 +253,25 @@ mod tests {
 
         assert_eq!(levenshtein_distance("kitten", "sitting"), 3);
         assert_eq!(levenshtein_distance("saturday", "sunday"), 3);
+    }
+
+    #[test]
+    fn test_polynomial_hash() {            
+        let string: &str = "ABACB";
+        let a: usize = 3;
+        let b: usize = 97;
+
+        let ph: PolynomialHash = PolynomialHash::new(string, a, b);
+
+        let hash_value: usize = ph.hash_substring(0, 4);
+        assert_eq!(hash_value, 42);
+
+        // Hash for substring "BAC"
+        let hash_value_sub: usize = ph.hash_substring(1, 3);
+        assert_eq!(hash_value_sub, 80);
+
+        // Hash for string "BAC"
+        let hash_value: usize = PolynomialHash::new("BAC", a, b).hash_substring(0, 2);
+        assert_eq!(hash_value, 80);
     }
 }
