@@ -180,6 +180,24 @@ impl PolynomialHash {
     }
 }
 
+pub fn pattern_matching(pattern: &str, string: &str) -> Vec<usize> {
+    let mut positions: Vec<usize> = Vec::new();
+
+    let pattern_ph: PolynomialHash = PolynomialHash::new(pattern, 3, 97);
+    let string_ph: PolynomialHash = PolynomialHash::new(string, 3, 97);
+
+    let pattern_length: usize = pattern.len();
+    let pattern_hash: usize = pattern_ph.hash_substring(0, pattern_length-1);
+
+    for i in 0..string.len()-pattern_length {
+        if string_ph.hash_substring(i, i + pattern_length - 1) == pattern_hash {
+            positions.push(i);
+        }
+    }
+
+    positions
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -273,5 +291,11 @@ mod tests {
         // Hash for string "BAC"
         let hash_value: usize = PolynomialHash::new("BAC", a, b).hash_substring(0, 2);
         assert_eq!(hash_value, 80);
+    }
+
+    #[test]
+    fn test_pattern_matching() {
+        let positions: Vec<usize> = pattern_matching("ABC", "ABCABABCA");
+        assert_eq!(positions, vec![0, 5]);
     }
 }
