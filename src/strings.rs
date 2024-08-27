@@ -1,4 +1,4 @@
-use std::{cmp, collections::{HashMap, VecDeque}};
+use std::{cmp, collections::{HashMap, HashSet, VecDeque}};
 
 use crate::{combinatorics, coordinates, graphs::AdjacencyListGraph};
 
@@ -198,6 +198,17 @@ pub fn pattern_matching(pattern: &str, string: &str) -> Vec<usize> {
     positions
 }
 
+pub fn count_different_substrings(string: &str, length: usize) -> usize {
+    let mut substring_hashes: HashSet<usize> = HashSet::new();
+
+    let string_ph: PolynomialHash = PolynomialHash::new(string, 3, 97);
+    for i in 0..string.len()-length {
+        substring_hashes.insert(string_ph.hash_substring(i, i + length - 1));
+    }
+
+    return substring_hashes.len();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -297,5 +308,11 @@ mod tests {
     fn test_pattern_matching() {
         let positions: Vec<usize> = pattern_matching("ABC", "ABCABABCA");
         assert_eq!(positions, vec![0, 5]);
+    }
+
+    #[test]
+    fn test_count_different_substrings() {
+        let c: usize = count_different_substrings("ABABAB", 3);
+        assert_eq!(c, 2); // ABA, BAB
     }
 }
