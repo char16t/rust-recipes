@@ -17,3 +17,4 @@ pub mod games;
 pub mod fourier;
 pub mod geometry;
 pub mod strings;
+pub mod concurrency;
