@@ -136,6 +136,18 @@ pub fn levenshtein_distance(a: &str, b: &str) -> usize {
     matrix[xy(word2_length-1, word1_length-1)]
 }
 
+pub fn fuzzy_search_levenshtein_distance<'a>(query: &'a str, list: &[&'a str], max_distance: usize) -> Vec<(&'a str, usize)> {
+    let mut result: Vec<(&str, usize)> = Vec::new();
+    for &item in list.iter() {
+        let distance: usize = levenshtein_distance(query, item);
+        if distance <= max_distance {
+            result.push((item, distance));
+        }
+    }
+    result.sort_by_key(|k| k.1);
+    result
+}
+
 #[allow(dead_code)]
 pub struct PolynomialHash {
     h: Vec<usize>, // array of prefix hash-codes
@@ -282,6 +294,16 @@ mod tests {
 
         assert_eq!(levenshtein_distance("kitten", "sitting"), 3);
         assert_eq!(levenshtein_distance("saturday", "sunday"), 3);
+    }
+
+    #[test]
+    fn test_fuzzy_search_levenshtein_distance() {
+        let query: &str = "repor.doc";
+        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let actual: Vec<(&str, usize)> = fuzzy_search_levenshtein_distance(query, &list, 3);
+
+        let expected: Vec<(&str, usize)> = vec![("report.docx", 2), ("repord2.docx", 3)];
+        assert_eq!(actual, expected);
     }
 
     #[test]
