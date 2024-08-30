@@ -148,6 +148,38 @@ pub fn fuzzy_search_levenshtein_distance<'a>(query: &'a str, list: &[&'a str], m
     result
 }
 
+pub fn fuzzy_search_levenshtein_distance_with_synonyms<'a>(
+    query: &'a str, 
+    list: &[&'a str], 
+    syn: &HashMap<&'a str, Vec<String>>, 
+    max_distance: usize) -> Vec<(&'a str, usize)> 
+{
+    let mut result: Vec<(&str, usize)> = Vec::new();
+    for &item in list.iter() {
+        
+        let copy: Vec<String> = vec![String::from(item)];
+        let synonyms: &Vec<String> = syn.get(item).unwrap_or(&copy);
+
+        let mut min_distance: Option<usize> = None;
+        for synonym in synonyms {
+            let distance: usize = levenshtein_distance(query, synonym.as_str());
+            if let Some(min_dist) = min_distance {
+                if distance < min_dist {
+                    min_distance = Some(distance);
+                }
+            } else {
+                min_distance = Some(distance);
+            }
+        }
+        let dist: usize = min_distance.unwrap();
+        if dist <= max_distance {
+            result.push((item, dist));
+        }
+    }
+    result.sort_by_key(|k| k.1);
+    result
+}
+
 #[allow(dead_code)]
 pub struct PolynomialHash {
     h: Vec<usize>, // array of prefix hash-codes
@@ -303,6 +335,61 @@ mod tests {
         let actual: Vec<(&str, usize)> = fuzzy_search_levenshtein_distance(query, &list, 3);
 
         let expected: Vec<(&str, usize)> = vec![("report.docx", 2), ("repord2.docx", 3)];
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_fuzzy_search_levenshtein_distance_with_synonyms() {
+        
+        let mut russian: HashMap<char, char> = HashMap::new();
+        russian.insert('q', 'й');
+        russian.insert('w', 'ц');
+        russian.insert('e', 'у' );
+        russian.insert('r', 'к' );
+        russian.insert('t', 'е');
+        russian.insert('y', 'н');
+        russian.insert('u', 'г' );
+        russian.insert('i', 'ш');
+        russian.insert('o', 'щ');
+        russian.insert('p', 'з');
+        russian.insert('a', 'ф');
+        russian.insert('s', 'ы');
+        russian.insert('d', 'в');
+        russian.insert('f', 'а');
+        russian.insert('g', 'п');
+        russian.insert('h', 'р');
+        russian.insert('j', 'о' );
+        russian.insert('k', 'л');
+        russian.insert('l', 'д' );
+        russian.insert('z', 'я');
+        russian.insert('x', 'ч');
+        russian.insert('с', 'c');
+        russian.insert('v', 'м');
+        russian.insert('b', 'и');
+        russian.insert('n', 'т');
+        russian.insert('m', 'ь');
+  
+        let query: &str = "кузщк"; // repor
+        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let mut synonyms: HashMap<&str, Vec<String>> = HashMap::new();
+        for &item in list.iter() {
+            let vector: &mut Vec<String> = synonyms.entry(item).or_insert(Vec::new());
+            vector.push(String::from(item));
+
+            let mut rus: Vec<char> = Vec::new();
+            for letter in item.to_lowercase().chars() {
+                if let Some(r) = russian.get(&letter) {
+                    rus.push(*r);
+                } else {
+                    rus.push(letter);
+                }
+            }
+            let rus_word: String = rus.iter().collect();
+            vector.push(rus_word);
+        }
+
+        let actual: Vec<(&str, usize)> = fuzzy_search_levenshtein_distance_with_synonyms(query, &list, &synonyms, 7);
+        let expected: Vec<(&str, usize)> = vec![("report.docx", 6), ("repord2.docx", 7)];
         assert_eq!(actual, expected);
     }
 
