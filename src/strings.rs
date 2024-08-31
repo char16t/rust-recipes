@@ -180,6 +180,65 @@ pub fn fuzzy_search_levenshtein_distance_with_synonyms<'a>(
     result
 }
 
+pub fn jaro_similarity(s1: &str, s2: &str) -> f64 {
+    let len1: usize = s1.len();
+    let len2: usize = s2.len();
+
+    if len1 == 0 && len2 == 0 {
+        return 1.0;
+    } else if len1 == 0 || len2 == 0 {
+        return 0.0;
+    }
+    if len1 == 1 && len2 == 1 {
+        return if s1 == s2 { 1.0 } else { 0.0 };
+    }
+
+    let match_distance: usize = (len1.max(len2) / 2) as usize - 1;
+    let mut matches: i32 = 0;
+    let mut s1_matches: Vec<bool> = vec![false; len1];
+    let mut s2_matches: Vec<bool> = vec![false; len2];
+
+    for i in 0..len1 {
+        let start: usize = (i as isize - match_distance as isize).max(0) as usize;
+        let end: usize = (i + match_distance as usize + 1).min(len2);
+        for j in start..end {
+            if s1.chars().nth(i) == s2.chars().nth(j) && !s2_matches[j] {
+                s1_matches[i] = true;
+                s2_matches[j] = true;
+                matches += 1;
+                break;
+            }
+        }
+    }
+
+    if matches == 0 {
+        return 0.0;
+    }
+
+    // Count transpositions
+    let mut t: usize = 0;
+    let mut s2_index: usize = 0;
+    for i in 0..len1 {
+        if s1_matches[i] {
+            while !s2_matches[s2_index] {
+                s2_index += 1;
+            }
+            if s1.chars().nth(i) != s2.chars().nth(s2_index) {
+                t += 1;
+            }
+            s2_index += 1;
+        }
+    }
+    let t: usize = t / 2;
+
+
+    let jaro_similarity: f64 = (matches as f64 / len1 as f64
+        + matches as f64 / len2 as f64
+        + (matches as f64 - t as f64) / matches as f64) / 3.0;
+
+    jaro_similarity
+}
+
 #[allow(dead_code)]
 pub struct PolynomialHash {
     h: Vec<usize>, // array of prefix hash-codes
@@ -255,6 +314,8 @@ pub fn count_different_substrings(string: &str, length: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use crate::numbers::approx_equal;
+
     use super::*;
 
     #[test]
@@ -344,11 +405,11 @@ mod tests {
         let mut russian: HashMap<char, char> = HashMap::new();
         russian.insert('q', 'й');
         russian.insert('w', 'ц');
-        russian.insert('e', 'у' );
-        russian.insert('r', 'к' );
+        russian.insert('e', 'у');
+        russian.insert('r', 'к');
         russian.insert('t', 'е');
         russian.insert('y', 'н');
-        russian.insert('u', 'г' );
+        russian.insert('u', 'г');
         russian.insert('i', 'ш');
         russian.insert('o', 'щ');
         russian.insert('p', 'з');
@@ -358,9 +419,9 @@ mod tests {
         russian.insert('f', 'а');
         russian.insert('g', 'п');
         russian.insert('h', 'р');
-        russian.insert('j', 'о' );
+        russian.insert('j', 'о');
         russian.insert('k', 'л');
-        russian.insert('l', 'д' );
+        russian.insert('l', 'д');
         russian.insert('z', 'я');
         russian.insert('x', 'ч');
         russian.insert('с', 'c');
@@ -391,6 +452,22 @@ mod tests {
         let actual: Vec<(&str, usize)> = fuzzy_search_levenshtein_distance_with_synonyms(query, &list, &synonyms, 7);
         let expected: Vec<(&str, usize)> = vec![("report.docx", 6), ("repord2.docx", 7)];
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_jaro_similarity() {
+        let epsilon: f64 = 0.00000001;
+        assert_eq!(jaro_similarity("", ""), 1.0);
+        assert_eq!(jaro_similarity("A", "B"), 0.0);
+        assert_eq!(jaro_similarity("A", ""), 0.0);
+        assert_eq!(jaro_similarity("", "B"), 0.0);
+        assert_eq!(jaro_similarity("B", "B"), 1.0);
+        assert_eq!(jaro_similarity("ABC", "ABC"), 1.0);
+        assert!(approx_equal(jaro_similarity("ABC", "ABCA"), 0.9166666666666666, epsilon));
+        assert!(approx_equal(jaro_similarity("ABC", "AC"), 0.611111111111111, epsilon));
+        assert!(approx_equal(jaro_similarity("ABC", "ADC"), 0.7777777777777777, epsilon));
+        assert!(approx_equal(jaro_similarity("kitten", "sitting"), 0.746031746031746, epsilon));
+        assert!(approx_equal(jaro_similarity("saturday", "sunday"), 0.7527777777777779, epsilon));
     }
 
     #[test]
