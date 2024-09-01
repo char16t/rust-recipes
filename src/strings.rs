@@ -239,6 +239,14 @@ pub fn jaro_similarity(s1: &str, s2: &str) -> f64 {
     jaro_similarity
 }
 
+pub fn jaro_winkler_similarity(s1: &str, s2: &str) -> f64 {
+    let jaro_similarity: f64 = jaro_similarity(s1, s2);
+    let prefix_length: usize = s1.chars().zip(s2.chars()).take_while(|(a, b)| a == b).count().min(4);
+    let p: f64 = 0.1; // scaling factor
+
+    jaro_similarity + (prefix_length as f64 * p * (1.0 - jaro_similarity))
+}
+
 #[allow(dead_code)]
 pub struct PolynomialHash {
     h: Vec<usize>, // array of prefix hash-codes
@@ -468,6 +476,16 @@ mod tests {
         assert!(approx_equal(jaro_similarity("ABC", "ADC"), 0.7777777777777777, epsilon));
         assert!(approx_equal(jaro_similarity("kitten", "sitting"), 0.746031746031746, epsilon));
         assert!(approx_equal(jaro_similarity("saturday", "sunday"), 0.7527777777777779, epsilon));
+    }
+
+    #[test]
+    fn test_jaro_winkler_similarity() {
+        let epsilon: f64 = 0.00000001;
+        assert!(approx_equal(jaro_winkler_similarity("ABC", "ABCA"), 0.9416666666666667, epsilon));
+        assert!(approx_equal(jaro_winkler_similarity("ABC", "AC"), 0.6499999999999999, epsilon));
+        assert!(approx_equal(jaro_winkler_similarity("ABC", "ADC"), 0.7999999999999999, epsilon));
+        assert!(approx_equal(jaro_winkler_similarity("kitten", "sitting"), 0.746031746031746, epsilon));
+        assert!(approx_equal(jaro_winkler_similarity("saturday", "sunday"), 0.7775000000000001, epsilon));
     }
 
     #[test]
