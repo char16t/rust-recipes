@@ -247,6 +247,18 @@ pub fn jaro_winkler_similarity(s1: &str, s2: &str) -> f64 {
     jaro_similarity + (prefix_length as f64 * p * (1.0 - jaro_similarity))
 }
 
+pub fn fuzzy_search_jaro_winkler<'a>(query: &'a str, list: &[&'a str], min_distance: f64) -> Vec<(&'a str, f64)> {
+    let mut result: Vec<(&str, f64)> = Vec::new();
+    for &item in list.iter() {
+        let distance: f64 = jaro_winkler_similarity(query, item);
+        if min_distance <= distance {
+            result.push((item, distance));
+        }
+    }
+    result.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    result
+}
+
 #[allow(dead_code)]
 pub struct PolynomialHash {
     h: Vec<usize>, // array of prefix hash-codes
@@ -486,6 +498,16 @@ mod tests {
         assert!(approx_equal(jaro_winkler_similarity("ABC", "ADC"), 0.7999999999999999, epsilon));
         assert!(approx_equal(jaro_winkler_similarity("kitten", "sitting"), 0.746031746031746, epsilon));
         assert!(approx_equal(jaro_winkler_similarity("saturday", "sunday"), 0.7775000000000001, epsilon));
+    }
+    
+    #[test]
+    fn test_fuzzy_search_jaro_winkler() {
+        let query: &str = "repor.doc";
+        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let actual: Vec<(&str, f64)> = fuzzy_search_jaro_winkler(query, &list, 0.9);
+
+        let expected: Vec<(&str, f64)> = vec![("report.docx", 0.9636363636363636), ("repord2.docx", 0.9277777777777778)];
+        assert_eq!(actual, expected);
     }
 
     #[test]
