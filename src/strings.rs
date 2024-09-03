@@ -259,6 +259,38 @@ pub fn fuzzy_search_jaro_winkler<'a>(query: &'a str, list: &[&'a str], min_dista
     result
 }
 
+pub fn fuzzy_search_jaro_winkler_with_synonyms<'a>(
+    query: &'a str, 
+    list: &[&'a str], 
+    syn: &HashMap<&'a str, Vec<String>>, 
+    min_distance: f64) -> Vec<(&'a str, f64)> 
+{
+    let mut result: Vec<(&str, f64)> = Vec::new();
+    for &item in list.iter() {
+        
+        let copy: Vec<String> = vec![String::from(item)];
+        let synonyms: &Vec<String> = syn.get(item).unwrap_or(&copy);
+
+        let mut max_distance: Option<f64> = None;
+        for synonym in synonyms {
+            let distance: f64 = jaro_winkler_similarity(query, synonym.as_str());
+            if let Some(max_dist) = max_distance {
+                if max_dist < distance {
+                    max_distance = Some(distance);
+                }
+            } else {
+                max_distance = Some(distance);
+            }
+        }
+        let dist: f64 = max_distance.unwrap();
+        if dist >= min_distance {
+            result.push((item, dist));
+        }
+    }
+    result.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    result
+}
+
 #[allow(dead_code)]
 pub struct PolynomialHash {
     h: Vec<usize>, // array of prefix hash-codes
@@ -507,6 +539,61 @@ mod tests {
         let actual: Vec<(&str, f64)> = fuzzy_search_jaro_winkler(query, &list, 0.9);
 
         let expected: Vec<(&str, f64)> = vec![("report.docx", 0.9636363636363636), ("repord2.docx", 0.9277777777777778)];
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_fuzzy_search_jaro_winkler_with_synonyms() {
+        
+        let mut russian: HashMap<char, char> = HashMap::new();
+        russian.insert('q', 'й');
+        russian.insert('w', 'ц');
+        russian.insert('e', 'у');
+        russian.insert('r', 'к');
+        russian.insert('t', 'е');
+        russian.insert('y', 'н');
+        russian.insert('u', 'г');
+        russian.insert('i', 'ш');
+        russian.insert('o', 'щ');
+        russian.insert('p', 'з');
+        russian.insert('a', 'ф');
+        russian.insert('s', 'ы');
+        russian.insert('d', 'в');
+        russian.insert('f', 'а');
+        russian.insert('g', 'п');
+        russian.insert('h', 'р');
+        russian.insert('j', 'о');
+        russian.insert('k', 'л');
+        russian.insert('l', 'д');
+        russian.insert('z', 'я');
+        russian.insert('x', 'ч');
+        russian.insert('с', 'c');
+        russian.insert('v', 'м');
+        russian.insert('b', 'и');
+        russian.insert('n', 'т');
+        russian.insert('m', 'ь');
+  
+        let query: &str = "кузщк"; // repor
+        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let mut synonyms: HashMap<&str, Vec<String>> = HashMap::new();
+        for &item in list.iter() {
+            let vector: &mut Vec<String> = synonyms.entry(item).or_insert(Vec::new());
+            vector.push(String::from(item));
+
+            let mut rus: Vec<char> = Vec::new();
+            for letter in item.to_lowercase().chars() {
+                if let Some(r) = russian.get(&letter) {
+                    rus.push(*r);
+                } else {
+                    rus.push(letter);
+                }
+            }
+            let rus_word: String = rus.iter().collect();
+            vector.push(rus_word);
+        }
+
+        let actual: Vec<(&str, f64)> = fuzzy_search_jaro_winkler_with_synonyms(query, &list, &synonyms, 0.7);
+        let expected: Vec<(&str, f64)> = vec![("report.docx", 0.9), ("repord2.docx", 0.8952380952380953)];
         assert_eq!(actual, expected);
     }
 
