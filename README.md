@@ -166,8 +166,8 @@ Use this repository to look up an implementation of an algorithm, understand it 
  * Concurrency (`concurrency.rs`)
    * Thread pool
 
-## Сборка и тестирование
+## Build and test
 
-Подробные инструкции по сборке и тестированию приведены в [/docs/Development.adoc](/docs/Development.adoc). Большая часть деталей сборки скрыта в [Makefile](/Makefile).
+Detailed instructions for building and testing are given in [/docs/Development.adoc](/docs/Development.adoc). Most of the build details are hidden in the [Makefile](/Makefile).
 
 ![Code coverage](/docs/codecov.png "Code coverage")

@@ -166,8 +166,8 @@ _This document is [available in English](/README.md)_
  * Конкурентность (`concurrency.rs`)
    * Thread pool
 
-## Build and test
+## Сборка и тестирование
 
-Detailed instructions for building and testing are given in [/docs/Development.adoc](/docs/Development.adoc). Most of the build details are hidden in the [Makefile](/Makefile).
+Подробные инструкции по сборке и тестированию приведены в [/docs/Development.adoc](/docs/Development.adoc). Большая часть деталей сборки скрыта в [Makefile](/Makefile).
 
 ![Code coverage](/docs/codecov.png "Code coverage")
