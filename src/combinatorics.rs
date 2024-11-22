@@ -102,7 +102,7 @@ where
         if count == k {
             result.push(s);
         } else {
-            for i in range_start..elements.len() {
+            for (i, _) in elements.iter().enumerate().skip(range_start) {
                 s.push(elements[i]);
                 stack.push((s.clone(), i + 1, count + 1));
                 s.pop();
@@ -123,7 +123,7 @@ where
         if count == k {
             result.push(s);
         } else {
-            for i in range_start..elements.len() {
+            for (i, _) in elements.iter().enumerate().skip(range_start) {
                 s.push(elements[i]);
                 stack.push((s.clone(), i, count + 1)); // Allow repetitions by passing i instead of i + 1
                 s.pop();
@@ -169,8 +169,8 @@ where
         if s.len() == k {
             result.push(s);
         } else {
-            for i in 0..elements.len() {
-                s.push(elements[i]);
+            for &element in elements.iter() {
+                s.push(element);
                 stack.push(s.clone());
                 s.pop();
             }
@@ -207,8 +207,8 @@ where
                 let union: HashSet<R> = s.iter().flat_map(|set| set.iter()).cloned().collect();
                 result += sign * (union.len() as isize);
             } else {
-                for i in range_start..unions.len() {
-                    s.push(unions[i].clone());
+                for (i, union) in unions.iter().enumerate().skip(range_start) {
+                    s.push(union.clone());
                     stack.push((s.clone(), i + 1, count + 1));
                     s.pop();
                 }
