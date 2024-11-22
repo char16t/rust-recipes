@@ -365,7 +365,7 @@ where
     T: Default + Copy + std::ops::AddAssign + std::ops::Add<T, Output = T>,
 {
     let mut tree: Vec<T> = vec![T::default(); arr.len() + 1];
-    for i in 0..arr.len() {
+    for (i, _) in arr.iter().enumerate() {
         add_to_fenwick_tree::<T, T>(&mut tree, i + 1, arr[i]);
     }
     tree

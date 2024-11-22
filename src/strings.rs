@@ -200,6 +200,7 @@ pub fn fuzzy_search_levenshtein_distance_with_synonyms<'a>(
     result
 }
 
+#[allow(clippy::needless_range_loop)]
 pub fn jaro_similarity(s1: &str, s2: &str) -> f64 {
     let len1: usize = s1.len();
     let len2: usize = s2.len();
