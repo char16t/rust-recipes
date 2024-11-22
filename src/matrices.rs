@@ -387,9 +387,9 @@ pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
             swap_rows(system, i, swap_with);
         }
         for j in (1..i + 1).rev() {
-            let factor = system[j - 1][i] as f32 / system[i][i] as f32;
+            let factor = system[j - 1][i] / system[i][i];
             for k in (0..system.cols).rev() {
-                system[j - 1][k] -= factor * system[i][k] as f32;
+                system[j - 1][k] -= factor * system[i][k];
             }
         }
     }
@@ -401,12 +401,12 @@ pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
         if system[i][i] == 0f32 {
             return None;
         } else {
-            system[i][n] /= system[i][i] as f32;
+            system[i][n] /= system[i][i];
             system[i][i] = 1f32;
             solutions.push(system[i][n])
         }
     }
-    return Some(solutions);
+    Some(solutions)
 }
 
 #[cfg(test)]
