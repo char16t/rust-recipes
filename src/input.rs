@@ -88,7 +88,7 @@ where
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).expect("Failed to read line");
 
-    let mut values: SplitWhitespace = input.trim().split_whitespace();
+    let mut values: SplitWhitespace = input.split_whitespace();
     let ax: T1 = values.next().unwrap().parse().unwrap();
     let ay: T2 = values.next().unwrap().parse().unwrap();
     (ax, ay)
@@ -108,7 +108,7 @@ where
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).expect("Failed to read line");
 
-    let mut values: SplitWhitespace = input.trim().split_whitespace();
+    let mut values: SplitWhitespace = input.split_whitespace();
     let a: T1 = values.next().unwrap().parse().unwrap();
     let b: T2 = values.next().unwrap().parse().unwrap();
     let c: T3 = values.next().unwrap().parse().unwrap();
@@ -131,7 +131,7 @@ where
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).expect("Failed to read line");
 
-    let mut values: SplitWhitespace = input.trim().split_whitespace();
+    let mut values: SplitWhitespace = input.split_whitespace();
     let a: T1 = values.next().unwrap().parse().unwrap();
     let b: T2 = values.next().unwrap().parse().unwrap();
     let c: T3 = values.next().unwrap().parse().unwrap();
@@ -149,11 +149,10 @@ where
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).unwrap();
     let arr: Vec<T> = input
-        .trim()
         .split_whitespace()
         .map(|x| x.parse().unwrap())
         .collect();
-    return arr;
+    arr
 }
 
 fn _take_string_from_reader<R>(reader: R) -> Vec<char>
@@ -164,7 +163,7 @@ where
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).unwrap();
     let vec: Vec<char> = input.trim().chars().collect();
-    return vec;
+    vec
 }
 
 #[cfg(test)]
