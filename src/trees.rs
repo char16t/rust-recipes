@@ -1,9 +1,11 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
 #[repr(transparent)]
+#[derive(Default)]
 pub struct AdjacencyListTree<T> {
     adjacency_list: HashMap<T, Vec<T>>,
 }
+
 impl<T> AdjacencyListTree<T>
 where
     T: Copy + Eq + std::hash::Hash,
@@ -16,11 +18,11 @@ where
     pub fn add_child(&mut self, parent: T, child: T) {
         self.adjacency_list
             .entry(parent)
-            .or_insert(Vec::new())
+            .or_default()
             .push(child);
         self.adjacency_list
             .entry(child)
-            .or_insert(Vec::new())
+            .or_default()
             .push(parent);
     }
     pub fn iter_dfs(&self, start_node: T) -> AdjacencyListTreeDfsIterator<T> {
@@ -163,10 +165,12 @@ where
 }
 
 /// Adjacency List Tree with support for switching to N ancestors
+#[derive(Default)]
 pub struct AdjacencyListTree2<T> {
     tree: AdjacencyListTree<T>,
     ancestors: AncestorGraph<T>,
 }
+
 impl<T> AdjacencyListTree2<T>
 where
     T: Default + Copy + Eq + std::hash::Hash,
@@ -195,13 +199,13 @@ where
     }
     pub fn lowest_common_ancestor(&mut self, a: T, b: T) -> T {
         let mut a_depth: usize = 0;
-        while let Some(_) = self.ancestor(a, a_depth) {
+        while self.ancestor(a, a_depth).is_some() {
             a_depth += 1;
         }
         a_depth -= 1;
 
         let mut b_depth: usize = 0;
-        while let Some(_) = self.ancestor(b, b_depth) {
+        while self.ancestor(b, b_depth).is_some() {
             b_depth += 1;
         }
         b_depth -= 1;
@@ -236,13 +240,13 @@ where
     }
     pub fn distance(&mut self, a: T, b: T) -> usize {
         let mut a_depth: usize = 0;
-        while let Some(_) = self.ancestor(a, a_depth) {
+        while self.ancestor(a, a_depth).is_some() {
             a_depth += 1;
         }
         a_depth -= 1;
 
         let mut b_depth: usize = 0;
-        while let Some(_) = self.ancestor(b, b_depth) {
+        while self.ancestor(b, b_depth).is_some() {
             b_depth += 1;
         }
         b_depth -= 1;
@@ -288,7 +292,7 @@ where
         }
 
         let mut lca_depth: usize = 0;
-        while let Some(_) = self.ancestor(lca, lca_depth) {
+        while self.ancestor(lca, lca_depth).is_some() {
             lca_depth += 1;
         }
         lca_depth -= 1;
@@ -298,10 +302,12 @@ where
 }
 
 /// Successor Graph adoption for trees
+#[derive(Default)]
 pub struct AncestorGraph<T> {
     data: HashMap<T, Vec<Option<T>>>,
     is_table_filled: bool,
 }
+
 impl<T> AncestorGraph<T>
 where
     T: Default + Copy + Eq + std::hash::Hash,
@@ -363,7 +369,7 @@ where
                     node = match node {
                         Some(x) => transformed_map
                             .get(&x)
-                            .and_then(|inner_option| inner_option.clone()),
+                            .and_then(|inner_option| *inner_option),
                         None => None,
                     };
                 }
@@ -392,7 +398,7 @@ where
     fn calculate_depth(&self) -> usize {
         let mut adjacency_list: HashMap<T, Vec<T>> = HashMap::new();
         for (&key, value) in self.data.iter() {
-            let vec: &mut Vec<T> = adjacency_list.entry(key).or_insert(Vec::new());
+            let vec: &mut Vec<T> = adjacency_list.entry(key).or_default();
             if let Some(v) = value[0] {
                 vec.push(v)
             }
@@ -425,9 +431,11 @@ where
 }
 
 #[repr(transparent)]
+#[derive(Default)]
 pub struct KeyValueTree<K, V> {
     adjacency_list: HashMap<K, (V, Vec<K>)>,
 }
+
 impl<K, V> KeyValueTree<K, V>
 where
     K: Copy + Eq + std::hash::Hash,
@@ -507,8 +515,7 @@ where
                 stack.push((node, parent));
                 for &neighbor in self
                     .adjacency_list
-                    .get(&node)
-                    .and_then(|x| Some(&x.1))
+                    .get(&node).map(|x| &x.1)
                     .unwrap_or(&vec![])
                     .iter()
                     .rev()
@@ -557,8 +564,7 @@ where
         while let Some(node) = queue.pop_front() {
             for &neighbor in self
                 .adjacency_list
-                .get(&node)
-                .and_then(|x| Some(&x.1))
+                .get(&node).map(|x| &x.1)
                 .unwrap_or(&vec![])
             {
                 if !visited.contains(&neighbor) {
@@ -689,7 +695,7 @@ impl<T> Node<T> {
         T: Copy,
     {
         let mut result: Vec<T> = Vec::new();
-        self.eulerian_tree_traversal(&self, &mut result);
+        self.eulerian_tree_traversal(self, &mut result);
         result
     }
     fn eulerian_tree_traversal(&self, root: &Node<T>, result: &mut Vec<T>)
@@ -791,7 +797,7 @@ pub fn prufer_code_decode(prufer: &[usize]) -> Vec<(usize, usize)> {
     let mut leaves: Vec<usize> = (0..n).filter(|&i| degree[i] == 1).collect();
 
     for &node in prufer.iter() {
-        let leaf: usize = leaves.iter().min().unwrap().clone();
+        let leaf: usize = *leaves.iter().min().unwrap();
         tree.push((node, leaf));
         degree[node] -= 1;
         degree[leaf] -= 1;
