@@ -691,16 +691,16 @@ impl<T> Node<T> {
         T: Copy,
     {
         let mut result: Vec<T> = Vec::new();
-        self.eulerian_tree_traversal(self, &mut result);
+        Self::eulerian_tree_traversal(self, &mut result);
         result
     }
-    fn eulerian_tree_traversal(&self, root: &Node<T>, result: &mut Vec<T>)
+    fn eulerian_tree_traversal(root: &Node<T>, result: &mut Vec<T>)
     where
         T: Copy,
     {
         result.push(root.value);
         for child in &root.children {
-            self.eulerian_tree_traversal(child, result);
+            Self::eulerian_tree_traversal(child, result);
             result.push(root.value);
         }
     }
