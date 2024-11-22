@@ -56,6 +56,8 @@ fn get_random_seed() -> Result<[u8; 32]> {
     file.read_exact(&mut seed)?;
     Ok(seed)
 }
+
+#[allow(clippy::needless_range_loop)]
 fn convert_to_u64_array(bytes: [u8; 32]) -> [u64; 4] {
     let mut u64_array: [u64; 4] = [0u64; 4];
     for i in 0..4 {
