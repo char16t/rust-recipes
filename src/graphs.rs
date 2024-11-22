@@ -1775,8 +1775,8 @@ impl TwoSatSolver {
                 }
                 used.insert(e.abs());
                 solution.entry(e.abs()).or_insert_with(|| {
-                    let v = *e >= 0;
-                    v
+                    
+                    *e >= 0
                 });
             }
         }
