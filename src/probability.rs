@@ -2,10 +2,12 @@ use crate::matrices;
 use crate::random;
 use std::collections::HashMap;
 
+#[derive(Default)]
 pub struct DiscreteRandomVariable {
     rng: random::Xoshiro256,
     distribution: HashMap<i64, f64>,
 }
+
 impl DiscreteRandomVariable {
     pub fn new() -> Self {
         DiscreteRandomVariable {
