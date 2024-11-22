@@ -27,8 +27,7 @@ pub fn de_bruijn_sequence(alphabet: &[char], length: usize) -> String {
         .iter()
         .skip(1)
         .cloned()
-        .map(|x| x.chars().last())
-        .filter_map(|x| x)
+        .filter_map(|x| x.chars().last())
         .collect();
 
     match result.first() {
@@ -104,19 +103,19 @@ pub fn longest_common_subsequence(a: &str, b: &str) -> String {
     while x != 0 && y != 0 {
         // Check element above is equal
         if table[xy(x, y)] == table[xy(x - 1, y)] {
-            x = x - 1;
+            x -= 1;
         }
         // check element to the left is equal
         else if table[xy(x, y)] == table[xy(x, y - 1)] {
-            y = y - 1;
+            y -= 1;
         } else {
             let char: u8 = a_chars[x - 1];
             common_seq.push_front(char);
-            x = x - 1;
-            y = y - 1;
+            x -= 1;
+            y -= 1;
         }
     }
-    return String::from_utf8(common_seq.into()).unwrap();
+    String::from_utf8(common_seq.into()).unwrap()
 }
 
 pub fn levenshtein_distance(a: &str, b: &str) -> usize {
@@ -214,14 +213,14 @@ pub fn jaro_similarity(s1: &str, s2: &str) -> f64 {
         return if s1 == s2 { 1.0 } else { 0.0 };
     }
 
-    let match_distance: usize = (len1.max(len2) / 2) as usize - 1;
+    let match_distance: usize = (len1.max(len2) / 2) - 1;
     let mut matches: i32 = 0;
     let mut s1_matches: Vec<bool> = vec![false; len1];
     let mut s2_matches: Vec<bool> = vec![false; len2];
 
     for i in 0..len1 {
         let start: usize = (i as isize - match_distance as isize).max(0) as usize;
-        let end: usize = (i + match_distance as usize + 1).min(len2);
+        let end: usize = (i + match_distance + 1).min(len2);
         for j in start..end {
             if s1.chars().nth(i) == s2.chars().nth(j) && !s2_matches[j] {
                 s1_matches[i] = true;
@@ -391,7 +390,7 @@ pub fn count_different_substrings(string: &str, length: usize) -> usize {
         substring_hashes.insert(string_ph.hash_substring(i, i + length - 1));
     }
 
-    return substring_hashes.len();
+    substring_hashes.len()
 }
 
 #[cfg(test)]
