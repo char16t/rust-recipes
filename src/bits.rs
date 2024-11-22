@@ -77,6 +77,7 @@ pub fn sets_is_superset(a: isize, b: isize) -> bool {
 
 const BITS_PER_U64: usize = 64;
 
+#[derive(Default)]
 pub struct LongArithmetic {
     data: Vec<u64>,
 }
@@ -146,7 +147,7 @@ impl LongArithmetic {
 impl std::fmt::Debug for LongArithmetic {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (i, &num) in self.data.iter().enumerate() {
-            write!(f, "Array[{}]: {:064b} ({})\n", i, num, num);
+            writeln!(f, "Array[{}]: {:064b} ({})", i, num, num);
         }
         Ok(())
     }
