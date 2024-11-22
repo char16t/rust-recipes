@@ -5,6 +5,7 @@ use std::{
 
 use crate::{bits, coordinates, heaps};
 
+#[derive(Default)]
 pub struct AdjacencyListGraph<T> {
     adjacency_list: HashMap<T, Vec<T>>,
     is_directed: bool,
@@ -27,16 +28,16 @@ where
         }
     }
     pub fn add_vertex(&mut self, a: T) {
-        self.adjacency_list.entry(a).or_insert(Vec::new());
+        self.adjacency_list.entry(a).or_default();
     }
     pub fn add_edge(&mut self, a: T, b: T) {
         self.adjacency_list
             .entry(a.clone())
-            .or_insert(Vec::new())
+            .or_default()
             .push(b.clone());
-        self.adjacency_list.entry(b.clone()).or_insert(Vec::new());
+        self.adjacency_list.entry(b.clone()).or_default();
         if !self.is_directed {
-            self.adjacency_list.entry(b).or_insert(Vec::new()).push(a);
+            self.adjacency_list.entry(b).or_default().push(a);
         }
     }
     pub fn neighbors(&self, v: T) -> &[T] {
@@ -60,7 +61,7 @@ where
 
             while let Some(node) = stack.pop_front() {
                 for neighbor in &self.adjacency_list[&node] {
-                    if !visited.contains(&neighbor) {
+                    if !visited.contains(neighbor) {
                         stack.push_front(neighbor.clone());
                         visited.insert(neighbor.clone());
                     }
@@ -135,20 +136,20 @@ where
                 if let Some(next_slow) = self
                     .adjacency_list
                     .get(slow)
-                    .and_then(|neighbors| neighbors.get(0))
+                    .and_then(|neighbors| neighbors.first())
                 {
                     if let Some(next_fast) = self
                         .adjacency_list
                         .get(fast)
-                        .and_then(|neighbors| neighbors.get(0))
+                        .and_then(|neighbors| neighbors.first())
                         .and_then(|next| {
                             self.adjacency_list
                                 .get(next)
-                                .and_then(|neighbors| neighbors.get(0))
+                                .and_then(|neighbors| neighbors.first())
                         })
                     {
-                        slow = &next_slow;
-                        fast = &next_fast;
+                        slow = next_slow;
+                        fast = next_fast;
 
                         visited.insert(slow.clone());
                         visited.insert(fast.clone());
@@ -176,7 +177,7 @@ where
                     cycle_node = self
                         .adjacency_list
                         .get(&node)
-                        .and_then(|neighbors| neighbors.get(0))
+                        .and_then(|neighbors| neighbors.first())
                         .cloned();
                 }
 
@@ -245,7 +246,7 @@ where
             for neighbor in neighbors {
                 reversed_adjacency_list
                     .entry(neighbor.clone())
-                    .or_insert(Vec::new())
+                    .or_default()
                     .push(node.clone());
             }
         }
@@ -285,15 +286,15 @@ where
 
         let mut adj: HashMap<T, Vec<(T, i8)>> = HashMap::new();
         for (key, values) in self.adjacency_list.iter() {
-            let new_values: Vec<(T, i8)> = values.iter().map(|k| (k.clone(), 1)).collect();
-            adj.insert(key.clone(), new_values);
+            let new_values: Vec<(T, i8)> = values.iter().map(|k| (*k, 1)).collect();
+            adj.insert(*key, new_values);
         }
 
         let (_, _, paths) = max_flow_internal(&adj, start, end);
 
         let result: Vec<Vec<T>> = paths
             .iter()
-            .map(|path| path.iter().map(|(t, _)| t.clone()).collect())
+            .map(|path| path.iter().map(|(t, _)| *t).collect())
             .collect();
         result
     }
@@ -313,13 +314,13 @@ where
         for (&node, neighbors) in self.adjacency_list.iter() {
             for &neighbor in neighbors {
                 adj.entry((node, OUT))
-                    .or_insert(Vec::new())
+                    .or_default()
                     .push(((neighbor, IN), 1));
             }
         }
         for (&node, _) in self.adjacency_list.iter() {
             adj.entry((node, IN))
-                .or_insert(Vec::new())
+                .or_default()
                 .push(((node, OUT), 1));
         }
 
@@ -481,18 +482,18 @@ where
         }
     }
     pub fn add_vertex(&mut self, a: T) {
-        self.adjacency_list.entry(a).or_insert(Vec::new());
+        self.adjacency_list.entry(a).or_default();
     }
     pub fn add_edge(&mut self, a: T, b: T, w: W) {
         self.adjacency_list
             .entry(a)
-            .or_insert(Vec::new())
+            .or_default()
             .push((b, w));
-        self.adjacency_list.entry(b).or_insert(Vec::new());
+        self.adjacency_list.entry(b).or_default();
         if !self.is_directed {
             self.adjacency_list
                 .entry(b)
-                .or_insert(Vec::new())
+                .or_default()
                 .push((a, w));
         }
     }
@@ -575,25 +576,25 @@ where
         // Initialize in-degree for each node
         for neighbors in self.adjacency_list.values() {
             for (neighbor, _) in neighbors {
-                *in_degree.entry(neighbor.clone()).or_insert(0) += 1;
+                *in_degree.entry(*neighbor).or_insert(0) += 1;
             }
         }
 
         // Add nodes with in-degree 0 to the queue
         for node in self.adjacency_list.keys() {
             if !in_degree.contains_key(node) {
-                queue.push_back(node.clone());
+                queue.push_back(*node);
             }
         }
 
         while let Some(node) = queue.pop_front() {
-            result.push(node.clone());
+            result.push(node);
 
             if let Some(neighbors) = self.adjacency_list.get(&node) {
                 for (neighbor, _) in neighbors {
                     *in_degree.get_mut(neighbor).unwrap() -= 1;
                     if *in_degree.get(neighbor).unwrap() == 0 {
-                        queue.push_back(neighbor.clone());
+                        queue.push_back(*neighbor);
                     }
                 }
             }
@@ -623,34 +624,34 @@ where
             }
             visited.insert(*node);
 
-            let mut slow: T = node.clone();
-            let mut fast: T = node.clone();
+            let mut slow: T = *node;
+            let mut fast: T = *node;
 
             loop {
                 if let Some(next_slow) = self
                     .adjacency_list
                     .get(&slow)
-                    .and_then(|neighbors| neighbors.get(0))
+                    .and_then(|neighbors| neighbors.first())
                 {
                     if let Some(next_fast) = self
                         .adjacency_list
                         .get(&fast)
-                        .and_then(|neighbors| neighbors.get(0))
+                        .and_then(|neighbors| neighbors.first())
                         .and_then(|next| {
                             self.adjacency_list
                                 .get(&next.0)
-                                .and_then(|neighbors| neighbors.get(0))
+                                .and_then(|neighbors| neighbors.first())
                         })
                     {
-                        slow = next_slow.0.clone();
-                        fast = next_fast.0.clone();
+                        slow = next_slow.0;
+                        fast = next_fast.0;
 
                         visited.insert(slow);
                         visited.insert(fast);
 
                         if slow == fast {
                             has_cycle = true;
-                            cycle_start = Some(slow.clone());
+                            cycle_start = Some(slow);
                             break;
                         }
                     } else {
@@ -662,7 +663,7 @@ where
             }
 
             if has_cycle {
-                let mut cycle_node: Option<T> = cycle_start.clone();
+                let mut cycle_node: Option<T> = cycle_start;
                 while let Some(node) = cycle_node {
                     if node == cycle_start.unwrap() && cycle_length > 1 {
                         break;
@@ -671,8 +672,7 @@ where
                     cycle_node = self
                         .adjacency_list
                         .get(&node)
-                        .and_then(|neighbors| neighbors.get(0))
-                        .and_then(|t| Some(t.0));
+                        .and_then(|neighbors| neighbors.first()).map(|t| t.0);
                 }
 
                 break;
@@ -754,10 +754,10 @@ where
         //     None => node.clone(),
         // }
         let mut current: &T = node;
-        while let Some(parent) = forest.get(&current) {
+        while let Some(parent) = forest.get(current) {
             current = parent;
         }
-        current.clone()
+        *current
     }
 
     fn union(&self, forest: &mut HashMap<T, T>, root1: T, root2: T) {
@@ -806,7 +806,7 @@ where
         visited: &mut HashMap<T, bool>,
         stack: &mut Vec<T>,
     ) {
-        visited.insert(node.clone(), true);
+        visited.insert(*node, true);
         if let Some(neighbors) = adjacency_list.get(node) {
             for (neighbor, _) in neighbors {
                 if !visited.get(neighbor).cloned().unwrap_or(false) {
@@ -814,7 +814,7 @@ where
                 }
             }
         }
-        stack.push(node.clone());
+        stack.push(*node);
     }
 
     fn reverse_graph(&self) -> HashMap<T, Vec<(T, W)>> {
@@ -822,9 +822,9 @@ where
         for (node, neighbors) in self.adjacency_list.iter() {
             for (neighbor, weight) in neighbors {
                 reversed_adjacency_list
-                    .entry(neighbor.clone())
-                    .or_insert(Vec::new())
-                    .push((node.clone(), weight.clone()));
+                    .entry(*neighbor)
+                    .or_default()
+                    .push((*node, *weight));
             }
         }
         reversed_adjacency_list
@@ -835,13 +835,13 @@ where
         let mut stack: Vec<T> = Vec::new();
 
         if let Some(start_node) = self.adjacency_list.keys().next().cloned() {
-            stack.push(start_node.clone());
+            stack.push(start_node);
 
             while let Some(node) = stack.last().cloned() {
                 if let Some(neighbors) = self.adjacency_list.get_mut(&node) {
                     if !neighbors.is_empty() {
                         let next_node: (T, W) = neighbors.remove(0);
-                        stack.push(next_node.0.clone());
+                        stack.push(next_node.0);
                     } else {
                         path.push(stack.pop().unwrap());
                     }
@@ -943,13 +943,13 @@ where
         for (&node, neighbors) in self.adjacency_list.iter() {
             for &(neighbor, _) in neighbors {
                 adj.entry((node, OUT))
-                    .or_insert(Vec::new())
+                    .or_default()
                     .push(((neighbor, IN), 1));
             }
         }
         for (&node, _) in self.adjacency_list.iter() {
             adj.entry((node, IN))
-                .or_insert(Vec::new())
+                .or_default()
                 .push(((node, OUT), 1));
         }
 
@@ -996,7 +996,7 @@ where
     let mut flow: HashMap<T1, Vec<(T1, W1)>> = adjacency_list.clone();
     for (&a, neighbors) in adjacency_list {
         for &(b, _) in neighbors {
-            flow.entry(b).or_insert(Vec::new()).push((a, W1::default()));
+            flow.entry(b).or_default().push((a, W1::default()));
         }
     }
 
@@ -1058,10 +1058,7 @@ where
         }
 
         // Update weights
-        let weight_difference: W1 = match min_weight {
-            Some(value) => value,
-            None => W1::default(),
-        };
+        let weight_difference: W1 = min_weight.unwrap_or_default();
         flow_value = match flow_value {
             Some(w) => Some(w + weight_difference),
             None => Some(weight_difference),
@@ -1475,7 +1472,7 @@ where
     pub fn weigth(&self, a: usize, b: usize) -> W {
         let xy = coordinates::create_coordinate_function_2d!(self.capacity, self.capacity);
         let pos: usize = xy(a, b);
-        return self.adjacency_matrix[pos];
+        self.adjacency_matrix[pos]
     }
     pub fn floyd_warshall(&self) -> Vec<Option<W>> {
         let num_vertices: usize = self.capacity;
@@ -1503,11 +1500,7 @@ where
                     let right_b: Option<W> = matrix[xy(k, j)];
 
                     let right: Option<W> = if let Some(right_a_value) = right_a {
-                        if let Some(right_b_value) = right_b {
-                            Some(right_a_value + right_b_value)
-                        } else {
-                            None
-                        }
+                        right_b.map(|right_b_value| right_a_value + right_b_value)
                     } else {
                         None
                     };
@@ -1519,11 +1512,7 @@ where
                             Some(right_value)
                         }
                     } else {
-                        if let Some(left_value) = left {
-                            Some(left_value)
-                        } else {
-                            None
-                        }
+                        left
                     };
                     matrix[xy(i, j)] = result;
                 }
@@ -1625,13 +1614,11 @@ where
                         // distance_a = INF
                         distances.insert(b, distance_b);
                     }
-                } else {
-                    if let Some(&distance_a) = distances.get(&a) {
-                        // distance_b = INF
-                        distances.insert(b, distance_a + w);
-                    }
-                    // else distance_a = INF && distance_b = INF
+                } else if let Some(&distance_a) = distances.get(&a) {
+                    // distance_b = INF
+                    distances.insert(b, distance_a + w);
                 }
+                // else distance_a = INF && distance_b = INF
             }
         }
         for &edge in self.edges.iter() {
@@ -1765,9 +1752,11 @@ where
     }
 }
 
+#[derive(Default)]
 pub struct TwoSatSolver {
     graph: AdjacencyListGraph<isize>,
 }
+
 impl TwoSatSolver {
     pub fn new() -> Self {
         Self {
@@ -1777,8 +1766,8 @@ impl TwoSatSolver {
     pub fn add_disjunction(&mut self, a: isize, na: bool, b: isize, nb: bool) {
         let aa: isize = a * if na { 1 } else { -1 };
         let bb: isize = b * if nb { 1 } else { -1 };
-        let neg_a: isize = aa * -1;
-        let neg_b: isize = bb * -1;
+        let neg_a: isize = -aa;
+        let neg_b: isize = -bb;
 
         self.graph.add_edge(neg_a, bb);
         self.graph.add_edge(neg_b, aa);
@@ -1794,13 +1783,13 @@ impl TwoSatSolver {
                     return None;
                 }
                 used.insert(e.abs());
-                if !solution.contains_key(&e.abs()) {
-                    let v = if *e < 0 { false } else { true };
-                    solution.insert(e.abs(), v);
-                }
+                solution.entry(e.abs()).or_insert_with(|| {
+                    let v = *e >= 0;
+                    v
+                });
             }
         }
-        return Some(solution);
+        Some(solution)
     }
 }
 
