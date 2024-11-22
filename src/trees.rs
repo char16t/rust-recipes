@@ -16,14 +16,8 @@ where
         }
     }
     pub fn add_child(&mut self, parent: T, child: T) {
-        self.adjacency_list
-            .entry(parent)
-            .or_default()
-            .push(child);
-        self.adjacency_list
-            .entry(child)
-            .or_default()
-            .push(parent);
+        self.adjacency_list.entry(parent).or_default().push(child);
+        self.adjacency_list.entry(child).or_default().push(parent);
     }
     pub fn iter_dfs(&self, start_node: T) -> AdjacencyListTreeDfsIterator<T> {
         AdjacencyListTreeDfsIterator::new(&self.adjacency_list, start_node)
@@ -515,7 +509,8 @@ where
                 stack.push((node, parent));
                 for &neighbor in self
                     .adjacency_list
-                    .get(&node).map(|x| &x.1)
+                    .get(&node)
+                    .map(|x| &x.1)
                     .unwrap_or(&vec![])
                     .iter()
                     .rev()
@@ -564,7 +559,8 @@ where
         while let Some(node) = queue.pop_front() {
             for &neighbor in self
                 .adjacency_list
-                .get(&node).map(|x| &x.1)
+                .get(&node)
+                .map(|x| &x.1)
                 .unwrap_or(&vec![])
             {
                 if !visited.contains(&neighbor) {

@@ -319,9 +319,7 @@ where
             }
         }
         for (&node, _) in self.adjacency_list.iter() {
-            adj.entry((node, IN))
-                .or_default()
-                .push(((node, OUT), 1));
+            adj.entry((node, IN)).or_default().push(((node, OUT), 1));
         }
 
         let (_, _, paths) = max_flow_internal(&adj, (start, OUT), (end, IN));
@@ -485,16 +483,10 @@ where
         self.adjacency_list.entry(a).or_default();
     }
     pub fn add_edge(&mut self, a: T, b: T, w: W) {
-        self.adjacency_list
-            .entry(a)
-            .or_default()
-            .push((b, w));
+        self.adjacency_list.entry(a).or_default().push((b, w));
         self.adjacency_list.entry(b).or_default();
         if !self.is_directed {
-            self.adjacency_list
-                .entry(b)
-                .or_default()
-                .push((a, w));
+            self.adjacency_list.entry(b).or_default().push((a, w));
         }
     }
     pub fn is_connected(&self) -> bool {
@@ -672,7 +664,8 @@ where
                     cycle_node = self
                         .adjacency_list
                         .get(&node)
-                        .and_then(|neighbors| neighbors.first()).map(|t| t.0);
+                        .and_then(|neighbors| neighbors.first())
+                        .map(|t| t.0);
                 }
 
                 break;
@@ -948,9 +941,7 @@ where
             }
         }
         for (&node, _) in self.adjacency_list.iter() {
-            adj.entry((node, IN))
-                .or_default()
-                .push(((node, OUT), 1));
+            adj.entry((node, IN)).or_default().push(((node, OUT), 1));
         }
 
         let (_, _, paths) = max_flow_internal(&adj, (start, OUT), (end, IN));
