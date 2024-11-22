@@ -134,7 +134,7 @@ pub fn grundy_number(n: usize) -> usize {
     let mut used_nums: HashSet<usize> = HashSet::new();
     for i in 1..n {
         if n - i != i && !used_nums.contains(&i) {
-            grundy_numbers.push(nim_sum(&vec![grundy_number(i), grundy_number(n - i)]));
+            grundy_numbers.push(nim_sum(&[grundy_number(i), grundy_number(n - i)]));
             used_nums.insert(i);
             used_nums.insert(n - i);
         }
@@ -158,7 +158,7 @@ pub fn grundy_game_move(heaps: &[usize]) -> (usize, usize, usize) {
         let mut used_nums: HashSet<usize> = HashSet::new();
         for i in 1..n {
             if n - i != i && !used_nums.contains(&i) {
-                if nim_sum(&vec![grundy_number(i), grundy_number(n - i)]) == 0 {
+                if nim_sum(&[grundy_number(i), grundy_number(n - i)]) == 0 {
                     return (heap_index, i, n - i);
                 }
                 used_nums.insert(i);
