@@ -712,8 +712,7 @@ pub struct DfsIterator<'a, T> {
 
 impl<'a, T> DfsIterator<'a, T> {
     fn new(node: &'a Node<T>) -> Self {
-        let mut stack: Vec<&Node<T>> = Vec::new();
-        stack.push(node);
+        let stack: Vec<&Node<T>> = vec![node];
         Self { stack }
     }
 }
