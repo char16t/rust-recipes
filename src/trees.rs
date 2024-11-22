@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{cmp::Ordering, collections::{HashMap, HashSet, VecDeque}};
 
 #[repr(transparent)]
 #[derive(Default)]
@@ -206,10 +206,11 @@ where
 
         let mut node_a: Option<T> = Some(a);
         let mut node_b: Option<T> = Some(b);
-        if a_depth > b_depth {
-            node_a = self.ancestor(a, a_depth - b_depth);
-        } else if b_depth > a_depth {
-            node_b = self.ancestor(b, b_depth - a_depth);
+        
+        match a_depth.cmp(&b_depth) {
+            Ordering::Greater => node_a = self.ancestor(a, a_depth - b_depth),
+            Ordering::Less => node_b = self.ancestor(b, b_depth - a_depth),
+            Ordering::Equal => {/* do nothing */}
         }
 
         let mut depth: usize = 1;
@@ -247,10 +248,11 @@ where
 
         let mut node_a: Option<T> = Some(a);
         let mut node_b: Option<T> = Some(b);
-        if a_depth > b_depth {
-            node_a = self.ancestor(a, a_depth - b_depth);
-        } else if b_depth > a_depth {
-            node_b = self.ancestor(b, b_depth - a_depth);
+
+        match a_depth.cmp(&b_depth) {
+            Ordering::Greater => node_a = self.ancestor(a, a_depth - b_depth),
+            Ordering::Less => node_b = self.ancestor(b, b_depth - a_depth),
+            Ordering::Equal => {/* do nothing */}
         }
 
         let max_depth: usize = a_depth.max(b_depth);
