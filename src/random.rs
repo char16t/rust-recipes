@@ -1,8 +1,10 @@
 use std::io::{Read, Result};
 
+#[derive(Default)]
 pub struct Xoshiro256 {
     s: [u64; 4],
 }
+
 impl Xoshiro256 {
     pub fn new() -> Self {
         match get_random_seed() {
@@ -34,10 +36,10 @@ impl Xoshiro256 {
     }
     pub fn rand_range(&mut self, a: u64, b: u64) -> u64 {
         let m: u64 = b - a + 1;
-        return a + (self.rand() % m);
+        a + (self.rand() % m)
     }
     pub fn shuffle<T>(&mut self, a: &mut [T]) {
-        if a.len() == 0 {
+        if a.is_empty() {
             return;
         }
         let mut i: usize = a.len() - 1;
