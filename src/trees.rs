@@ -757,7 +757,7 @@ impl<'a, T> Iterator for BfsIterator<'a, T> {
     }
 }
 
-pub fn prufer_code_encode(adj_list: &mut Vec<Vec<usize>>) -> Vec<usize> {
+pub fn prufer_code_encode(adj_list: &mut [Vec<usize>]) -> Vec<usize> {
     let n: usize = adj_list.len();
     let mut degree: Vec<usize> = adj_list.iter().map(|x| x.len()).collect();
     let mut prufer: Vec<usize> = Vec::new();
@@ -779,7 +779,7 @@ pub fn prufer_code_encode(adj_list: &mut Vec<Vec<usize>>) -> Vec<usize> {
     prufer
 }
 
-pub fn prufer_code_decode(prufer: &Vec<usize>) -> Vec<(usize, usize)> {
+pub fn prufer_code_decode(prufer: &[usize]) -> Vec<(usize, usize)> {
     let n: usize = prufer.len() + 2;
     let mut degree: Vec<usize> = vec![1; n];
 
