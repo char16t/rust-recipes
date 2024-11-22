@@ -113,8 +113,6 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let first = first;
-        let second = second;
         self.data.swap(first, second);
     }
 }
@@ -238,8 +236,6 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let first = first;
-        let second = second;
         self.data.swap(first, second);
     }
 }
@@ -359,8 +355,6 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let first = first;
-        let second = second;
         self.data.swap(first, second);
     }
 }
@@ -483,8 +477,6 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let first = first;
-        let second = second;
         self.data.swap(first, second);
     }
 }
