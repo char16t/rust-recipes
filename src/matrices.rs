@@ -436,7 +436,7 @@ mod tests {
         assert_eq!(m.data[1], 0);
         assert_eq!(m.data[2], 0);
 
-        let m: Matrix<usize> = Matrix::from_vector(&vec![10, 20, 30]);
+        let m: Matrix<usize> = Matrix::from_vector(&[10, 20, 30]);
         assert_eq!(m.rows, 3);
         assert_eq!(m.cols, 1);
         assert_eq!(m.data[0], 10);
@@ -709,11 +709,11 @@ mod tests {
 
     #[test]
     fn test_linear_recurrent_sequence() {
-        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 1), 1);
-        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 3), 2);
-        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 9), 34);
-        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 10), 55);
-        assert_eq!(linear_recurrent_sequence(&vec![1, 1], &vec![0, 1], 14), 377);
+        assert_eq!(linear_recurrent_sequence(&[1, 1], &[0, 1], 1), 1);
+        assert_eq!(linear_recurrent_sequence(&[1, 1], &[0, 1], 3), 2);
+        assert_eq!(linear_recurrent_sequence(&[1, 1], &[0, 1], 9), 34);
+        assert_eq!(linear_recurrent_sequence(&[1, 1], &[0, 1], 10), 55);
+        assert_eq!(linear_recurrent_sequence(&[1, 1], &[0, 1], 14), 377);
     }
 
     #[test]

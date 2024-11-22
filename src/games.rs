@@ -192,44 +192,44 @@ mod tests {
 
     #[test]
     fn test_nim_sum() {
-        assert_eq!(nim_sum::<i32>(&vec![]), 0);
-        assert_eq!(nim_sum(&vec![10, 3]), 9);
-        assert_eq!(nim_sum(&vec![1, 4, 5]), 0);
-        assert_eq!(nim_sum(&vec![1, 1, 5]), 5);
+        assert_eq!(nim_sum::<i32>(&[]), 0);
+        assert_eq!(nim_sum(&[10, 3]), 9);
+        assert_eq!(nim_sum(&[1, 4, 5]), 0);
+        assert_eq!(nim_sum(&[1, 1, 5]), 5);
     }
 
     #[test]
     fn test_is_nim_game_over() {
-        assert_eq!(is_nim_game_over::<i32>(&vec![]), true);
-        assert_eq!(is_nim_game_over(&vec![10, 3]), false);
-        assert_eq!(is_nim_game_over(&vec![0, 3, 0]), false);
-        assert_eq!(is_nim_game_over(&vec![0, 0]), true);
-        assert_eq!(is_nim_game_over(&vec![0]), true);
+        assert_eq!(is_nim_game_over::<i32>(&[]), true);
+        assert_eq!(is_nim_game_over(&[10, 3]), false);
+        assert_eq!(is_nim_game_over(&[0, 3, 0]), false);
+        assert_eq!(is_nim_game_over(&[0, 0]), true);
+        assert_eq!(is_nim_game_over(&[0]), true);
     }
 
     #[test]
     fn test_nim_move() {
-        assert_eq!(nim_move(&vec![]), (0, 0));
-        assert_eq!(nim_move(&vec![3, 4, 5]), (0, 2));
-        assert_eq!(nim_move(&vec![1, 1, 5]), (2, 5));
-        assert_eq!(nim_move(&vec![1, 1, 2]), (2, 2));
+        assert_eq!(nim_move(&[]), (0, 0));
+        assert_eq!(nim_move(&[3, 4, 5]), (0, 2));
+        assert_eq!(nim_move(&[1, 1, 5]), (2, 5));
+        assert_eq!(nim_move(&[1, 1, 2]), (2, 2));
 
-        assert_eq!(nim_move(&vec![10, 12, 5]), (0, 1));
-        assert_eq!(nim_move(&vec![1, 4, 5]), (0, 1));
+        assert_eq!(nim_move(&[10, 12, 5]), (0, 1));
+        assert_eq!(nim_move(&[1, 4, 5]), (0, 1));
     }
 
     #[test]
     fn test_misere_nim_move() {
-        assert_eq!(misere_nim_move(&vec![]), (0, 0));
-        assert_eq!(misere_nim_move(&vec![3, 4, 5]), (0, 2));
-        assert_eq!(misere_nim_move(&vec![1, 1, 5]), (2, 4));
-        assert_eq!(misere_nim_move(&vec![1, 1, 2]), (2, 1));
-        assert_eq!(misere_nim_move(&vec![0, 1, 2]), (2, 2));
-        assert_eq!(misere_nim_move(&vec![5, 0, 1]), (0, 5));
-        assert_eq!(misere_nim_move(&vec![0, 5, 0]), (1, 4));
+        assert_eq!(misere_nim_move(&[]), (0, 0));
+        assert_eq!(misere_nim_move(&[3, 4, 5]), (0, 2));
+        assert_eq!(misere_nim_move(&[1, 1, 5]), (2, 4));
+        assert_eq!(misere_nim_move(&[1, 1, 2]), (2, 1));
+        assert_eq!(misere_nim_move(&[0, 1, 2]), (2, 2));
+        assert_eq!(misere_nim_move(&[5, 0, 1]), (0, 5));
+        assert_eq!(misere_nim_move(&[0, 5, 0]), (1, 4));
 
-        assert_eq!(misere_nim_move(&vec![10, 12, 5]), (0, 1));
-        assert_eq!(misere_nim_move(&vec![1, 4, 5]), (0, 1));
+        assert_eq!(misere_nim_move(&[10, 12, 5]), (0, 1));
+        assert_eq!(misere_nim_move(&[1, 4, 5]), (0, 1));
     }
 
     #[test]
@@ -266,7 +266,7 @@ mod tests {
 
     #[test]
     fn test_mex() {
-        assert_eq!(mex(&vec![0, 1, 3]), 2);
+        assert_eq!(mex(&[0, 1, 3]), 2);
     }
 
     #[test]
@@ -295,22 +295,22 @@ mod tests {
 
     #[test]
     fn test_grundy_game_move() {
-        assert_eq!(grundy_game_move(&vec![8]), (0, 1, 7));
+        assert_eq!(grundy_game_move(&[8]), (0, 1, 7));
     }
 
     #[test]
     #[should_panic]
     fn test_grundy_game_move_panic() {
-        grundy_game_move(&vec![]);
+        grundy_game_move(&[]);
     }
 
     #[test]
     fn test_is_grundy_game_over() {
-        assert_eq!(is_grundy_game_over(&vec![]), true);
-        assert_eq!(is_grundy_game_over(&vec![10, 3]), false);
-        assert_eq!(is_grundy_game_over(&vec![1, 3, 1]), false);
-        assert_eq!(is_grundy_game_over(&vec![1, 1]), true);
-        assert_eq!(is_grundy_game_over(&vec![1]), true);
+        assert_eq!(is_grundy_game_over(&[]), true);
+        assert_eq!(is_grundy_game_over(&[10, 3]), false);
+        assert_eq!(is_grundy_game_over(&[1, 3, 1]), false);
+        assert_eq!(is_grundy_game_over(&[1, 1]), true);
+        assert_eq!(is_grundy_game_over(&[1]), true);
     }
 
     #[test]
