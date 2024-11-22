@@ -1,5 +1,5 @@
 pub fn approx_equal(x: f64, y: f64, epsilon: f64) -> bool {
-    return (x - y).abs() < epsilon;
+    (x - y).abs() < epsilon
 }
 
 pub fn is_prime(n: usize) -> bool {
