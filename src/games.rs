@@ -4,7 +4,7 @@ pub fn nim_sum<T>(elements: &[T]) -> T
 where
     T: Default + Copy + std::ops::BitXor<Output = T>,
 {
-    if elements.len() == 0 {
+    if elements.is_empty() {
         return T::default();
     }
     let mut result: T = elements[0];
@@ -23,7 +23,7 @@ where
             return false;
         }
     }
-    return true;
+    true
 }
 
 /// Return (A, B). It means "Take B elements from A heap"
@@ -40,14 +40,14 @@ pub fn nim_move(elements: &[usize]) -> (usize, usize) {
                 break;
             }
         }
-        return (elem_index, n_removed);
+        (elem_index, n_removed)
     } else {
         for i in 0..elements.len() {
             if elements[i] != 0 {
                 return (i, 1);
             }
         }
-        return (0, 0);
+        (0, 0)
     }
 }
 
@@ -68,7 +68,7 @@ pub fn misere_nim_move(elements: &[usize]) -> (usize, usize) {
             n_heaps_with_size_more_than_1 += 1;
             heap_with_size_more_than_1 = i;
         }
-        nim_sum = nim_sum ^ elements[i];
+        nim_sum ^= elements[i];
     }
 
     if n_heaps_with_size_more_than_1 == 1 {
@@ -95,14 +95,14 @@ pub fn misere_nim_move(elements: &[usize]) -> (usize, usize) {
                 break;
             }
         }
-        return (elem_index, n_removed);
+        (elem_index, n_removed)
     } else {
         for i in 0..elements.len() {
             if elements[i] != 0 {
                 return (i, 1);
             }
         }
-        return (0, 0);
+        (0, 0)
     }
 }
 
@@ -115,7 +115,7 @@ pub fn mex(states: &[usize]) -> usize {
     while grundy_numbers.contains(&mex) {
         mex += 1;
     }
-    return mex;
+    mex
 }
 
 pub fn is_losing_state(grundy_number: usize) -> bool {
@@ -139,7 +139,7 @@ pub fn grundy_number(n: usize) -> usize {
             used_nums.insert(n - i);
         }
     }
-    return mex(&grundy_numbers);
+    mex(&grundy_numbers)
 }
 
 /// Return (A, B, C). It means "Split A-th heap into B and C"
@@ -183,7 +183,7 @@ pub fn is_grundy_game_over(elements: &[usize]) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
 
 #[cfg(test)]
