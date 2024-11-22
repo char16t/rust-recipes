@@ -104,7 +104,7 @@ where
         let xy = coordinates::create_coordinate_function_2d!(self.rows, self.cols);
         if top_left.0 == 0 && top_left.1 == 0 {
             let a: usize = xy(bottom_right.0, bottom_right.1);
-            return self.prefix_sum[a];
+            self.prefix_sum[a]
         } else if top_left.0 == 0 {
             let a: usize = xy(bottom_right.0, bottom_right.1);
             let b: usize = xy(bottom_right.0, top_left.1 - 1);
@@ -255,7 +255,7 @@ where
         let (x1, y1, z1): (usize, usize, usize) = top_left;
         let (x2, y2, z2): (usize, usize, usize) = bottom_right;
         if x1 == 0 && y1 == 0 && z1 == 0 {
-            return self.prefix_sum[xy(x2, y2, z2)];
+            self.prefix_sum[xy(x2, y2, z2)]
         } else if x1 == 0 && y1 == 0 {
             return self.prefix_sum[xy(x2, y2, z2)] - self.prefix_sum[xy(x2, y2, z1 - 1)];
         } else if x1 == 0 && z1 == 0 {
@@ -380,7 +380,7 @@ where
     let mut idx: usize = index;
     while idx < fenwick_tree.len() {
         fenwick_tree[idx] += delta;
-        idx = idx + (idx & !idx + 1);
+        idx = idx + (idx & (!idx + 1));
     }
 }
 
@@ -392,7 +392,7 @@ where
     let mut sum: T = T::default();
     while idx > 0 {
         sum = sum + fenwick_tree[idx];
-        idx = idx - (idx & !idx + 1);
+        idx = idx - (idx & (!idx + 1));
     }
     sum
 }
@@ -524,8 +524,8 @@ pub fn build_original_by_difference_array<T>(diff_arr: &[T]) -> Vec<T>
 where
     T: Default + Copy + std::ops::Add<Output = T> + std::ops::Sub<Output = T>,
 {
-    let psa: PrefixSumArray<T> = PrefixSumArray::new(&diff_arr);
-    return psa.prefix_sum;
+    let psa: PrefixSumArray<T> = PrefixSumArray::new(diff_arr);
+    psa.prefix_sum
 }
 
 #[cfg(test)]
