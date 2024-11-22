@@ -289,7 +289,7 @@ mod tests {
         ));
         assert!(numbers::approx_equal(
             sin(std::f64::consts::PI / 4.0),
-            0.70710678119,
+            std::f64::consts::FRAC_1_SQRT_2, // 0.70710678119
             0.0000001
         ));
         assert!(numbers::approx_equal(
@@ -313,7 +313,7 @@ mod tests {
         ));
         assert!(numbers::approx_equal(
             cos(std::f64::consts::PI / 4.0),
-            0.70710678119,
+            std::f64::consts::FRAC_1_SQRT_2, // 0.70710678119
             0.0000001
         ));
         assert!(numbers::approx_equal(
@@ -327,7 +327,7 @@ mod tests {
     fn test_exp() {
         assert!(numbers::approx_equal(
             exp::<f64>(1.0),
-            2.71828182846,
+            std::f64::consts::E, // 2.71828182846
             0.000000000001
         ));
         assert!(numbers::approx_equal(

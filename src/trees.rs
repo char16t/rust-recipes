@@ -1342,15 +1342,15 @@ mod tests {
 
     #[test]
     fn test_prufer_code_decode() {
-        let mut prufer: Vec<usize> = vec![1, 1];
+        let prufer: Vec<usize> = vec![1, 1];
         assert_eq!(
-            prufer_code_decode(&mut prufer),
+            prufer_code_decode(&prufer),
             vec![(1, 0), (1, 2), (1, 3)]
         );
 
-        let mut prufer: Vec<usize> = vec![3, 3, 1];
+        let prufer: Vec<usize> = vec![3, 3, 1];
         assert_eq!(
-            prufer_code_decode(&mut prufer),
+            prufer_code_decode(&prufer),
             vec![(3, 0), (3, 2), (1, 4), (1, 3)]
         );
     }
