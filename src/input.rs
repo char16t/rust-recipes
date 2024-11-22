@@ -1,44 +1,61 @@
 use std::io;
-use std::io::{Read, BufRead};
-use std::str::{SplitWhitespace, FromStr};
+use std::io::{BufRead, Read};
+use std::str::{FromStr, SplitWhitespace};
 
 #[allow(dead_code)]
-pub fn take_num<T>() -> T where T: FromStr, <T as FromStr>::Err: std::fmt::Debug {
+pub fn take_num<T>() -> T
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Debug,
+{
     _take_num_from_reader(std::io::stdin())
 }
 
 #[allow(dead_code)]
-pub fn take_2nums<T1, T2>() -> (T1, T2) 
-where 
-    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
-    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug
+pub fn take_2nums<T1, T2>() -> (T1, T2)
+where
+    T1: FromStr,
+    <T1 as FromStr>::Err: std::fmt::Debug,
+    T2: FromStr,
+    <T2 as FromStr>::Err: std::fmt::Debug,
 {
     _take_2nums_from_reader(std::io::stdin())
 }
 
 #[allow(dead_code)]
-pub fn take_3nums<T1, T2, T3>() -> (T1, T2, T3) 
-where 
-    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
-    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
-    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug
+pub fn take_3nums<T1, T2, T3>() -> (T1, T2, T3)
+where
+    T1: FromStr,
+    <T1 as FromStr>::Err: std::fmt::Debug,
+    T2: FromStr,
+    <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr,
+    <T3 as FromStr>::Err: std::fmt::Debug,
 {
     _take_3nums_from_reader(std::io::stdin())
 }
 
 #[allow(dead_code)]
-pub fn take_4nums<T1, T2, T3, T4>() -> (T1, T2, T3, T4) 
-where 
-    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
-    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
-    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug,
-    T4: FromStr, <T4 as FromStr>::Err: std::fmt::Debug
+pub fn take_4nums<T1, T2, T3, T4>() -> (T1, T2, T3, T4)
+where
+    T1: FromStr,
+    <T1 as FromStr>::Err: std::fmt::Debug,
+    T2: FromStr,
+    <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr,
+    <T3 as FromStr>::Err: std::fmt::Debug,
+    T4: FromStr,
+    <T4 as FromStr>::Err: std::fmt::Debug,
 {
     _take_4nums_from_reader(std::io::stdin())
 }
 
 #[allow(dead_code)]
-pub fn take_vector<T>() -> Vec<T> where T: FromStr, <T as FromStr>::Err: std::fmt::Debug {
+pub fn take_vector<T>() -> Vec<T>
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Debug,
+{
     _take_vector_from_reader(std::io::stdin())
 }
 
@@ -47,18 +64,25 @@ pub fn take_string<T>() -> Vec<char> {
     _take_string_from_reader(std::io::stdin())
 }
 
-fn _take_num_from_reader<T, R>(reader: R) -> T where T: FromStr, <T as FromStr>::Err: std::fmt::Debug, R: Read {
+fn _take_num_from_reader<T, R>(reader: R) -> T
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Debug,
+    R: Read,
+{
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).expect("Failed to read line");
     input.trim().parse().unwrap()
 }
 
-fn _take_2nums_from_reader<T1, T2, R>(reader: R) -> (T1, T2)  
-where 
-    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
-    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug, 
-    R: Read
+fn _take_2nums_from_reader<T1, T2, R>(reader: R) -> (T1, T2)
+where
+    T1: FromStr,
+    <T1 as FromStr>::Err: std::fmt::Debug,
+    T2: FromStr,
+    <T2 as FromStr>::Err: std::fmt::Debug,
+    R: Read,
 {
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
@@ -70,12 +94,15 @@ where
     (ax, ay)
 }
 
-fn _take_3nums_from_reader<T1, T2, T3, R>(reader: R) -> (T1, T2, T3)  
-where 
-    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
-    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
-    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug,
-    R: Read
+fn _take_3nums_from_reader<T1, T2, T3, R>(reader: R) -> (T1, T2, T3)
+where
+    T1: FromStr,
+    <T1 as FromStr>::Err: std::fmt::Debug,
+    T2: FromStr,
+    <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr,
+    <T3 as FromStr>::Err: std::fmt::Debug,
+    R: Read,
 {
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
@@ -88,13 +115,17 @@ where
     (a, b, c)
 }
 
-fn _take_4nums_from_reader<T1, T2, T3, T4, R>(reader: R) -> (T1, T2, T3, T4)  
-where 
-    T1: FromStr, <T1 as FromStr>::Err: std::fmt::Debug, 
-    T2: FromStr, <T2 as FromStr>::Err: std::fmt::Debug,
-    T3: FromStr, <T3 as FromStr>::Err: std::fmt::Debug,
-    T4: FromStr, <T4 as FromStr>::Err: std::fmt::Debug, 
-    R: Read
+fn _take_4nums_from_reader<T1, T2, T3, T4, R>(reader: R) -> (T1, T2, T3, T4)
+where
+    T1: FromStr,
+    <T1 as FromStr>::Err: std::fmt::Debug,
+    T2: FromStr,
+    <T2 as FromStr>::Err: std::fmt::Debug,
+    T3: FromStr,
+    <T3 as FromStr>::Err: std::fmt::Debug,
+    T4: FromStr,
+    <T4 as FromStr>::Err: std::fmt::Debug,
+    R: Read,
 {
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
@@ -108,19 +139,31 @@ where
     (a, b, c, d)
 }
 
-fn _take_vector_from_reader<T, R>(reader: R) -> Vec<T> where T: FromStr, <T as FromStr>::Err: std::fmt::Debug, R: Read {
+fn _take_vector_from_reader<T, R>(reader: R) -> Vec<T>
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Debug,
+    R: Read,
+{
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).unwrap();
-    let arr: Vec<T> = input.trim().split_whitespace().map(|x| x.parse().unwrap()).collect();
+    let arr: Vec<T> = input
+        .trim()
+        .split_whitespace()
+        .map(|x| x.parse().unwrap())
+        .collect();
     return arr;
 }
 
-fn _take_string_from_reader<R>(reader: R) -> Vec<char> where R: Read {
+fn _take_string_from_reader<R>(reader: R) -> Vec<char>
+where
+    R: Read,
+{
     let mut input: String = String::new();
     let mut reader: io::BufReader<R> = io::BufReader::new(reader);
     reader.read_line(&mut input).unwrap();
-    let vec:Vec<char> = input.trim().chars().collect();
+    let vec: Vec<char> = input.trim().chars().collect();
     return vec;
 }
 

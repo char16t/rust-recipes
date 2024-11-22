@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use crate::numbers;
+use std::collections::HashSet;
 
 pub fn binomial_coefficient(n: usize, k: usize) -> usize {
     if k > n {
@@ -19,12 +19,12 @@ pub fn factorial_usize(n: usize) -> usize {
     if n <= 1 {
         return 1;
     }
-    
+
     let mut result: usize = 1;
     for i in 2..=n {
         result *= i;
     }
-    
+
     result
 }
 
@@ -32,12 +32,12 @@ pub fn factorial_i128(n: i128) -> i128 {
     if n <= 1 {
         return 1;
     }
-    
+
     let mut result: i128 = 1;
     for i in 2..=n {
         result *= i;
     }
-    
+
     result
 }
 
@@ -46,7 +46,7 @@ pub fn multinomial_coefficient(n: usize, k: &[usize]) -> usize {
     for &x in k {
         denominator *= factorial_usize(x);
     }
-    
+
     factorial_usize(n) / denominator
 }
 
@@ -92,8 +92,8 @@ pub fn count_permutations_with_repetitions(n: usize) -> usize {
 }
 
 pub fn combinations<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
-where 
-    T: Copy
+where
+    T: Copy,
 {
     let mut result: Vec<Vec<T>> = Vec::new();
     let mut stack: Vec<(Vec<T>, usize, usize)> = Vec::new();
@@ -113,8 +113,8 @@ where
 }
 
 pub fn combinations_with_repetitions<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
-where 
-    T: Copy
+where
+    T: Copy,
 {
     let mut result: Vec<Vec<T>> = Vec::new();
     let mut stack: Vec<(Vec<T>, usize, usize)> = Vec::new();
@@ -134,8 +134,8 @@ where
 }
 
 pub fn placements<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
-where 
-    T: Copy
+where
+    T: Copy,
 {
     let mut result: Vec<Vec<T>> = Vec::new();
     let mut stack: Vec<(Vec<T>, Vec<bool>)> = Vec::new();
@@ -159,8 +159,8 @@ where
 }
 
 pub fn placements_with_repetitions<T>(elements: &[T], k: usize) -> Vec<Vec<T>>
-where 
-    T: Copy
+where
+    T: Copy,
 {
     let mut result: Vec<Vec<T>> = Vec::new();
     let mut stack: Vec<Vec<T>> = Vec::new();
@@ -180,22 +180,22 @@ where
 }
 
 pub fn permutations<T>(elements: &[T]) -> Vec<Vec<T>>
-where 
-    T: Copy
+where
+    T: Copy,
 {
     placements(elements, elements.len())
 }
 
 pub fn permutations_with_repetitions<T>(elements: &[T]) -> Vec<Vec<T>>
-where 
-    T: Copy
+where
+    T: Copy,
 {
     placements_with_repetitions(elements, elements.len())
 }
 
 pub fn inclusion_exclusion<R>(unions: &[HashSet<R>]) -> isize
 where
-    R: Copy + Eq + std::hash::Hash
+    R: Copy + Eq + std::hash::Hash,
 {
     let mut result: isize = 0;
     let mut sign: isize = 1;
@@ -313,27 +313,28 @@ mod tests {
         assert_eq!(r, vec![vec!['B', 'C'], vec!['A', 'C'], vec!['A', 'B']]);
 
         let r: Vec<Vec<i16>> = combinations(&vec![1, 2, 3, 4, 5, 6], 3);
-        assert_eq!(r, 
+        assert_eq!(
+            r,
             vec![
-                vec![4, 5, 6], 
-                vec![3, 5, 6], 
-                vec![3, 4, 6], 
+                vec![4, 5, 6],
+                vec![3, 5, 6],
+                vec![3, 4, 6],
                 vec![3, 4, 5],
-                vec![2, 5, 6], 
-                vec![2, 4, 6], 
-                vec![2, 4, 5], 
-                vec![2, 3, 6], 
-                vec![2, 3, 5], 
-                vec![2, 3, 4], 
-                vec![1, 5, 6], 
-                vec![1, 4, 6], 
-                vec![1, 4, 5], 
-                vec![1, 3, 6], 
-                vec![1, 3, 5], 
-                vec![1, 3, 4], 
-                vec![1, 2, 6], 
-                vec![1, 2, 5], 
-                vec![1, 2, 4], 
+                vec![2, 5, 6],
+                vec![2, 4, 6],
+                vec![2, 4, 5],
+                vec![2, 3, 6],
+                vec![2, 3, 5],
+                vec![2, 3, 4],
+                vec![1, 5, 6],
+                vec![1, 4, 6],
+                vec![1, 4, 5],
+                vec![1, 3, 6],
+                vec![1, 3, 5],
+                vec![1, 3, 4],
+                vec![1, 2, 6],
+                vec![1, 2, 5],
+                vec![1, 2, 4],
                 vec![1, 2, 3]
             ]
         );
@@ -345,105 +346,122 @@ mod tests {
     #[test]
     fn test_combinations_with_repetitions() {
         let r: Vec<Vec<char>> = combinations_with_repetitions(&vec!['A', 'B', 'C'], 2);
-        assert_eq!(r, vec![
-            vec!['C', 'C'], 
-            vec!['B', 'C'], 
-            vec!['B', 'B'], 
-            vec!['A', 'C'], 
-            vec!['A', 'B'], 
-            vec!['A', 'A']
-        ]);
+        assert_eq!(
+            r,
+            vec![
+                vec!['C', 'C'],
+                vec!['B', 'C'],
+                vec!['B', 'B'],
+                vec!['A', 'C'],
+                vec!['A', 'B'],
+                vec!['A', 'A']
+            ]
+        );
     }
 
     #[test]
     fn test_placements() {
         let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 2);
-        assert_eq!(r, vec![
-            vec!['C', 'B'], 
-            vec!['C', 'A'], 
-            vec!['B', 'C'], 
-            vec!['B', 'A'], 
-            vec!['A', 'C'], 
-            vec!['A', 'B']
-        ]);
+        assert_eq!(
+            r,
+            vec![
+                vec!['C', 'B'],
+                vec!['C', 'A'],
+                vec!['B', 'C'],
+                vec!['B', 'A'],
+                vec!['A', 'C'],
+                vec!['A', 'B']
+            ]
+        );
 
         let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 3);
-        assert_eq!(r, vec![
-            vec!['C', 'B', 'A'], 
-            vec!['C', 'A', 'B'], 
-            vec!['B', 'C', 'A'], 
-            vec!['B', 'A', 'C'], 
-            vec!['A', 'C', 'B'], 
-            vec!['A', 'B', 'C']
-        ]);
+        assert_eq!(
+            r,
+            vec![
+                vec!['C', 'B', 'A'],
+                vec!['C', 'A', 'B'],
+                vec!['B', 'C', 'A'],
+                vec!['B', 'A', 'C'],
+                vec!['A', 'C', 'B'],
+                vec!['A', 'B', 'C']
+            ]
+        );
     }
 
     #[test]
     fn test_placements_with_repetitions() {
         let r: Vec<Vec<char>> = placements_with_repetitions(&vec!['A', 'B', 'C'], 2);
-        assert_eq!(r, vec![
-            vec!['C', 'C'], 
-            vec!['C', 'B'], 
-            vec!['C', 'A'], 
-            vec!['B', 'C'], 
-            vec!['B', 'B'], 
-            vec!['B', 'A'], 
-            vec!['A', 'C'], 
-            vec!['A', 'B'], 
-            vec!['A', 'A']
-        ]);
+        assert_eq!(
+            r,
+            vec![
+                vec!['C', 'C'],
+                vec!['C', 'B'],
+                vec!['C', 'A'],
+                vec!['B', 'C'],
+                vec!['B', 'B'],
+                vec!['B', 'A'],
+                vec!['A', 'C'],
+                vec!['A', 'B'],
+                vec!['A', 'A']
+            ]
+        );
     }
 
     #[test]
     fn test_permutations() {
         let p: Vec<Vec<char>> = permutations(&vec!['A', 'B', 'C']);
-        assert_eq!(p, vec![
-            vec!['C', 'B', 'A'], 
-            vec!['C', 'A', 'B'], 
-            vec!['B', 'C', 'A'], 
-            vec!['B', 'A', 'C'], 
-            vec!['A', 'C', 'B'], 
-            vec!['A', 'B', 'C']
-        ]);
+        assert_eq!(
+            p,
+            vec![
+                vec!['C', 'B', 'A'],
+                vec!['C', 'A', 'B'],
+                vec!['B', 'C', 'A'],
+                vec!['B', 'A', 'C'],
+                vec!['A', 'C', 'B'],
+                vec!['A', 'B', 'C']
+            ]
+        );
     }
 
     #[test]
     fn test_permutations_with_repetitions() {
         let p: Vec<Vec<char>> = permutations_with_repetitions(&vec!['A', 'B', 'C']);
-        assert_eq!(p, vec![
-            vec!['C', 'C', 'C'], 
-            vec!['C', 'C', 'B'], 
-            vec!['C', 'C', 'A'], 
-            vec!['C', 'B', 'C'], 
-            vec!['C', 'B', 'B'], 
-            vec!['C', 'B', 'A'], 
-            vec!['C', 'A', 'C'], 
-            vec!['C', 'A', 'B'], 
-            vec!['C', 'A', 'A'], 
-            vec!['B', 'C', 'C'], 
-            vec!['B', 'C', 'B'], 
-            vec!['B', 'C', 'A'], 
-            vec!['B', 'B', 'C'], 
-            vec!['B', 'B', 'B'], 
-            vec!['B', 'B', 'A'], 
-            vec!['B', 'A', 'C'], 
-            vec!['B', 'A', 'B'], 
-            vec!['B', 'A', 'A'], 
-            vec!['A', 'C', 'C'], 
-            vec!['A', 'C', 'B'], 
-            vec!['A', 'C', 'A'], 
-            vec!['A', 'B', 'C'], 
-            vec!['A', 'B', 'B'], 
-            vec!['A', 'B', 'A'], 
-            vec!['A', 'A', 'C'], 
-            vec!['A', 'A', 'B'], 
-            vec!['A', 'A', 'A']
-        ]);
+        assert_eq!(
+            p,
+            vec![
+                vec!['C', 'C', 'C'],
+                vec!['C', 'C', 'B'],
+                vec!['C', 'C', 'A'],
+                vec!['C', 'B', 'C'],
+                vec!['C', 'B', 'B'],
+                vec!['C', 'B', 'A'],
+                vec!['C', 'A', 'C'],
+                vec!['C', 'A', 'B'],
+                vec!['C', 'A', 'A'],
+                vec!['B', 'C', 'C'],
+                vec!['B', 'C', 'B'],
+                vec!['B', 'C', 'A'],
+                vec!['B', 'B', 'C'],
+                vec!['B', 'B', 'B'],
+                vec!['B', 'B', 'A'],
+                vec!['B', 'A', 'C'],
+                vec!['B', 'A', 'B'],
+                vec!['B', 'A', 'A'],
+                vec!['A', 'C', 'C'],
+                vec!['A', 'C', 'B'],
+                vec!['A', 'C', 'A'],
+                vec!['A', 'B', 'C'],
+                vec!['A', 'B', 'B'],
+                vec!['A', 'B', 'A'],
+                vec!['A', 'A', 'C'],
+                vec!['A', 'A', 'B'],
+                vec!['A', 'A', 'A']
+            ]
+        );
     }
 
     #[test]
     fn test_inclusion_exclusion() {
-
         let a: HashSet<i32> = HashSet::from_iter(vec![4]);
         let b: HashSet<i32> = HashSet::from_iter(vec![2]);
         let c: HashSet<i32> = HashSet::from_iter(vec![3]);

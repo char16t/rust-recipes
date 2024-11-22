@@ -1,4 +1,7 @@
-use std::{cmp, collections::{HashMap, HashSet, VecDeque}};
+use std::{
+    cmp,
+    collections::{HashMap, HashSet, VecDeque},
+};
 
 use crate::{combinatorics, coordinates, graphs::AdjacencyListGraph};
 
@@ -9,17 +12,28 @@ pub fn de_bruijn_sequence(alphabet: &[char], length: usize) -> String {
     for vertice in vertices {
         let a: String = vertice.iter().collect::<String>();
         for &letter in alphabet {
-            let b: String = vertice.iter().skip(1).cloned().chain(std::iter::once(letter)).collect::<String>();
+            let b: String = vertice
+                .iter()
+                .skip(1)
+                .cloned()
+                .chain(std::iter::once(letter))
+                .collect::<String>();
             graph.add_edge(a.clone(), b);
         }
     }
 
     let result: Vec<String> = graph.eulerian_path_for_connected_graphs();
-    let tail: String = result.iter().skip(1).cloned().map(|x| x.chars().last()).filter_map(|x| x).collect();
-    
+    let tail: String = result
+        .iter()
+        .skip(1)
+        .cloned()
+        .map(|x| x.chars().last())
+        .filter_map(|x| x)
+        .collect();
+
     match result.first() {
         Some(head) => head.clone() + tail.as_str(),
-        None => String::new()
+        None => String::new(),
     }
 }
 
@@ -72,8 +86,6 @@ pub fn longest_common_subsequence(a: &str, b: &str) -> String {
     let total_columns: usize = b_chars.len() + 1;
     let xy = coordinates::create_coordinate_function_2d!(total_rows, total_columns);
 
-
-
     let mut table: Vec<usize> = vec![0; total_rows * total_columns];
     for row in 1..total_rows {
         for col in 1..total_columns {
@@ -97,8 +109,7 @@ pub fn longest_common_subsequence(a: &str, b: &str) -> String {
         // check element to the left is equal
         else if table[xy(x, y)] == table[xy(x, y - 1)] {
             y = y - 1;
-        }
-        else {
+        } else {
             let char: u8 = a_chars[x - 1];
             common_seq.push_front(char);
             x = x - 1;
@@ -119,24 +130,35 @@ pub fn levenshtein_distance(a: &str, b: &str) -> usize {
     let mut matrix: Vec<usize> = vec![0; word1_length * word2_length];
     let xy = coordinates::create_coordinate_function_2d!(word2_length, word1_length);
 
-    for i in 1..word1_length { matrix[xy(0, i)] = i; }
-    for j in 1..word2_length { matrix[xy(j, 0)] = j; }
+    for i in 1..word1_length {
+        matrix[xy(0, i)] = i;
+    }
+    for j in 1..word2_length {
+        matrix[xy(j, 0)] = j;
+    }
 
     for j in 1..word2_length {
         for i in 1..word1_length {
-            let edit_j_i: usize = if w1[i-1] == w2[j-1] {
-                matrix[xy(j-1, i-1)]
+            let edit_j_i: usize = if w1[i - 1] == w2[j - 1] {
+                matrix[xy(j - 1, i - 1)]
             } else {
-                1 + std::cmp::min(std::cmp::min(matrix[xy(j, i-1)], matrix[xy(j-1, i)]), matrix[xy(j-1, i-1)])
+                1 + std::cmp::min(
+                    std::cmp::min(matrix[xy(j, i - 1)], matrix[xy(j - 1, i)]),
+                    matrix[xy(j - 1, i - 1)],
+                )
             };
             matrix[xy(j, i)] = edit_j_i;
         }
     }
 
-    matrix[xy(word2_length-1, word1_length-1)]
+    matrix[xy(word2_length - 1, word1_length - 1)]
 }
 
-pub fn fuzzy_search_levenshtein_distance<'a>(query: &'a str, list: &[&'a str], max_distance: usize) -> Vec<(&'a str, usize)> {
+pub fn fuzzy_search_levenshtein_distance<'a>(
+    query: &'a str,
+    list: &[&'a str],
+    max_distance: usize,
+) -> Vec<(&'a str, usize)> {
     let mut result: Vec<(&str, usize)> = Vec::new();
     for &item in list.iter() {
         let distance: usize = levenshtein_distance(query, item);
@@ -149,14 +171,13 @@ pub fn fuzzy_search_levenshtein_distance<'a>(query: &'a str, list: &[&'a str], m
 }
 
 pub fn fuzzy_search_levenshtein_distance_with_synonyms<'a>(
-    query: &'a str, 
-    list: &[&'a str], 
-    syn: &HashMap<&'a str, Vec<String>>, 
-    max_distance: usize) -> Vec<(&'a str, usize)> 
-{
+    query: &'a str,
+    list: &[&'a str],
+    syn: &HashMap<&'a str, Vec<String>>,
+    max_distance: usize,
+) -> Vec<(&'a str, usize)> {
     let mut result: Vec<(&str, usize)> = Vec::new();
     for &item in list.iter() {
-        
         let copy: Vec<String> = vec![String::from(item)];
         let synonyms: &Vec<String> = syn.get(item).unwrap_or(&copy);
 
@@ -231,23 +252,32 @@ pub fn jaro_similarity(s1: &str, s2: &str) -> f64 {
     }
     let t: usize = t / 2;
 
-
     let jaro_similarity: f64 = (matches as f64 / len1 as f64
         + matches as f64 / len2 as f64
-        + (matches as f64 - t as f64) / matches as f64) / 3.0;
+        + (matches as f64 - t as f64) / matches as f64)
+        / 3.0;
 
     jaro_similarity
 }
 
 pub fn jaro_winkler_similarity(s1: &str, s2: &str) -> f64 {
     let jaro_similarity: f64 = jaro_similarity(s1, s2);
-    let prefix_length: usize = s1.chars().zip(s2.chars()).take_while(|(a, b)| a == b).count().min(4);
+    let prefix_length: usize = s1
+        .chars()
+        .zip(s2.chars())
+        .take_while(|(a, b)| a == b)
+        .count()
+        .min(4);
     let p: f64 = 0.1; // scaling factor
 
     jaro_similarity + (prefix_length as f64 * p * (1.0 - jaro_similarity))
 }
 
-pub fn fuzzy_search_jaro_winkler<'a>(query: &'a str, list: &[&'a str], min_distance: f64) -> Vec<(&'a str, f64)> {
+pub fn fuzzy_search_jaro_winkler<'a>(
+    query: &'a str,
+    list: &[&'a str],
+    min_distance: f64,
+) -> Vec<(&'a str, f64)> {
     let mut result: Vec<(&str, f64)> = Vec::new();
     for &item in list.iter() {
         let distance: f64 = jaro_winkler_similarity(query, item);
@@ -260,14 +290,13 @@ pub fn fuzzy_search_jaro_winkler<'a>(query: &'a str, list: &[&'a str], min_dista
 }
 
 pub fn fuzzy_search_jaro_winkler_with_synonyms<'a>(
-    query: &'a str, 
-    list: &[&'a str], 
-    syn: &HashMap<&'a str, Vec<String>>, 
-    min_distance: f64) -> Vec<(&'a str, f64)> 
-{
+    query: &'a str,
+    list: &[&'a str],
+    syn: &HashMap<&'a str, Vec<String>>,
+    min_distance: f64,
+) -> Vec<(&'a str, f64)> {
     let mut result: Vec<(&str, f64)> = Vec::new();
     for &item in list.iter() {
-        
         let copy: Vec<String> = vec![String::from(item)];
         let synonyms: &Vec<String> = syn.get(item).unwrap_or(&copy);
 
@@ -303,10 +332,10 @@ impl PolynomialHash {
     pub fn new(string: &str, a: usize, b: usize) -> Self {
         let bytes: &[u8] = string.as_bytes();
         let n: usize = bytes.len();
-        
+
         let mut h: Vec<usize> = vec![0; n];
         let mut p: Vec<usize> = vec![0; n];
-        
+
         // p[0] = A^0 mod B
         p[0] = 1;
 
@@ -328,8 +357,9 @@ impl PolynomialHash {
         if a == 0 {
             return self.h[b];
         }
-        
-        let hash_value: usize = (self.h[b] + self.b - (self.h[a - 1] * self.p[b - a + 1] % self.b)) % self.b;
+
+        let hash_value: usize =
+            (self.h[b] + self.b - (self.h[a - 1] * self.p[b - a + 1] % self.b)) % self.b;
 
         hash_value
     }
@@ -342,9 +372,9 @@ pub fn pattern_matching(pattern: &str, string: &str) -> Vec<usize> {
     let string_ph: PolynomialHash = PolynomialHash::new(string, 3, 97);
 
     let pattern_length: usize = pattern.len();
-    let pattern_hash: usize = pattern_ph.hash_substring(0, pattern_length-1);
+    let pattern_hash: usize = pattern_ph.hash_substring(0, pattern_length - 1);
 
-    for i in 0..string.len()-pattern_length {
+    for i in 0..string.len() - pattern_length {
         if string_ph.hash_substring(i, i + pattern_length - 1) == pattern_hash {
             positions.push(i);
         }
@@ -357,7 +387,7 @@ pub fn count_different_substrings(string: &str, length: usize) -> usize {
     let mut substring_hashes: HashSet<usize> = HashSet::new();
 
     let string_ph: PolynomialHash = PolynomialHash::new(string, 3, 97);
-    for i in 0..string.len()-length {
+    for i in 0..string.len() - length {
         substring_hashes.insert(string_ph.hash_substring(i, i + length - 1));
     }
 
@@ -376,7 +406,7 @@ mod tests {
         let n: usize = 3; //length
         let k: usize = alphabet.len();
         let result: String = de_bruijn_sequence(&alphabet, n);
-        
+
         assert_eq!(result.len(), k.pow(n as u32) + n - 1);
 
         let ps: Vec<Vec<char>> = combinatorics::placements_with_repetitions(&alphabet, 3);
@@ -444,7 +474,13 @@ mod tests {
     #[test]
     fn test_fuzzy_search_levenshtein_distance() {
         let query: &str = "repor.doc";
-        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let list: Vec<&str> = vec![
+            "report.docx",
+            "repord2.docx",
+            "summary.pdf",
+            "presentation.pptx",
+            "data_analysis.xlsx",
+        ];
         let actual: Vec<(&str, usize)> = fuzzy_search_levenshtein_distance(query, &list, 3);
 
         let expected: Vec<(&str, usize)> = vec![("report.docx", 2), ("repord2.docx", 3)];
@@ -453,7 +489,6 @@ mod tests {
 
     #[test]
     fn test_fuzzy_search_levenshtein_distance_with_synonyms() {
-        
         let mut russian: HashMap<char, char> = HashMap::new();
         russian.insert('q', 'й');
         russian.insert('w', 'ц');
@@ -481,9 +516,15 @@ mod tests {
         russian.insert('b', 'и');
         russian.insert('n', 'т');
         russian.insert('m', 'ь');
-  
+
         let query: &str = "кузщк"; // repor
-        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let list: Vec<&str> = vec![
+            "report.docx",
+            "repord2.docx",
+            "summary.pdf",
+            "presentation.pptx",
+            "data_analysis.xlsx",
+        ];
         let mut synonyms: HashMap<&str, Vec<String>> = HashMap::new();
         for &item in list.iter() {
             let vector: &mut Vec<String> = synonyms.entry(item).or_insert(Vec::new());
@@ -501,7 +542,8 @@ mod tests {
             vector.push(rus_word);
         }
 
-        let actual: Vec<(&str, usize)> = fuzzy_search_levenshtein_distance_with_synonyms(query, &list, &synonyms, 7);
+        let actual: Vec<(&str, usize)> =
+            fuzzy_search_levenshtein_distance_with_synonyms(query, &list, &synonyms, 7);
         let expected: Vec<(&str, usize)> = vec![("report.docx", 6), ("repord2.docx", 7)];
         assert_eq!(actual, expected);
     }
@@ -515,36 +557,84 @@ mod tests {
         assert_eq!(jaro_similarity("", "B"), 0.0);
         assert_eq!(jaro_similarity("B", "B"), 1.0);
         assert_eq!(jaro_similarity("ABC", "ABC"), 1.0);
-        assert!(approx_equal(jaro_similarity("ABC", "ABCA"), 0.9166666666666666, epsilon));
-        assert!(approx_equal(jaro_similarity("ABC", "AC"), 0.611111111111111, epsilon));
-        assert!(approx_equal(jaro_similarity("ABC", "ADC"), 0.7777777777777777, epsilon));
-        assert!(approx_equal(jaro_similarity("kitten", "sitting"), 0.746031746031746, epsilon));
-        assert!(approx_equal(jaro_similarity("saturday", "sunday"), 0.7527777777777779, epsilon));
+        assert!(approx_equal(
+            jaro_similarity("ABC", "ABCA"),
+            0.9166666666666666,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_similarity("ABC", "AC"),
+            0.611111111111111,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_similarity("ABC", "ADC"),
+            0.7777777777777777,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_similarity("kitten", "sitting"),
+            0.746031746031746,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_similarity("saturday", "sunday"),
+            0.7527777777777779,
+            epsilon
+        ));
     }
 
     #[test]
     fn test_jaro_winkler_similarity() {
         let epsilon: f64 = 0.00000001;
-        assert!(approx_equal(jaro_winkler_similarity("ABC", "ABCA"), 0.9416666666666667, epsilon));
-        assert!(approx_equal(jaro_winkler_similarity("ABC", "AC"), 0.6499999999999999, epsilon));
-        assert!(approx_equal(jaro_winkler_similarity("ABC", "ADC"), 0.7999999999999999, epsilon));
-        assert!(approx_equal(jaro_winkler_similarity("kitten", "sitting"), 0.746031746031746, epsilon));
-        assert!(approx_equal(jaro_winkler_similarity("saturday", "sunday"), 0.7775000000000001, epsilon));
+        assert!(approx_equal(
+            jaro_winkler_similarity("ABC", "ABCA"),
+            0.9416666666666667,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_winkler_similarity("ABC", "AC"),
+            0.6499999999999999,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_winkler_similarity("ABC", "ADC"),
+            0.7999999999999999,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_winkler_similarity("kitten", "sitting"),
+            0.746031746031746,
+            epsilon
+        ));
+        assert!(approx_equal(
+            jaro_winkler_similarity("saturday", "sunday"),
+            0.7775000000000001,
+            epsilon
+        ));
     }
-    
+
     #[test]
     fn test_fuzzy_search_jaro_winkler() {
         let query: &str = "repor.doc";
-        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let list: Vec<&str> = vec![
+            "report.docx",
+            "repord2.docx",
+            "summary.pdf",
+            "presentation.pptx",
+            "data_analysis.xlsx",
+        ];
         let actual: Vec<(&str, f64)> = fuzzy_search_jaro_winkler(query, &list, 0.9);
 
-        let expected: Vec<(&str, f64)> = vec![("report.docx", 0.9636363636363636), ("repord2.docx", 0.9277777777777778)];
+        let expected: Vec<(&str, f64)> = vec![
+            ("report.docx", 0.9636363636363636),
+            ("repord2.docx", 0.9277777777777778),
+        ];
         assert_eq!(actual, expected);
     }
 
     #[test]
     fn test_fuzzy_search_jaro_winkler_with_synonyms() {
-        
         let mut russian: HashMap<char, char> = HashMap::new();
         russian.insert('q', 'й');
         russian.insert('w', 'ц');
@@ -572,9 +662,15 @@ mod tests {
         russian.insert('b', 'и');
         russian.insert('n', 'т');
         russian.insert('m', 'ь');
-  
+
         let query: &str = "кузщк"; // repor
-        let list: Vec<&str> = vec!["report.docx", "repord2.docx", "summary.pdf", "presentation.pptx", "data_analysis.xlsx"];
+        let list: Vec<&str> = vec![
+            "report.docx",
+            "repord2.docx",
+            "summary.pdf",
+            "presentation.pptx",
+            "data_analysis.xlsx",
+        ];
         let mut synonyms: HashMap<&str, Vec<String>> = HashMap::new();
         for &item in list.iter() {
             let vector: &mut Vec<String> = synonyms.entry(item).or_insert(Vec::new());
@@ -592,13 +688,15 @@ mod tests {
             vector.push(rus_word);
         }
 
-        let actual: Vec<(&str, f64)> = fuzzy_search_jaro_winkler_with_synonyms(query, &list, &synonyms, 0.7);
-        let expected: Vec<(&str, f64)> = vec![("report.docx", 0.9), ("repord2.docx", 0.8952380952380953)];
+        let actual: Vec<(&str, f64)> =
+            fuzzy_search_jaro_winkler_with_synonyms(query, &list, &synonyms, 0.7);
+        let expected: Vec<(&str, f64)> =
+            vec![("report.docx", 0.9), ("repord2.docx", 0.8952380952380953)];
         assert_eq!(actual, expected);
     }
 
     #[test]
-    fn test_polynomial_hash() {            
+    fn test_polynomial_hash() {
         let string: &str = "ABACB";
         let a: usize = 3;
         let b: usize = 97;

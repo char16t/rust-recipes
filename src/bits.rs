@@ -82,14 +82,17 @@ pub struct LongArithmetic {
 }
 
 impl LongArithmetic {
-
     pub fn new() -> Self {
-        LongArithmetic { data: Vec::with_capacity(1) }
+        LongArithmetic {
+            data: Vec::with_capacity(1),
+        }
     }
 
     pub fn with_capacity(size: usize) -> Self {
         let cap: usize = size / BITS_PER_U64 + 1;
-        let mut a: LongArithmetic = LongArithmetic { data: Vec::with_capacity(1) };
+        let mut a: LongArithmetic = LongArithmetic {
+            data: Vec::with_capacity(1),
+        };
         a.data.resize_with(cap, Default::default);
         a
     }
@@ -97,7 +100,7 @@ impl LongArithmetic {
     pub fn set_bit(&mut self, index: usize) {
         let array_index: usize = index / BITS_PER_U64;
         let bit_index: usize = index % BITS_PER_U64;
-       
+
         while array_index >= self.data.len() {
             self.data.push(0);
         }
@@ -108,7 +111,7 @@ impl LongArithmetic {
     pub fn unset_bit(&mut self, index: usize) {
         let array_index: usize = index / BITS_PER_U64;
         let bit_index: usize = index % BITS_PER_U64;
-       
+
         while array_index >= self.data.len() {
             self.data.push(0);
         }
@@ -119,7 +122,7 @@ impl LongArithmetic {
     pub fn toggle_bit(&mut self, index: usize) {
         let array_index: usize = index / BITS_PER_U64;
         let bit_index: usize = index % BITS_PER_U64;
-       
+
         while array_index >= self.data.len() {
             self.data.push(0);
         }
@@ -130,7 +133,7 @@ impl LongArithmetic {
     pub fn is_bit_set(&mut self, index: usize) -> bool {
         let array_index: usize = index / BITS_PER_U64;
         let bit_index: usize = index % BITS_PER_U64;
-       
+
         while array_index >= self.data.len() {
             self.data.push(0);
         }
@@ -156,13 +159,13 @@ mod tests {
     #[test]
     fn test_set_bit() {
         assert_eq!(set_bit(0b0001, 0), 0b0001);
-        assert_eq!(set_bit(0b0001, 1), 0b0011);       
+        assert_eq!(set_bit(0b0001, 1), 0b0011);
     }
 
     #[test]
     fn test_unset_bit() {
         assert_eq!(unset_bit(0b0001, 0), 0b0000);
-        assert_eq!(unset_bit(0b0001, 1), 0b0001);       
+        assert_eq!(unset_bit(0b0001, 1), 0b0001);
     }
 
     #[test]
@@ -174,7 +177,7 @@ mod tests {
     #[test]
     fn test_is_bit_set() {
         assert_eq!(is_bit_set(0b0001, 0), true);
-        assert_eq!(is_bit_set(0b0001, 1),false);
+        assert_eq!(is_bit_set(0b0001, 1), false);
     }
 
     #[test]
@@ -205,7 +208,7 @@ mod tests {
     #[test]
     fn test_unset_bit_in_matrix() {
         assert_eq!(unset_bit_in_matrix(0b0001, 2, 2, 0, 0), 0b0000);
-        assert_eq!(unset_bit_in_matrix(0b0001, 2, 2, 1, 0), 0b0001);       
+        assert_eq!(unset_bit_in_matrix(0b0001, 2, 2, 1, 0), 0b0001);
     }
 
     #[test]
@@ -217,7 +220,7 @@ mod tests {
     #[test]
     fn test_is_bit_set_in_matrix() {
         assert_eq!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 0), true);
-        assert_eq!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 1),false);
+        assert_eq!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 1), false);
     }
 
     #[test]
@@ -296,7 +299,6 @@ mod tests {
 
         a.unset_bit(256);
         assert_eq!(a.is_bit_set(256), false);
-
     }
 
     #[test]

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 /// Sequence elements numbering
 /// The elements will be assigned numbers in the order of their first occurrence in the sequence.
-pub fn enumerate_inplace(a: &mut[i32]) {
+pub fn enumerate_inplace(a: &mut [i32]) {
     let mut m: HashMap<i32, i32> = HashMap::new();
 
     for x in a.iter_mut() {
@@ -62,7 +62,7 @@ mod tests {
     fn test_enumerate_inplace_ordered() {
         let mut a: Vec<i32> = vec![3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5];
         enumerate_inplace_ordered(&mut a);
-        
+
         assert_eq!(a[0], 3);
         assert_eq!(a[1], 0);
         assert_eq!(a[2], 5);

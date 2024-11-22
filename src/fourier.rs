@@ -1,5 +1,5 @@
-use std::f64::consts::PI;
 use crate::geometry::Complex;
+use std::f64::consts::PI;
 
 pub fn fast_fourier_transform(a: Vec<Complex<f64>>, d: i32) -> Vec<Complex<f64>> {
     let n: usize = a.len();
@@ -45,9 +45,9 @@ pub fn fast_fourier_transform(a: Vec<Complex<f64>>, d: i32) -> Vec<Complex<f64>>
 }
 
 pub fn multiply_polynomials(a: &[i64], b: &[i64]) -> Vec<i64> {
-    let mut aa: Vec<Complex<f64>> = a.iter().map(|&n| { Complex::new(n as f64, 0.0) }).collect();
-    let mut bb: Vec<Complex<f64>> = b.iter().map(|&n| { Complex::new(n as f64, 0.0) }).collect();
-    let n: usize =  2usize.pow(((aa.len() + bb.len() - 1) as f64).log2().ceil() as u32);
+    let mut aa: Vec<Complex<f64>> = a.iter().map(|&n| Complex::new(n as f64, 0.0)).collect();
+    let mut bb: Vec<Complex<f64>> = b.iter().map(|&n| Complex::new(n as f64, 0.0)).collect();
+    let n: usize = 2usize.pow(((aa.len() + bb.len() - 1) as f64).log2().ceil() as u32);
 
     let zeros_to_append_a: usize = n - aa.len();
     aa.extend(std::iter::repeat(Complex::new(0.0, 0.0)).take(zeros_to_append_a));
@@ -62,8 +62,12 @@ pub fn multiply_polynomials(a: &[i64], b: &[i64]) -> Vec<i64> {
     for i in 0..n {
         tr[i] = ta[i] * tb[i];
     }
-    let p: Vec<Complex<f64>> = fast_fourier_transform(tr,-1);
-    let r: Vec<i64> = p.iter().take(a.len() + b.len() - 1).map(|&c| { (c.re().signum() * (c.re().abs() + 0.5)) as i64}).collect();
+    let p: Vec<Complex<f64>> = fast_fourier_transform(tr, -1);
+    let r: Vec<i64> = p
+        .iter()
+        .take(a.len() + b.len() - 1)
+        .map(|&c| (c.re().signum() * (c.re().abs() + 0.5)) as i64)
+        .collect();
     r
 }
 
@@ -86,12 +90,17 @@ pub fn signal_handle(signal: &[i64], mask: &[i64]) -> Vec<i64> {
 
 #[cfg(test)]
 mod tests {
-    use crate::numbers;
     use super::*;
+    use crate::numbers;
 
     #[test]
     fn test_fast_fourier_transform() {
-        let f: Vec<Complex<f64>> = vec![Complex::new(3.0, 0.0), Complex::new(2.0, 0.0), Complex::new(0.0, 0.0), Complex::new(0.0, 0.0)];        
+        let f: Vec<Complex<f64>> = vec![
+            Complex::new(3.0, 0.0),
+            Complex::new(2.0, 0.0),
+            Complex::new(0.0, 0.0),
+            Complex::new(0.0, 0.0),
+        ];
         let tf: Vec<Complex<f64>> = fast_fourier_transform(f, 1);
 
         assert!(numbers::approx_equal(tf[0].re(), 5.0, 0.0000000001));
@@ -106,8 +115,12 @@ mod tests {
         assert!(numbers::approx_equal(tf[3].re(), 3.0, 0.0000000001));
         assert!(numbers::approx_equal(tf[3].im(), -2.0, 0.0000000001));
 
-        
-        let g: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0), Complex::new(5.0, 0.0), Complex::new(0.0, 0.0), Complex::new(0.0, 0.0)];
+        let g: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 0.0),
+            Complex::new(5.0, 0.0),
+            Complex::new(0.0, 0.0),
+            Complex::new(0.0, 0.0),
+        ];
         let tg: Vec<Complex<f64>> = fast_fourier_transform(g, 1);
 
         assert!(numbers::approx_equal(tg[0].re(), 6.0, 0.0000000001));
@@ -127,7 +140,7 @@ mod tests {
         for i in 0..n {
             tp[i] = tf[i] * tg[i];
         }
-        let p: Vec<Complex<f64>> = fast_fourier_transform(tp,-1);
+        let p: Vec<Complex<f64>> = fast_fourier_transform(tp, -1);
 
         assert!(numbers::approx_equal(p[0].re(), 3.0, 0.0000000001));
         assert!(numbers::approx_equal(p[0].im(), 0.0, 0.0000000001));
@@ -141,7 +154,7 @@ mod tests {
         assert!(numbers::approx_equal(p[3].re(), 0.0, 0.0000000001));
         assert!(numbers::approx_equal(p[3].im(), 0.0, 0.0000000001));
 
-        let r: Vec<i64> = p.iter().map(|&c| { (c.re() + 0.5) as i64}).collect();
+        let r: Vec<i64> = p.iter().map(|&c| (c.re() + 0.5) as i64).collect();
         assert_eq!(r, vec![3, 17, 10, 0])
     }
 
@@ -153,14 +166,12 @@ mod tests {
         // f(x) * g(x) = 10x^2 + 17x + 3
         assert_eq!(r, vec![3, 17, 10]);
 
-
         // f(x) = 4x^2 + 3x - 1
         // g(x) = 5x - 1
         let r: Vec<i64> = multiply_polynomials(&[-1, 3, 4], &[-1, 5]);
-        // f(x) * g(x) = 20x^3 + 11x^2 - 8x + 1 
+        // f(x) * g(x) = 20x^3 + 11x^2 - 8x + 1
         assert_eq!(r, vec![1, -8, 11, 20]);
     }
-
 
     #[test]
     fn test_signal_handle() {
@@ -176,7 +187,6 @@ mod tests {
         let actual: Vec<i64> = signal_handle(&[5, 1, 3, 4, 2, 1, 2], &[1, 3, 2]);
         assert_eq!(expected, actual);
 
-
         // Test very short masks
         let actual: Vec<i64> = signal_handle(&[5, 1, 3, 4, 2, 1, 2], &[2]);
         assert_eq!(actual, vec![10, 2, 6, 8, 4, 2, 4]);
@@ -184,5 +194,4 @@ mod tests {
         let actual: Vec<i64> = signal_handle(&[5, 1, 3, 4, 2, 1, 2], &[2, 4]);
         assert_eq!(actual, vec![20, 14, 14, 22, 16, 8, 10, 4]);
     }
-
 }

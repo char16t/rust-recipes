@@ -1,4 +1,7 @@
-use std::{sync::{mpsc, Arc, Mutex}, thread};
+use std::{
+    sync::{mpsc, Arc, Mutex},
+    thread,
+};
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
@@ -11,14 +14,21 @@ impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
         assert!(size > 0);
 
-        let (sender, receiver): (mpsc::Sender<Box<dyn FnOnce() + Send>>, mpsc::Receiver<Box<dyn FnOnce() + Send>>) = mpsc::channel();
-        let receiver: Arc<Mutex<mpsc::Receiver<Box<dyn FnOnce() + Send>>>> = Arc::new(Mutex::new(receiver));
+        let (sender, receiver): (
+            mpsc::Sender<Box<dyn FnOnce() + Send>>,
+            mpsc::Receiver<Box<dyn FnOnce() + Send>>,
+        ) = mpsc::channel();
+        let receiver: Arc<Mutex<mpsc::Receiver<Box<dyn FnOnce() + Send>>>> =
+            Arc::new(Mutex::new(receiver));
 
         let mut workers: Vec<Worker> = Vec::with_capacity(size);
         for id in 0..size {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
-        ThreadPool { workers, sender: Some(sender) }
+        ThreadPool {
+            workers,
+            sender: Some(sender),
+        }
     }
     pub fn execute<F>(&self, f: F)
     where
@@ -37,7 +47,8 @@ struct Worker {
 impl Worker {
     fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
         let thread: thread::JoinHandle<()> = thread::spawn(move || loop {
-            let message: Result<Box<dyn FnOnce() + Send>, mpsc::RecvError> = receiver.lock().unwrap().recv();
+            let message: Result<Box<dyn FnOnce() + Send>, mpsc::RecvError> =
+                receiver.lock().unwrap().recv();
 
             match message {
                 Ok(job) => {

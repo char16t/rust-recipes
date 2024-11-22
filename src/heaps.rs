@@ -1,12 +1,12 @@
 pub struct MinBinaryHeap<T> {
     data: Vec<T>,
     capacity: usize,
-    size: usize
+    size: usize,
 }
 
 impl<T> MinBinaryHeap<T>
 where
-    T: Default + Copy + PartialOrd
+    T: Default + Copy + PartialOrd,
 {
     pub fn with_capacity(capacity: usize) -> Self {
         let mut data: Vec<T> = Vec::with_capacity(0);
@@ -14,7 +14,7 @@ where
         Self {
             data,
             capacity,
-            size: 0
+            size: 0,
         }
     }
     pub fn push(&mut self, value: T) {
@@ -36,7 +36,7 @@ where
         }
         self.size += 1;
     }
-    
+
     pub fn pop(&mut self) -> Option<T> {
         if self.size == 0 {
             return None;
@@ -47,7 +47,7 @@ where
         self.min_heapify();
         return Some(peak);
     }
-    
+
     #[inline(always)]
     fn min_heapify(&mut self) {
         let mut current_position: usize = 0;
@@ -61,7 +61,8 @@ where
         let mut right: T = self.data[right_position];
 
         let size: usize = self.size;
-        while (current > left && left_position < size) || (current > right && right_position < size) {
+        while (current > left && left_position < size) || (current > right && right_position < size)
+        {
             let swap_position: usize = if left < right {
                 if left_position < size {
                     left_position
@@ -90,7 +91,11 @@ where
 
     #[inline(always)]
     fn parent(&self, pos: usize) -> usize {
-        if pos > 0 { (pos - 1) / 2 } else { 0 }
+        if pos > 0 {
+            (pos - 1) / 2
+        } else {
+            0
+        }
     }
 
     #[inline(always)]
@@ -102,7 +107,7 @@ where
     fn right(&self, pos: usize) -> usize {
         (2 * pos) + 2
     }
-    
+
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
         pos >= self.size / 2
@@ -119,13 +124,13 @@ where
 pub struct MinBinaryHeap2<T, W> {
     data: Vec<(T, W)>,
     capacity: usize,
-    size: usize
+    size: usize,
 }
 
 impl<T, W> MinBinaryHeap2<T, W>
 where
     T: Default + Copy,
-    W: Default + Copy + PartialOrd
+    W: Default + Copy + PartialOrd,
 {
     pub fn with_capacity(capacity: usize) -> Self {
         let mut data: Vec<(T, W)> = Vec::with_capacity(0);
@@ -133,12 +138,13 @@ where
         Self {
             data,
             capacity,
-            size: 0
+            size: 0,
         }
     }
     pub fn push(&mut self, value: T, weight: W) {
         if self.size >= self.capacity {
-            self.data.resize(self.capacity * 2 + 1, (T::default(), W::default()));
+            self.data
+                .resize(self.capacity * 2 + 1, (T::default(), W::default()));
             self.capacity *= 2;
         }
         self.data[self.size] = (value, weight);
@@ -156,7 +162,7 @@ where
         }
         self.size += 1;
     }
-    
+
     pub fn pop(&mut self) -> Option<(T, W)> {
         if self.size == 0 {
             return None;
@@ -167,7 +173,7 @@ where
         self.min_heapify();
         return Some(peak);
     }
-    
+
     #[inline(always)]
     fn min_heapify(&mut self) {
         let mut current_position: usize = 0;
@@ -181,7 +187,9 @@ where
         let mut right: (T, W) = self.data[right_position];
 
         let size: usize = self.size;
-        while (current.1 > left.1 && left_position < size) || (current.1 > right.1 && right_position < size) {
+        while (current.1 > left.1 && left_position < size)
+            || (current.1 > right.1 && right_position < size)
+        {
             let swap_position: usize = if left.1 < right.1 {
                 if left_position < size {
                     left_position
@@ -210,7 +218,11 @@ where
 
     #[inline(always)]
     fn parent(&self, pos: usize) -> usize {
-        if pos > 0 { (pos - 1) / 2 } else { 0 }
+        if pos > 0 {
+            (pos - 1) / 2
+        } else {
+            0
+        }
     }
 
     #[inline(always)]
@@ -222,7 +234,7 @@ where
     fn right(&self, pos: usize) -> usize {
         (2 * pos) + 2
     }
-    
+
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
         pos >= self.size / 2
@@ -239,12 +251,12 @@ where
 pub struct MaxBinaryHeap<T> {
     data: Vec<T>,
     capacity: usize,
-    size: usize
+    size: usize,
 }
 
 impl<T> MaxBinaryHeap<T>
 where
-    T: Default + Copy + PartialOrd
+    T: Default + Copy + PartialOrd,
 {
     pub fn with_capacity(capacity: usize) -> Self {
         let mut data: Vec<T> = Vec::with_capacity(0);
@@ -252,7 +264,7 @@ where
         Self {
             data,
             capacity,
-            size: 0
+            size: 0,
         }
     }
     pub fn push(&mut self, value: T) {
@@ -274,7 +286,7 @@ where
         }
         self.size += 1;
     }
-    
+
     pub fn pop(&mut self) -> Option<T> {
         if self.size == 0 {
             return None;
@@ -285,7 +297,7 @@ where
         self.max_heapify();
         return Some(peak);
     }
-    
+
     #[inline(always)]
     fn max_heapify(&mut self) {
         let mut current_position: usize = 0;
@@ -299,7 +311,8 @@ where
         let mut right: T = self.data[right_position];
 
         let size: usize = self.size;
-        while (current < left && left_position < size) || (current < right && right_position < size) {
+        while (current < left && left_position < size) || (current < right && right_position < size)
+        {
             let swap_position: usize = if left > right {
                 if left_position < size {
                     left_position
@@ -328,7 +341,11 @@ where
 
     #[inline(always)]
     fn parent(&self, pos: usize) -> usize {
-        if pos > 0 { (pos - 1) / 2 } else { 0 }
+        if pos > 0 {
+            (pos - 1) / 2
+        } else {
+            0
+        }
     }
 
     #[inline(always)]
@@ -340,7 +357,7 @@ where
     fn right(&self, pos: usize) -> usize {
         (2 * pos) + 2
     }
-    
+
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
         pos >= self.size / 2
@@ -357,13 +374,13 @@ where
 pub struct MaxBinaryHeap2<T, W> {
     data: Vec<(T, W)>,
     capacity: usize,
-    size: usize
+    size: usize,
 }
 
 impl<T, W> MaxBinaryHeap2<T, W>
 where
     T: Default + Copy,
-    W: Default + Copy + PartialOrd
+    W: Default + Copy + PartialOrd,
 {
     pub fn with_capacity(capacity: usize) -> Self {
         let mut data: Vec<(T, W)> = Vec::with_capacity(0);
@@ -371,12 +388,13 @@ where
         Self {
             data: vec![(T::default(), W::default()); capacity],
             capacity,
-            size: 0
+            size: 0,
         }
     }
     pub fn push(&mut self, value: T, weight: W) {
         if self.size >= self.capacity {
-            self.data.resize(self.capacity * 2 + 1, (T::default(), W::default()));
+            self.data
+                .resize(self.capacity * 2 + 1, (T::default(), W::default()));
             self.capacity *= 2;
         }
         self.data[self.size] = (value, weight);
@@ -393,7 +411,7 @@ where
         }
         self.size += 1;
     }
-    
+
     pub fn pop(&mut self) -> Option<(T, W)> {
         if self.size == 0 {
             return None;
@@ -404,7 +422,7 @@ where
         self.max_heapify();
         return Some(peak);
     }
-    
+
     #[inline(always)]
     fn max_heapify(&mut self) {
         let mut current_position: usize = 0;
@@ -418,7 +436,9 @@ where
         let mut right: (T, W) = self.data[right_position];
 
         let size: usize = self.size;
-        while (current.1 < left.1 && left_position < size) || (current.1 < right.1 && right_position < size) {
+        while (current.1 < left.1 && left_position < size)
+            || (current.1 < right.1 && right_position < size)
+        {
             let swap_position: usize = if left.1 > right.1 {
                 if left_position < size {
                     left_position
@@ -447,7 +467,11 @@ where
 
     #[inline(always)]
     fn parent(&self, pos: usize) -> usize {
-        if pos > 0 { (pos - 1) / 2 } else { 0 }
+        if pos > 0 {
+            (pos - 1) / 2
+        } else {
+            0
+        }
     }
 
     #[inline(always)]
@@ -459,7 +483,7 @@ where
     fn right(&self, pos: usize) -> usize {
         (2 * pos) + 2
     }
-    
+
     #[inline(always)]
     fn is_leaf(&self, pos: usize) -> bool {
         pos >= self.size / 2
@@ -493,11 +517,11 @@ mod tests {
         assert_eq!(min_heap.pop(), Some(6));
         assert_eq!(min_heap.pop(), Some(7));
         assert_eq!(min_heap.pop(), Some(8));
-        assert_eq!(min_heap.pop(), Some(9));        
+        assert_eq!(min_heap.pop(), Some(9));
 
         let mut min_heap: MinBinaryHeap<i32> = MinBinaryHeap::with_capacity(10);
         assert_eq!(min_heap.pop(), None);
-        
+
         min_heap.push(1);
         assert_eq!(min_heap.pop(), Some(1));
         assert_eq!(min_heap.pop(), None);
@@ -583,11 +607,11 @@ mod tests {
         assert_eq!(min_heap.pop(), Some(('C', 6)));
         assert_eq!(min_heap.pop(), Some(('D', 7)));
         assert_eq!(min_heap.pop(), Some(('E', 8)));
-        assert_eq!(min_heap.pop(), Some(('F', 9)));        
+        assert_eq!(min_heap.pop(), Some(('F', 9)));
 
         let mut min_heap: MinBinaryHeap2<char, i64> = MinBinaryHeap2::with_capacity(10);
         assert_eq!(min_heap.pop(), None);
-        
+
         min_heap.push('A', 1);
         assert_eq!(min_heap.pop(), Some(('A', 1)));
         assert_eq!(min_heap.pop(), None);
@@ -675,11 +699,10 @@ mod tests {
         assert_eq!(heap.pop(), Some(5));
         assert_eq!(heap.pop(), Some(4));
         assert_eq!(heap.capacity, 6);
-        
 
         let mut heap: MaxBinaryHeap<i32> = MaxBinaryHeap::with_capacity(10);
         assert_eq!(heap.pop(), None);
-        
+
         heap.push(1);
         assert_eq!(heap.pop(), Some(1));
         assert_eq!(heap.pop(), None);
@@ -760,17 +783,16 @@ mod tests {
         heap.push('E', 8);
         heap.push('F', 9);
         assert_eq!(heap.capacity, 6);
-        assert_eq!(heap.pop(), Some(('F', 9)));        
+        assert_eq!(heap.pop(), Some(('F', 9)));
         assert_eq!(heap.pop(), Some(('E', 8)));
         assert_eq!(heap.pop(), Some(('D', 7)));
         assert_eq!(heap.pop(), Some(('C', 6)));
         assert_eq!(heap.pop(), Some(('B', 5)));
         assert_eq!(heap.pop(), Some(('A', 4)));
 
-
         let mut heap: MaxBinaryHeap2<char, i64> = MaxBinaryHeap2::with_capacity(10);
         assert_eq!(heap.pop(), None);
-        
+
         heap.push('A', 1);
         assert_eq!(heap.pop(), Some(('A', 1)));
         assert_eq!(heap.pop(), None);
@@ -788,7 +810,6 @@ mod tests {
         assert_eq!(heap.pop(), Some(('A', 3)));
         assert_eq!(heap.pop(), Some(('B', 2)));
         assert_eq!(heap.pop(), Some(('C', 1)));
-
 
         heap.push('A', 2);
         heap.push('B', 5);
@@ -825,7 +846,6 @@ mod tests {
         assert_eq!(heap.pop(), Some(('G', 2000)));
 
         heap.push('H', -2000);
-
 
         assert_eq!(heap.pop(), Some(('C', 3)));
         assert_eq!(heap.pop(), Some(('B', 2)));

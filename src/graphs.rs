@@ -1,27 +1,39 @@
-use std::{cmp, collections::{HashMap, HashSet, VecDeque}};
+use std::{
+    cmp,
+    collections::{HashMap, HashSet, VecDeque},
+};
 
 use crate::{bits, coordinates, heaps};
 
 pub struct AdjacencyListGraph<T> {
     adjacency_list: HashMap<T, Vec<T>>,
-    is_directed: bool
+    is_directed: bool,
 }
 
 impl<T> AdjacencyListGraph<T>
 where
-    T: Clone + Eq + std::hash::Hash
+    T: Clone + Eq + std::hash::Hash,
 {
     pub fn new_undirected() -> Self {
-        Self { adjacency_list: HashMap::new(), is_directed: false }
+        Self {
+            adjacency_list: HashMap::new(),
+            is_directed: false,
+        }
     }
     pub fn new_directed() -> Self {
-        Self { adjacency_list: HashMap::new(), is_directed: true }
+        Self {
+            adjacency_list: HashMap::new(),
+            is_directed: true,
+        }
     }
     pub fn add_vertex(&mut self, a: T) {
         self.adjacency_list.entry(a).or_insert(Vec::new());
     }
     pub fn add_edge(&mut self, a: T, b: T) {
-        self.adjacency_list.entry(a.clone()).or_insert(Vec::new()).push(b.clone());
+        self.adjacency_list
+            .entry(a.clone())
+            .or_insert(Vec::new())
+            .push(b.clone());
         self.adjacency_list.entry(b.clone()).or_insert(Vec::new());
         if !self.is_directed {
             self.adjacency_list.entry(b).or_insert(Vec::new()).push(a);
@@ -30,7 +42,7 @@ where
     pub fn neighbors(&self, v: T) -> &[T] {
         match self.adjacency_list.get(&v) {
             Some(vec) => vec,
-            None => &[]
+            None => &[],
         }
     }
     pub fn iter_dfs(&self, start_node: T) -> AdjacencyListGraphDfsIterator<T> {
@@ -98,7 +110,7 @@ where
             None // Graph contains a cycle
         }
     }
-    
+
     // Floyd’s cycle finding algorithm (two pointers)
     pub fn has_cycle(&self) -> (bool, Option<T>, usize) {
         if !self.is_directed {
@@ -120,8 +132,21 @@ where
             let mut fast: &T = &node.clone();
 
             loop {
-                if let Some(next_slow) = self.adjacency_list.get(slow).and_then(|neighbors| neighbors.get(0)) {
-                    if let Some(next_fast) = self.adjacency_list.get(fast).and_then(|neighbors| neighbors.get(0)).and_then(|next| self.adjacency_list.get(next).and_then(|neighbors| neighbors.get(0))) {
+                if let Some(next_slow) = self
+                    .adjacency_list
+                    .get(slow)
+                    .and_then(|neighbors| neighbors.get(0))
+                {
+                    if let Some(next_fast) = self
+                        .adjacency_list
+                        .get(fast)
+                        .and_then(|neighbors| neighbors.get(0))
+                        .and_then(|next| {
+                            self.adjacency_list
+                                .get(next)
+                                .and_then(|neighbors| neighbors.get(0))
+                        })
+                    {
                         slow = &next_slow;
                         fast = &next_fast;
 
@@ -148,7 +173,11 @@ where
                         break;
                     }
                     cycle_length += 1;
-                    cycle_node = self.adjacency_list.get(&node).and_then(|neighbors| neighbors.get(0)).cloned();
+                    cycle_node = self
+                        .adjacency_list
+                        .get(&node)
+                        .and_then(|neighbors| neighbors.get(0))
+                        .cloned();
                 }
 
                 break;
@@ -180,7 +209,12 @@ where
         while let Some(node) = stack.pop() {
             if !visited.contains(&node) {
                 let mut component: Vec<T> = Vec::new();
-                Self::reversed_dfs(&reversed_adjacency_list, &node, &mut visited, &mut component);
+                Self::reversed_dfs(
+                    &reversed_adjacency_list,
+                    &node,
+                    &mut visited,
+                    &mut component,
+                );
                 result.push(component);
             }
         }
@@ -188,7 +222,12 @@ where
         result
     }
 
-    fn reversed_dfs(adjacency_list: &HashMap<T, Vec<T>>, node: &T, visited: &mut HashSet<T>, stack: &mut Vec<T>) {
+    fn reversed_dfs(
+        adjacency_list: &HashMap<T, Vec<T>>,
+        node: &T,
+        visited: &mut HashSet<T>,
+        stack: &mut Vec<T>,
+    ) {
         visited.insert(node.clone());
         if let Some(neighbors) = adjacency_list.get(node) {
             for neighbor in neighbors {
@@ -216,10 +255,10 @@ where
     pub fn eulerian_path_for_connected_graphs(&mut self) -> Vec<T> {
         let mut path: Vec<T> = Vec::new();
         let mut stack: Vec<T> = Vec::new();
-    
+
         if let Some(start_node) = self.adjacency_list.keys().next().cloned() {
             stack.push(start_node.clone());
-    
+
             while let Some(node) = stack.last().cloned() {
                 if let Some(neighbors) = self.adjacency_list.get_mut(&node) {
                     if !neighbors.is_empty() {
@@ -231,14 +270,14 @@ where
                 }
             }
         }
-    
+
         path.reverse();
         path
     }
 
     pub fn edge_disjoint_paths(&self, start: T, end: T) -> Vec<Vec<T>>
     where
-        T: Copy + Default
+        T: Copy + Default,
     {
         if !self.is_directed {
             panic!("Unable to find edge-disjoint paths for undirected graph.")
@@ -254,19 +293,14 @@ where
 
         let result: Vec<Vec<T>> = paths
             .iter()
-            .map(|path| {
-                path
-                    .iter()
-                    .map(|(t, _)| t.clone())
-                    .collect()
-            })
+            .map(|path| path.iter().map(|(t, _)| t.clone()).collect())
             .collect();
         result
     }
 
     pub fn node_disjoint_paths(&self, start: T, end: T) -> Vec<Vec<T>>
-    where 
-        T: Copy + Default
+    where
+        T: Copy + Default,
     {
         if !self.is_directed {
             panic!("Unable to find node-disjoint paths for undirected graph.")
@@ -278,22 +312,21 @@ where
         let mut adj: HashMap<(T, u8), Vec<((T, u8), i8)>> = HashMap::new();
         for (&node, neighbors) in self.adjacency_list.iter() {
             for &neighbor in neighbors {
-                adj.entry((node, OUT)).or_insert(Vec::new()).push(((neighbor, IN), 1));
+                adj.entry((node, OUT))
+                    .or_insert(Vec::new())
+                    .push(((neighbor, IN), 1));
             }
         }
         for (&node, _) in self.adjacency_list.iter() {
-            adj.entry((node, IN)).or_insert(Vec::new()).push(((node, OUT), 1));
+            adj.entry((node, IN))
+                .or_insert(Vec::new())
+                .push(((node, OUT), 1));
         }
 
         let (_, _, paths) = max_flow_internal(&adj, (start, OUT), (end, IN));
         let paths_in_out: Vec<Vec<(T, u8)>> = paths
             .iter()
-            .map(|path| {
-                path
-                    .iter()
-                    .map(|(t, _)| *t)
-                    .collect()
-            })
+            .map(|path| path.iter().map(|(t, _)| *t).collect())
             .collect();
         let mut result = Vec::new();
         for path in paths_in_out {
@@ -323,7 +356,7 @@ pub struct AdjacencyListGraphDfsIterator<'a, T> {
 
 impl<'a, T> AdjacencyListGraphDfsIterator<'a, T>
 where
-    T: Clone + Eq + std::hash::Hash
+    T: Clone + Eq + std::hash::Hash,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
         let mut stack: VecDeque<T> = VecDeque::new();
@@ -341,7 +374,7 @@ where
 
 impl<'a, T> Iterator for AdjacencyListGraphDfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     type Item = T;
 
@@ -378,7 +411,7 @@ pub struct AdjacencyListGraphBfsIterator<'a, T> {
 
 impl<'a, T> AdjacencyListGraphBfsIterator<'a, T>
 where
-    T: Clone + Eq + std::hash::Hash
+    T: Clone + Eq + std::hash::Hash,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
         let mut queue: VecDeque<T> = VecDeque::new();
@@ -396,7 +429,7 @@ where
 
 impl<'a, T> Iterator for AdjacencyListGraphBfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     type Item = T;
 
@@ -427,28 +460,40 @@ where
 
 pub struct AdjacencyListWightedGraph<T, W> {
     adjacency_list: HashMap<T, Vec<(T, W)>>,
-    is_directed: bool
+    is_directed: bool,
 }
 
 impl<T, W> AdjacencyListWightedGraph<T, W>
 where
     T: Default + Copy + Eq + std::hash::Hash,
-    W: Copy + Default + std::cmp::PartialOrd + std::ops::Add<Output = W>
+    W: Copy + Default + std::cmp::PartialOrd + std::ops::Add<Output = W>,
 {
     pub fn new_undirected() -> Self {
-        Self { adjacency_list: HashMap::new(), is_directed: false }
+        Self {
+            adjacency_list: HashMap::new(),
+            is_directed: false,
+        }
     }
     pub fn new_directed() -> Self {
-        Self { adjacency_list: HashMap::new(), is_directed: true }
+        Self {
+            adjacency_list: HashMap::new(),
+            is_directed: true,
+        }
     }
     pub fn add_vertex(&mut self, a: T) {
         self.adjacency_list.entry(a).or_insert(Vec::new());
     }
     pub fn add_edge(&mut self, a: T, b: T, w: W) {
-        self.adjacency_list.entry(a).or_insert(Vec::new()).push((b, w));
+        self.adjacency_list
+            .entry(a)
+            .or_insert(Vec::new())
+            .push((b, w));
         self.adjacency_list.entry(b).or_insert(Vec::new());
         if !self.is_directed {
-            self.adjacency_list.entry(b).or_insert(Vec::new()).push((a, w));
+            self.adjacency_list
+                .entry(b)
+                .or_insert(Vec::new())
+                .push((a, w));
         }
     }
     pub fn is_connected(&self) -> bool {
@@ -473,7 +518,7 @@ where
     pub fn neighbors(&self, v: T) -> &[(T, W)] {
         match self.adjacency_list.get(&v) {
             Some(vec) => vec,
-            None => &[]
+            None => &[],
         }
     }
     pub fn iter_dfs(&self, start_node: T) -> AdjacencyListWightedGraphDfsIterator<T, W> {
@@ -498,7 +543,8 @@ where
         let mut distances: HashMap<T, W> = HashMap::new();
         distances.insert(start_node, W::default());
 
-        let mut heap: heaps::MinBinaryHeap2<T, W> = heaps::MinBinaryHeap2::with_capacity(self.adjacency_list.len());
+        let mut heap: heaps::MinBinaryHeap2<T, W> =
+            heaps::MinBinaryHeap2::with_capacity(self.adjacency_list.len());
         heap.push(start_node, W::default());
 
         while let Some((node, dist)) = heap.pop() {
@@ -507,7 +553,7 @@ where
                     let new_dist: W = dist + *weight;
                     let shorter_path_found: bool = match distances.get(neighbor) {
                         Some(&dist) => new_dist < dist,
-                        None => true
+                        None => true,
                     };
                     if shorter_path_found {
                         distances.insert(*neighbor, new_dist);
@@ -581,11 +627,20 @@ where
             let mut fast: T = node.clone();
 
             loop {
-                if let Some(next_slow) = self.adjacency_list.get(&slow).and_then(|neighbors| neighbors.get(0)) {
-                    if let Some(next_fast) = self.adjacency_list.get(&fast)
+                if let Some(next_slow) = self
+                    .adjacency_list
+                    .get(&slow)
+                    .and_then(|neighbors| neighbors.get(0))
+                {
+                    if let Some(next_fast) = self
+                        .adjacency_list
+                        .get(&fast)
                         .and_then(|neighbors| neighbors.get(0))
-                        .and_then(|next| self.adjacency_list.get(&next.0)
-                        .and_then(|neighbors| neighbors.get(0))) 
+                        .and_then(|next| {
+                            self.adjacency_list
+                                .get(&next.0)
+                                .and_then(|neighbors| neighbors.get(0))
+                        })
                     {
                         slow = next_slow.0.clone();
                         fast = next_fast.0.clone();
@@ -613,7 +668,9 @@ where
                         break;
                     }
                     cycle_length += 1;
-                    cycle_node = self.adjacency_list.get(&node)
+                    cycle_node = self
+                        .adjacency_list
+                        .get(&node)
                         .and_then(|neighbors| neighbors.get(0))
                         .and_then(|t| Some(t.0));
                 }
@@ -627,21 +684,23 @@ where
 
     pub fn minimum_spanning_tree_kruskal(&self) -> (W, Self)
     where
-        W: Ord + std::ops::AddAssign
+        W: Ord + std::ops::AddAssign,
     {
-        let mut edges: Vec<(&T, &T, W)> = 
-            self.adjacency_list.iter()
+        let mut edges: Vec<(&T, &T, W)> = self
+            .adjacency_list
+            .iter()
             .flat_map(|(from, neighbors)| {
-                neighbors.iter().map(move |(to, weight)| {
-                    (from, to, *weight)
-                })
-            }).collect();
+                neighbors
+                    .iter()
+                    .map(move |(to, weight)| (from, to, *weight))
+            })
+            .collect();
         let mut cost: W = W::default();
 
         edges.sort_by_key(|edge| edge.2);
-        
 
-        let mut mst_graph: AdjacencyListWightedGraph<T, W> = AdjacencyListWightedGraph::new_undirected();
+        let mut mst_graph: AdjacencyListWightedGraph<T, W> =
+            AdjacencyListWightedGraph::new_undirected();
         let mut forest: HashMap<T, T> = HashMap::new();
         for (from, to, weight) in edges {
             let root_from: T = self.find_root(&forest, from);
@@ -658,21 +717,23 @@ where
 
     pub fn maximum_spanning_tree_kruskal(&self) -> (W, Self)
     where
-        W: Ord + std::ops::AddAssign
+        W: Ord + std::ops::AddAssign,
     {
-        let mut edges: Vec<(&T, &T, W)> = 
-            self.adjacency_list.iter()
+        let mut edges: Vec<(&T, &T, W)> = self
+            .adjacency_list
+            .iter()
             .flat_map(|(from, neighbors)| {
-                neighbors.iter().map(move |(to, weight)| {
-                    (from, to, *weight)
-                })
-            }).collect();
+                neighbors
+                    .iter()
+                    .map(move |(to, weight)| (from, to, *weight))
+            })
+            .collect();
         let mut cost: W = W::default();
 
         edges.sort_by(|a, b| b.2.cmp(&a.2));
-        
 
-        let mut mst_graph: AdjacencyListWightedGraph<T, W> = AdjacencyListWightedGraph::new_undirected();
+        let mut mst_graph: AdjacencyListWightedGraph<T, W> =
+            AdjacencyListWightedGraph::new_undirected();
         let mut forest: HashMap<T, T> = HashMap::new();
         for (from, to, weight) in edges {
             let root_from: T = self.find_root(&forest, from);
@@ -726,7 +787,12 @@ where
         while let Some(node) = stack.pop() {
             if !visited.get(&node).cloned().unwrap_or(false) {
                 let mut component: Vec<T> = Vec::new();
-                Self::reversed_dfs(&reversed_adjacency_list, &node, &mut visited, &mut component);
+                Self::reversed_dfs(
+                    &reversed_adjacency_list,
+                    &node,
+                    &mut visited,
+                    &mut component,
+                );
                 result.push(component);
             }
         }
@@ -734,7 +800,12 @@ where
         result
     }
 
-    fn reversed_dfs(adjacency_list: &HashMap<T, Vec<(T, W)>>, node: &T, visited: &mut HashMap<T, bool>, stack: &mut Vec<T>) {
+    fn reversed_dfs(
+        adjacency_list: &HashMap<T, Vec<(T, W)>>,
+        node: &T,
+        visited: &mut HashMap<T, bool>,
+        stack: &mut Vec<T>,
+    ) {
         visited.insert(node.clone(), true);
         if let Some(neighbors) = adjacency_list.get(node) {
             for (neighbor, _) in neighbors {
@@ -762,10 +833,10 @@ where
     pub fn eulerian_path_for_connected_graphs(&mut self) -> Vec<T> {
         let mut path: Vec<T> = Vec::new();
         let mut stack: Vec<T> = Vec::new();
-    
+
         if let Some(start_node) = self.adjacency_list.keys().next().cloned() {
             stack.push(start_node.clone());
-    
+
             while let Some(node) = stack.last().cloned() {
                 if let Some(neighbors) = self.adjacency_list.get_mut(&node) {
                     if !neighbors.is_empty() {
@@ -777,7 +848,7 @@ where
                 }
             }
         }
-    
+
         path.reverse();
         path
     }
@@ -785,20 +856,21 @@ where
     /// Max flow. Ford–Fulkerson algorithm
     pub fn max_flow(&self, start: T, end: T) -> Option<W>
     where
-        W: std::cmp::Ord + std::ops::Sub<Output = W>
+        W: std::cmp::Ord + std::ops::Sub<Output = W>,
     {
         if !self.is_directed {
             panic!("Unable to calculate max flow for undirected graph.")
         }
 
-        let result: (Option<W>, HashMap<T, Vec<(T, W)>>, Vec<Vec<(T, Option<W>)>>) = max_flow_internal(&self.adjacency_list, start, end);
+        let result: (Option<W>, HashMap<T, Vec<(T, W)>>, Vec<Vec<(T, Option<W>)>>) =
+            max_flow_internal(&self.adjacency_list, start, end);
         result.0
     }
 
     /// Minimum cut (max flow, Ford–Fulkerson algorithm)
     pub fn minimum_cut(&self, start: T, end: T) -> Vec<(T, T)>
     where
-        W: std::cmp::Ord + std::ops::Sub<Output = W>
+        W: std::cmp::Ord + std::ops::Sub<Output = W>,
     {
         if !self.is_directed {
             panic!("Unable to calculate minimum cut for undirected graph.")
@@ -806,7 +878,7 @@ where
 
         let (_, flow, _) = max_flow_internal(&self.adjacency_list, start, end);
 
-        // Consider the graph generated by the algorithm and denote by A the set of vertices, 
+        // Consider the graph generated by the algorithm and denote by A the set of vertices,
         // reachable from the source by edges of positive weight
         let mut visited: HashSet<T> = HashSet::new();
         let mut stack: Vec<T> = Vec::new();
@@ -838,7 +910,7 @@ where
 
     pub fn edge_disjoint_paths(&self, start: T, end: T) -> Vec<Vec<T>>
     where
-        W: std::cmp::Ord + std::ops::Sub<Output = W> + From<i8>
+        W: std::cmp::Ord + std::ops::Sub<Output = W> + From<i8>,
     {
         if !self.is_directed {
             panic!("Unable to find edge-disjoint paths for undirected graph.")
@@ -854,12 +926,7 @@ where
 
         let result: Vec<Vec<T>> = paths
             .iter()
-            .map(|path| {
-                path
-                    .iter()
-                    .map(|(t, _)| *t)
-                    .collect()
-            })
+            .map(|path| path.iter().map(|(t, _)| *t).collect())
             .collect();
         result
     }
@@ -875,22 +942,21 @@ where
         let mut adj: HashMap<(T, u8), Vec<((T, u8), i8)>> = HashMap::new();
         for (&node, neighbors) in self.adjacency_list.iter() {
             for &(neighbor, _) in neighbors {
-                adj.entry((node, OUT)).or_insert(Vec::new()).push(((neighbor, IN), 1));
+                adj.entry((node, OUT))
+                    .or_insert(Vec::new())
+                    .push(((neighbor, IN), 1));
             }
         }
         for (&node, _) in self.adjacency_list.iter() {
-            adj.entry((node, IN)).or_insert(Vec::new()).push(((node, OUT), 1));
+            adj.entry((node, IN))
+                .or_insert(Vec::new())
+                .push(((node, OUT), 1));
         }
 
         let (_, _, paths) = max_flow_internal(&adj, (start, OUT), (end, IN));
         let paths_in_out: Vec<Vec<(T, u8)>> = paths
             .iter()
-            .map(|path| {
-                path
-                    .iter()
-                    .map(|(t, _)| *t)
-                    .collect()
-            })
+            .map(|path| path.iter().map(|(t, _)| *t).collect())
             .collect();
         let mut result = Vec::new();
         for path in paths_in_out {
@@ -913,10 +979,18 @@ where
 }
 
 /// Max flow. Ford–Fulkerson algorithm
-fn max_flow_internal<T1, W1>(adjacency_list: &HashMap<T1, Vec<(T1, W1)>>, start: T1, end: T1) -> (Option<W1>, HashMap<T1, Vec<(T1, W1)>>, Vec<Vec<(T1, Option<W1>)>>)
+fn max_flow_internal<T1, W1>(
+    adjacency_list: &HashMap<T1, Vec<(T1, W1)>>,
+    start: T1,
+    end: T1,
+) -> (
+    Option<W1>,
+    HashMap<T1, Vec<(T1, W1)>>,
+    Vec<Vec<(T1, Option<W1>)>>,
+)
 where
     T1: Default + Copy + Eq + std::hash::Hash,
-    W1: Copy + Default + std::ops::Add<Output = W1> + std::cmp::Ord + std::ops::Sub<Output = W1>
+    W1: Copy + Default + std::ops::Add<Output = W1> + std::cmp::Ord + std::ops::Sub<Output = W1>,
 {
     // Create reverse edge (b, a, 0) for each edge (a, b, weight)
     let mut flow: HashMap<T1, Vec<(T1, W1)>> = adjacency_list.clone();
@@ -928,9 +1002,9 @@ where
 
     let mut flow_value: Option<W1> = None;
     let mut paths: Vec<Vec<(T1, Option<W1>)>> = Vec::new();
-    
+
     loop {
-        let mut path_found: bool = false; 
+        let mut path_found: bool = false;
         let mut path: Vec<(T1, Option<W1>)> = Vec::new();
         let mut min_weight: Option<W1> = None;
 
@@ -953,7 +1027,7 @@ where
             // Update minimal weight
             min_weight = match min_weight {
                 Some(w) => weight.min(Some(w)),
-                None => weight
+                None => weight,
             };
 
             // Add node to path
@@ -967,7 +1041,6 @@ where
 
             // Add neighbors to stack
             if let Some(neighbors) = flow.get_mut(&current) {
-
                 // Sort ascending and then push to stack (actually sort descending)
                 neighbors.sort_by_key(|n| n.1);
 
@@ -987,17 +1060,17 @@ where
         // Update weights
         let weight_difference: W1 = match min_weight {
             Some(value) => value,
-            None => W1::default()
+            None => W1::default(),
         };
         flow_value = match flow_value {
             Some(w) => Some(w + weight_difference),
-            None => Some(weight_difference)
+            None => Some(weight_difference),
         };
 
-        for i in 0..path.len()-1 {
+        for i in 0..path.len() - 1 {
             let a: (T1, Option<W1>) = path[i];
-            let b: (T1, Option<W1>) = path[i+1];
-            
+            let b: (T1, Option<W1>) = path[i + 1];
+
             if let Some(neighbors) = flow.get_mut(&a.0) {
                 for neighbor in neighbors {
                     if neighbor.0 == b.0 {
@@ -1028,7 +1101,7 @@ pub struct AdjacencyListWightedGraphDfsIterator<'a, T, W> {
 impl<'a, T, W> AdjacencyListWightedGraphDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Default
+    W: Default,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<(T, W)>>, start_node: T) -> Self {
         let mut stack: VecDeque<(T, W)> = VecDeque::new();
@@ -1047,7 +1120,7 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default
+    W: Copy + Default,
 {
     type Item = (T, W);
 
@@ -1085,7 +1158,7 @@ pub struct AdjacencyListWightedGraphBfsIterator<'a, T, W> {
 impl<'a, T, W> AdjacencyListWightedGraphBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Default
+    W: Default,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<(T, W)>>, start_node: T) -> Self {
         let mut queue: VecDeque<(T, W)> = VecDeque::new();
@@ -1104,7 +1177,7 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default
+    W: Copy + Default,
 {
     type Item = (T, W);
 
@@ -1142,7 +1215,7 @@ pub struct AdjacencyListWightedGraphAscDfsIterator<'a, T, W> {
 impl<'a, T, W> AdjacencyListWightedGraphAscDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Default
+    W: Default,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<(T, W)>>, start_node: T) -> Self {
         let mut stack: VecDeque<(T, W)> = VecDeque::new();
@@ -1161,7 +1234,7 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphAscDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default + Ord
+    W: Copy + Default + Ord,
 {
     type Item = (T, W);
 
@@ -1179,7 +1252,7 @@ where
 
         if let Some(node) = self.stack.pop_front() {
             let mut neighbors: Vec<(T, W)> = self.adjacency_list[&node.0].clone();
-            neighbors.sort_by(|a, b| { b.1.cmp(&a.1) });
+            neighbors.sort_by(|a, b| b.1.cmp(&a.1));
             for neighbor in neighbors {
                 if !self.visited.contains(&neighbor.0) {
                     self.stack.push_front(neighbor);
@@ -1201,7 +1274,7 @@ pub struct AdjacencyListWightedGraphAscBfsIterator<'a, T, W> {
 impl<'a, T, W> AdjacencyListWightedGraphAscBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Default
+    W: Default,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<(T, W)>>, start_node: T) -> Self {
         let mut queue: VecDeque<(T, W)> = VecDeque::new();
@@ -1220,7 +1293,7 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphAscBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default + Ord
+    W: Copy + Default + Ord,
 {
     type Item = (T, W);
 
@@ -1238,7 +1311,7 @@ where
 
         if let Some(node) = self.queue.pop_front() {
             let mut neighbors: Vec<(T, W)> = self.adjacency_list[&node.0].clone();
-            neighbors.sort_by_key(|k| { k.1 });
+            neighbors.sort_by_key(|k| k.1);
             for neighbor in neighbors {
                 if !self.visited.contains(&neighbor.0) {
                     self.queue.push_back(neighbor);
@@ -1260,7 +1333,7 @@ pub struct AdjacencyListWightedGraphDescDfsIterator<'a, T, W> {
 impl<'a, T, W> AdjacencyListWightedGraphDescDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Default
+    W: Default,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<(T, W)>>, start_node: T) -> Self {
         let mut stack: VecDeque<(T, W)> = VecDeque::new();
@@ -1279,7 +1352,7 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphDescDfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default + Ord
+    W: Copy + Default + Ord,
 {
     type Item = (T, W);
 
@@ -1319,7 +1392,7 @@ pub struct AdjacencyListWightedGraphDescBfsIterator<'a, T, W> {
 impl<'a, T, W> AdjacencyListWightedGraphDescBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Default
+    W: Default,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<(T, W)>>, start_node: T) -> Self {
         let mut queue: VecDeque<(T, W)> = VecDeque::new();
@@ -1338,7 +1411,7 @@ where
 impl<'a, T, W> Iterator for AdjacencyListWightedGraphDescBfsIterator<'a, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default + Ord
+    W: Copy + Default + Ord,
 {
     type Item = (T, W);
 
@@ -1374,7 +1447,7 @@ pub struct AdjacencyMatrixWeighted<W> {
     is_directed: bool,
     capacity: usize,
 }
-impl<W> AdjacencyMatrixWeighted<W> 
+impl<W> AdjacencyMatrixWeighted<W>
 where
     W: Default + Copy + Ord + std::ops::Add<Output = W>,
 {
@@ -1389,7 +1462,7 @@ where
         Self {
             adjacency_matrix: vec![W::default(); size * size],
             is_directed: true,
-            capacity: size
+            capacity: size,
         }
     }
     pub fn add_edge(&mut self, a: usize, b: usize, w: W) {
@@ -1427,19 +1500,23 @@ where
 
                     let left: Option<W> = matrix[xy(i, j)];
                     let right_a: Option<W> = matrix[xy(i, k)];
-                    let right_b: Option<W> = matrix[xy(k, j)]; 
-                    
+                    let right_b: Option<W> = matrix[xy(k, j)];
+
                     let right: Option<W> = if let Some(right_a_value) = right_a {
                         if let Some(right_b_value) = right_b {
                             Some(right_a_value + right_b_value)
-                        } else { None }
-                    } else { None };
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
 
                     let result: Option<W> = if let Some(right_value) = right {
                         if let Some(left_value) = left {
                             Some(cmp::min(left_value, right_value))
-                        } else { 
-                            Some(right_value) 
+                        } else {
+                            Some(right_value)
                         }
                     } else {
                         if let Some(left_value) = left {
@@ -1459,21 +1536,21 @@ where
 pub struct AdjacencyMatrix {
     data: bits::LongArithmetic,
     length: usize,
-    is_directed: bool
+    is_directed: bool,
 }
 impl AdjacencyMatrix {
     pub fn new_undirected(size: usize) -> Self {
         Self {
             data: bits::LongArithmetic::with_capacity(size),
             length: size,
-            is_directed: false
+            is_directed: false,
         }
     }
     pub fn new_directed(size: usize) -> Self {
         Self {
             data: bits::LongArithmetic::with_capacity(size),
             length: size,
-            is_directed: true
+            is_directed: true,
         }
     }
     pub fn add_edge(&mut self, a: usize, b: usize) {
@@ -1490,12 +1567,12 @@ impl AdjacencyMatrix {
 }
 
 pub struct EdgeListGraph<T> {
-    pub edges: Vec<(T, T)>
+    pub edges: Vec<(T, T)>,
 }
 
 impl<T> EdgeListGraph<T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     pub fn new_directed() -> Self {
         Self { edges: Vec::new() }
@@ -1507,19 +1584,25 @@ where
 
 pub struct EdgeListWegihtedGraph<T, W> {
     pub edges: Vec<(T, T, W)>,
-    is_directed: bool
+    is_directed: bool,
 }
 
 impl<T, W> EdgeListWegihtedGraph<T, W>
 where
     T: Copy + Eq + std::hash::Hash,
-    W: Copy + Default + std::cmp::Ord + std::ops::Add<W, Output = W>
+    W: Copy + Default + std::cmp::Ord + std::ops::Add<W, Output = W>,
 {
     pub fn new_undirected() -> Self {
-        Self { edges: Vec::new(), is_directed: false }
+        Self {
+            edges: Vec::new(),
+            is_directed: false,
+        }
     }
     pub fn new_directed() -> Self {
-        Self { edges: Vec::new(), is_directed: true }
+        Self {
+            edges: Vec::new(),
+            is_directed: true,
+        }
     }
     pub fn add_edge(&mut self, a: T, b: T, w: W) {
         self.edges.push((a, b, w));
@@ -1530,10 +1613,10 @@ where
     pub fn bellman_ford(&self, start_node: T, n_vertices: usize) -> HashMap<T, W> {
         let mut distances: HashMap<T, W> = HashMap::new();
         distances.insert(start_node, W::default());
-        for _ in 0..n_vertices-1 {
+        for _ in 0..n_vertices - 1 {
             for j in self.edges.iter() {
                 let &(a, b, w): &(T, T, W) = j;
-                
+
                 // distance[b] = min(distance[b], distance[a]+w);
                 if let Some(&distance_b) = distances.get(&b) {
                     if let Some(&distance_a) = distances.get(&a) {
@@ -1544,8 +1627,8 @@ where
                     }
                 } else {
                     if let Some(&distance_a) = distances.get(&a) {
-                         // distance_b = INF
-                         distances.insert(b, distance_a + w);
+                        // distance_b = INF
+                        distances.insert(b, distance_a + w);
                     }
                     // else distance_a = INF && distance_b = INF
                 }
@@ -1569,7 +1652,7 @@ pub struct SuccessorGraphEnumerated {
     data: Vec<usize>,
     size: usize,
     steps: usize,
-    is_table_filled: bool
+    is_table_filled: bool,
 }
 impl SuccessorGraphEnumerated {
     pub fn new(size: usize, steps: usize) -> Self {
@@ -1577,7 +1660,7 @@ impl SuccessorGraphEnumerated {
             size,
             steps: steps + 1,
             data: vec![0; (steps + 1) * size],
-            is_table_filled: false
+            is_table_filled: false,
         }
     }
     pub fn insert(&mut self, idx: usize, successor: usize) {
@@ -1594,13 +1677,13 @@ impl SuccessorGraphEnumerated {
 
         let mut current_steps: usize = steps;
         let mut current_idx: usize = idx;
-    
+
         while current_steps > 0 {
             let power_of_two: u32 = (current_steps & !(current_steps - 1)).trailing_zeros();
             current_idx = self.data[xy(power_of_two as usize, current_idx)];
             current_steps -= 1 << power_of_two;
         }
-    
+
         current_idx
     }
     fn fill_table(&mut self) {
@@ -1608,7 +1691,7 @@ impl SuccessorGraphEnumerated {
         for i in 1..self.steps {
             for j in 0..self.size {
                 let mut idx = self.data[xy(0, j)];
-                for _ in 0..(1 << i)-1 {
+                for _ in 0..(1 << i) - 1 {
                     idx = self.data[xy(0, idx)];
                 }
                 self.data[xy(i, j)] = idx;
@@ -1620,17 +1703,17 @@ impl SuccessorGraphEnumerated {
 pub struct SuccessorGraph<T> {
     data: HashMap<T, Vec<T>>,
     steps: usize,
-    is_table_filled: bool
+    is_table_filled: bool,
 }
 impl<T> SuccessorGraph<T>
 where
-    T: Default + Copy + Eq + std::hash::Hash
+    T: Default + Copy + Eq + std::hash::Hash,
 {
     pub fn new(steps: usize) -> Self {
         Self {
             steps: steps + 1,
             data: HashMap::new(),
-            is_table_filled: false
+            is_table_filled: false,
         }
     }
     pub fn insert(&mut self, source: T, successor: T) {
@@ -1643,7 +1726,6 @@ where
         self.is_table_filled = false;
     }
     pub fn find_successor(&mut self, node: T, steps: usize) -> T {
-
         if !self.is_table_filled {
             self.fill_table();
             self.is_table_filled = true;
@@ -1651,9 +1733,10 @@ where
 
         let mut current_steps: usize = steps;
         let mut current_node: T = node;
-    
+
         while current_steps > 0 {
-            let power_of_two: usize = (current_steps & !(current_steps - 1)).trailing_zeros() as usize;
+            let power_of_two: usize =
+                (current_steps & !(current_steps - 1)).trailing_zeros() as usize;
             current_node = self.data[&current_node][power_of_two];
             current_steps -= 1 << power_of_two;
         }
@@ -1670,25 +1753,26 @@ where
             }
             for (&key, &successor) in transformed_map.iter() {
                 let mut node: T = successor;
-                for _ in 0..(1 << i)-1 {
+                for _ in 0..(1 << i) - 1 {
                     node = transformed_map[&node];
                 }
 
                 if let Some(e) = self.data.get_mut(&key) {
                     e[i] = node;
                 }
-
             }
         }
     }
 }
 
 pub struct TwoSatSolver {
-    graph: AdjacencyListGraph<isize>
+    graph: AdjacencyListGraph<isize>,
 }
 impl TwoSatSolver {
     pub fn new() -> Self {
-        Self { graph: AdjacencyListGraph::new_directed() }
+        Self {
+            graph: AdjacencyListGraph::new_directed(),
+        }
     }
     pub fn add_disjunction(&mut self, a: isize, na: bool, b: isize, nb: bool) {
         let aa: isize = a * if na { 1 } else { -1 };
@@ -1860,11 +1944,9 @@ mod tests {
         let graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         assert_eq!(graph.has_cycle(), (false, None, 0));
 
-
         let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         graph.add_edge(0, 1);
         assert_eq!(graph.has_cycle(), (false, None, 0));
-
 
         let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         graph.add_edge(0, 1);
@@ -1874,7 +1956,6 @@ mod tests {
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1));
         assert_eq!(has_cycle.2, 2);
 
-
         let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         graph.add_edge(0, 1);
         graph.add_edge(2, 0);
@@ -1883,7 +1964,6 @@ mod tests {
         assert_eq!(has_cycle.0, true);
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1) || has_cycle.1 == Some(2));
         assert_eq!(has_cycle.2, 3);
-
 
         let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_directed();
         graph.add_edge(3, 32);
@@ -1936,7 +2016,7 @@ mod tests {
         graph.add_edge(7, 6);
 
         let r: Vec<Vec<i32>> = graph.strongly_connected_components();
-        
+
         assert_eq!(r.len(), 4);
         assert_eq!(r[0].len(), 3);
         assert_eq!(r[1].len(), 2);
@@ -1955,7 +2035,6 @@ mod tests {
         assert!(r[3].contains(&4));
     }
 
-
     #[test]
     fn test_adjacency_list_graph_undirected_eulerian_path_for_connected_graphs() {
         let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
@@ -1963,7 +2042,7 @@ mod tests {
         graph.add_edge(1, 4);
 
         let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
-        assert!(path == [2, 1, 4, 1, 2] || path == [4, 1, 2, 1, 4] || path == [1, 2, 1, 4, 1]);  
+        assert!(path == [2, 1, 4, 1, 2] || path == [4, 1, 2, 1, 4] || path == [1, 2, 1, 4, 1]);
     }
 
     #[test]
@@ -1974,7 +2053,7 @@ mod tests {
         let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
         assert!(path == [1, 4, 2] || path == [2] || path == [4]);
     }
-    
+
     #[test]
     #[should_panic]
     fn test_adjacency_list_graph_undirected_has_cycle() {
@@ -1984,7 +2063,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighed_undirected_graph() {
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(0, 1, 0.5);
         graph.add_edge(0, 2, 0.7);
         graph.add_edge(1, 3, 0.9);
@@ -2012,7 +2092,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighed_directed_graph() {
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(0, 1, 0.5);
         graph.add_edge(0, 2, 0.7);
         graph.add_edge(1, 3, 0.9);
@@ -2037,14 +2118,16 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_is_connected() {
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(0, 1, 0.1);
         graph.add_edge(0, 2, 0.1);
         graph.add_edge(1, 3, 0.1);
         graph.add_edge(2, 3, 0.1);
         assert_eq!(graph.is_connected(), true);
 
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_vertex(0);
         graph.add_vertex(1);
         graph.add_vertex(2);
@@ -2052,20 +2135,23 @@ mod tests {
         graph.add_edge(0, 2, 0.1);
         assert_eq!(graph.is_connected(), true);
 
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_vertex(0);
         graph.add_vertex(1);
         graph.add_vertex(2);
         graph.add_edge(0, 1, 0.1);
         assert_eq!(graph.is_connected(), false);
 
-        let empty: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        let empty: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_undirected();
         assert_eq!(empty.is_connected(), true);
     }
 
     #[test]
     fn test_adjacency_list_weighted_graph_topological_sort_directed_1() {
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(1, 2, 0.5);
         graph.add_edge(2, 3, 0.5);
         graph.add_edge(3, 6, 0.5);
@@ -2080,7 +2166,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_topological_sort_directed_2() {
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_directed();
 
         //cycle
         graph.add_edge(1, 2, 0.5);
@@ -2100,7 +2187,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_topological_sort_undirected() {
-        let mut graph: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, f64> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(1, 2, 0.5);
         graph.add_edge(2, 3, 0.5);
         graph.add_edge(3, 6, 0.5);
@@ -2115,7 +2203,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_dijkstra() {
-        let mut graph: AdjacencyListWightedGraph<char, f64> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<char, f64> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge('A', 'B', 10.0);
         graph.add_edge('A', 'C', 5.0);
         graph.add_edge('B', 'D', 25.0);
@@ -2132,13 +2221,13 @@ mod tests {
         let graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
         assert_eq!(graph.has_cycle(), (false, None, 0));
 
-
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(0, 1, 100);
         assert_eq!(graph.has_cycle(), (false, None, 0));
 
-
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(0, 1, 100);
         graph.add_edge(1, 0, 100);
         let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
@@ -2146,8 +2235,8 @@ mod tests {
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1));
         assert_eq!(has_cycle.2, 2);
 
-
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(0, 1, 100);
         graph.add_edge(2, 0, 100);
         graph.add_edge(1, 2, 100);
@@ -2156,8 +2245,8 @@ mod tests {
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1) || has_cycle.1 == Some(2));
         assert_eq!(has_cycle.2, 3);
 
-
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(0, 1, 100);
         graph.add_edge(2, 3, 100);
         graph.add_edge(1, 2, 100);
@@ -2178,47 +2267,51 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_adjacency_list_weighted_graph_undirected_has_cycle() {
-        let graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        let graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.has_cycle();
     }
 
     #[test]
     fn test_adjacency_list_wighted_graph_undirected_minimum_spanning_tree_kruskal() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
-        
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_undirected();
+
         graph.add_edge(0, 1, 3);
         graph.add_edge(1, 0, 3);
-        
+
         graph.add_edge(0, 4, 5);
         graph.add_edge(4, 0, 5);
-        
+
         graph.add_edge(1, 2, 5);
         graph.add_edge(2, 1, 5);
-        
+
         graph.add_edge(1, 4, 6);
         graph.add_edge(4, 1, 6);
-        
+
         graph.add_edge(2, 3, 9);
         graph.add_edge(3, 2, 9);
-        
+
         graph.add_edge(2, 5, 3);
         graph.add_edge(5, 2, 3);
-        
+
         graph.add_edge(3, 5, 7);
         graph.add_edge(5, 3, 7);
-        
+
         graph.add_edge(4, 5, 2);
         graph.add_edge(5, 4, 2);
-        
-        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) = graph.minimum_spanning_tree_kruskal();
-        
+
+        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) =
+            graph.minimum_spanning_tree_kruskal();
+
         assert_eq!(cost, 20);
     }
 
     #[test]
     fn test_adjacency_list_wighted_graph_directed_minimum_spanning_tree_kruskal() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
-        
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
+
         graph.add_edge(0, 1, 3);
         graph.add_edge(0, 4, 5);
         graph.add_edge(1, 2, 5);
@@ -2227,49 +2320,53 @@ mod tests {
         graph.add_edge(2, 5, 3);
         graph.add_edge(3, 5, 7);
         graph.add_edge(4, 5, 2);
-        
-        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) = graph.minimum_spanning_tree_kruskal();
-        
+
+        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) =
+            graph.minimum_spanning_tree_kruskal();
+
         assert_eq!(cost, 20);
     }
 
     #[test]
     fn test_adjacency_list_wighted_graph_undirected_maximum_spanning_tree_kruskal() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
-        
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_undirected();
+
         graph.add_edge(0, 1, 3);
         graph.add_edge(1, 0, 3);
-        
+
         graph.add_edge(0, 4, 5);
         graph.add_edge(4, 0, 5);
-        
+
         graph.add_edge(1, 2, 5);
         graph.add_edge(2, 1, 5);
-        
+
         graph.add_edge(1, 4, 6);
         graph.add_edge(4, 1, 6);
-        
+
         graph.add_edge(2, 3, 9);
         graph.add_edge(3, 2, 9);
-        
+
         graph.add_edge(2, 5, 3);
         graph.add_edge(5, 2, 3);
-        
+
         graph.add_edge(3, 5, 7);
         graph.add_edge(5, 3, 7);
-        
+
         graph.add_edge(4, 5, 2);
         graph.add_edge(5, 4, 2);
-        
-        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) = graph.maximum_spanning_tree_kruskal();
-        
+
+        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) =
+            graph.maximum_spanning_tree_kruskal();
+
         assert_eq!(cost, 32);
     }
 
     #[test]
     fn test_adjacency_list_wighted_graph_directed_maximum_spanning_tree_kruskal() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
-        
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
+
         graph.add_edge(0, 1, 3);
         graph.add_edge(0, 4, 5);
         graph.add_edge(1, 2, 5);
@@ -2278,16 +2375,18 @@ mod tests {
         graph.add_edge(2, 5, 3);
         graph.add_edge(3, 5, 7);
         graph.add_edge(4, 5, 2);
-        
-        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) = graph.maximum_spanning_tree_kruskal();
-        
+
+        let (cost, _): (i32, AdjacencyListWightedGraph<i32, i32>) =
+            graph.maximum_spanning_tree_kruskal();
+
         assert_eq!(cost, 32);
     }
 
     #[test]
     #[should_panic]
     fn test_adjacency_list_weighted_graph_undirected_strongly_connected_components() {
-        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, usize> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(1, 2, 41);
         graph.add_edge(1, 4, 41);
         graph.add_edge(2, 1, 41);
@@ -2304,7 +2403,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_directed_strongly_connected_components() {
-        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, usize> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(1, 2, 41);
         graph.add_edge(1, 4, 42);
         graph.add_edge(2, 1, 43);
@@ -2317,7 +2417,7 @@ mod tests {
         graph.add_edge(7, 6, 50);
 
         let r: Vec<Vec<i32>> = graph.strongly_connected_components();
-        
+
         assert_eq!(r.len(), 4);
         assert_eq!(r[0].len(), 3);
         assert_eq!(r[1].len(), 2);
@@ -2338,17 +2438,19 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_undirected_eulerian_path_for_connected_graphs() {
-        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, usize> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(1, 2, 0);
         graph.add_edge(1, 4, 0);
 
         let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
-        assert!(path == [2, 1, 4, 1, 2] || path == [4, 1, 2, 1, 4] || path == [1, 2, 1, 4, 1]);  
+        assert!(path == [2, 1, 4, 1, 2] || path == [4, 1, 2, 1, 4] || path == [1, 2, 1, 4, 1]);
     }
 
     #[test]
     fn test_adjacency_list_weighted_graph_directed_eulerian_path_for_connected_graphs() {
-        let mut graph: AdjacencyListWightedGraph<i32, usize> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, usize> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(1, 2, 0);
         graph.add_edge(1, 4, 0);
         let path: Vec<i32> = graph.eulerian_path_for_connected_graphs();
@@ -2362,7 +2464,7 @@ mod tests {
         graph.add_edge(0, 2, 70);
         graph.add_edge(1, 3, 90);
         graph.add_edge(2, 3, 10);
-        
+
         assert_eq!(graph.weigth(0, 1), 50);
         assert_eq!(graph.weigth(1, 0), 50);
 
@@ -2385,7 +2487,7 @@ mod tests {
         graph.add_edge(0, 2, 70);
         graph.add_edge(1, 3, 90);
         graph.add_edge(2, 3, 10);
-        
+
         assert_eq!(graph.weigth(0, 1), 50);
         assert_eq!(graph.weigth(1, 0), 0);
 
@@ -2452,7 +2554,6 @@ mod tests {
         //     }
         //     println!("")
         // }
-
     }
 
     #[test]
@@ -2542,7 +2643,7 @@ mod tests {
         g.add_edge(1, 3, 5);
         g.add_edge(2, 4, 25);
         g.add_edge(3, 4, 50);
-        
+
         let start_node: i32 = 1;
         let n_vertices: usize = 4;
         let distances: HashMap<i32, i64> = g.bellman_ford(start_node, n_vertices);
@@ -2563,7 +2664,7 @@ mod tests {
         g.add_edge(3, 4, -7);
 
         // negative cycle: 2 → 3 → 4 → 2
-        
+
         let start_node: i32 = 2;
         let n_vertices: usize = 4;
         g.bellman_ford(start_node, n_vertices);
@@ -2667,7 +2768,6 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_dfs_iterator() {
-
         let mut g: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
         g.add_edge(0, 1, 0.1);
         g.add_edge(0, 2, 0.2);
@@ -2684,14 +2784,14 @@ mod tests {
         //     println!("Visited Node: {}", node);
         // }
 
-        let expected_order: Vec<(i32, f64)> = vec![(0, 0.0), (2, 0.2), (5, 0.7), (1, 0.1), (4, 0.5), (3, 0.4)];
+        let expected_order: Vec<(i32, f64)> =
+            vec![(0, 0.0), (2, 0.2), (5, 0.7), (1, 0.1), (4, 0.5), (3, 0.4)];
         let actual_order: Vec<(i32, f64)> = g.iter_dfs(0).collect();
         assert_eq!(actual_order, expected_order);
     }
 
     #[test]
     fn test_adjacency_list_weighted_graph_dfs_iterator_2() {
-
         let mut g: AdjacencyListWightedGraph<i32, f64> = AdjacencyListWightedGraph::new_directed();
         g.add_edge(0, 1, 0.1);
         g.add_edge(0, 2, 0.2);
@@ -2709,7 +2809,8 @@ mod tests {
         g.add_edge(22, 42, 0.5);
         g.add_edge(32, 52, 0.6);
 
-        let expected_order: Vec<(i32, f64)> = vec![(0, 0.0), (2, 0.2), (5, 0.7), (1, 0.1), (4, 0.5), (3, 0.4)];
+        let expected_order: Vec<(i32, f64)> =
+            vec![(0, 0.0), (2, 0.2), (5, 0.7), (1, 0.1), (4, 0.5), (3, 0.4)];
         let actual_order: Vec<(i32, f64)> = g.iter_dfs(0).collect();
         assert_eq!(actual_order[0..6], expected_order);
         assert_eq!(actual_order.len(), 11);
@@ -2733,7 +2834,8 @@ mod tests {
         //     println!("Visited Node: {}", node);
         // }
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs(0).collect();
         assert_eq!(actual_order, expected_order);
     }
@@ -2757,7 +2859,8 @@ mod tests {
         g.add_edge(22, 42, 50);
         g.add_edge(32, 52, 60);
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs(0).collect();
         assert_eq!(actual_order[0..6], expected_order);
         assert_eq!(actual_order.len(), 11);
@@ -2781,7 +2884,8 @@ mod tests {
         //     println!("Visited Node: {}", node);
         // }
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (3, 40), (4, 50), (2, 20), (5, 70)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (1, 10), (3, 40), (4, 50), (2, 20), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_dfs_asc(0).collect();
         assert_eq!(actual_order, expected_order);
     }
@@ -2805,7 +2909,8 @@ mod tests {
         g.add_edge(22, 42, 50);
         g.add_edge(32, 52, 60);
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (3, 40), (4, 50), (2, 20), (5, 70)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (1, 10), (3, 40), (4, 50), (2, 20), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_dfs_asc(0).collect();
         assert_eq!(actual_order[0..6], expected_order);
         assert_eq!(actual_order.len(), 11);
@@ -2829,7 +2934,8 @@ mod tests {
         //     println!("Visited Node: {} ({})", node.0, node.1);
         // }
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs_asc(0).collect();
         assert_eq!(actual_order, expected_order);
     }
@@ -2853,7 +2959,8 @@ mod tests {
         g.add_edge(22, 42, 50);
         g.add_edge(32, 52, 60);
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (1, 10), (2, 20), (3, 40), (4, 50), (5, 70)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs_asc(0).collect();
         assert_eq!(actual_order[0..6], expected_order);
         assert_eq!(actual_order.len(), 11);
@@ -2877,7 +2984,8 @@ mod tests {
         //     println!("Visited Node: {}", node);
         // }
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (2, 20), (5, 70), (1, 10), (4, 50), (3, 40)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (2, 20), (5, 70), (1, 10), (4, 50), (3, 40)];
         let actual_order: Vec<(i32, i64)> = g.iter_dfs_desc(0).collect();
         assert_eq!(actual_order, expected_order);
     }
@@ -2901,7 +3009,8 @@ mod tests {
         g.add_edge(22, 42, 50);
         g.add_edge(32, 52, 60);
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (2, 20), (5, 70), (1, 10), (4, 50), (3, 40)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (2, 20), (5, 70), (1, 10), (4, 50), (3, 40)];
         let actual_order: Vec<(i32, i64)> = g.iter_dfs_desc(0).collect();
         assert_eq!(actual_order[0..6], expected_order);
         assert_eq!(actual_order.len(), 11);
@@ -2925,7 +3034,8 @@ mod tests {
         //     println!("Visited Node: {} ({})", node.0, node.1);
         // }
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (2, 20), (1, 10), (5, 70), (4, 50), (3, 40)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (2, 20), (1, 10), (5, 70), (4, 50), (3, 40)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs_desc(0).collect();
         assert_eq!(actual_order, expected_order);
     }
@@ -2949,7 +3059,8 @@ mod tests {
         g.add_edge(22, 42, 50);
         g.add_edge(32, 52, 60);
 
-        let expected_order: Vec<(i32, i64)> = vec![(0, 0), (2, 20), (1, 10), (5, 70), (4, 50), (3, 40)];
+        let expected_order: Vec<(i32, i64)> =
+            vec![(0, 0), (2, 20), (1, 10), (5, 70), (4, 50), (3, 40)];
         let actual_order: Vec<(i32, i64)> = g.iter_bfs_desc(0).collect();
         assert_eq!(actual_order[0..6], expected_order);
         assert_eq!(actual_order.len(), 11);
@@ -2960,7 +3071,7 @@ mod tests {
         let size: usize = 9;
         let steps: usize = 3; // 2^3 = 8
         let mut g: SuccessorGraphEnumerated = SuccessorGraphEnumerated::new(size, steps);
-        
+
         g.insert(0, 2);
         g.insert(1, 4);
         g.insert(2, 6);
@@ -2973,21 +3084,23 @@ mod tests {
 
         assert_eq!(g.steps, 4);
         assert_eq!(g.is_table_filled, false);
-        assert_eq!(g.data, vec![
-            2, 4, 6, 5, 1, 1, 0, 5, 2,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0,
-        ]);
+        assert_eq!(
+            g.data,
+            vec![
+                2, 4, 6, 5, 1, 1, 0, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+            ]
+        );
 
         assert_eq!(g.find_successor(0, 0), 0);
         assert_eq!(g.is_table_filled, true);
-        assert_eq!(g.data, vec![
-            2, 4, 6, 5, 1, 1, 0, 5, 2,
-            6, 1, 0, 1, 4, 4, 2, 1, 6,
-            2, 1, 6, 1, 4, 4, 0, 1, 2,
-            6, 1, 0, 1, 4, 4, 2, 1, 6,
-        ]);
+        assert_eq!(
+            g.data,
+            vec![
+                2, 4, 6, 5, 1, 1, 0, 5, 2, 6, 1, 0, 1, 4, 4, 2, 1, 6, 2, 1, 6, 1, 4, 4, 0, 1, 2, 6,
+                1, 0, 1, 4, 4, 2, 1, 6,
+            ]
+        );
 
         assert_eq!(g.find_successor(0, 1), 2);
         assert_eq!(g.find_successor(0, 2), 6);
@@ -3016,7 +3129,7 @@ mod tests {
     fn test_successor_graph() {
         let steps: usize = 3; // 2^3 = 8
         let mut g: SuccessorGraph<i32> = SuccessorGraph::new(steps);
-        
+
         g.insert(0, 2);
         g.insert(1, 4);
         g.insert(2, 6);
@@ -3026,7 +3139,7 @@ mod tests {
         g.insert(6, 0);
         g.insert(7, 5);
         g.insert(8, 2);
-        
+
         assert_eq!(g.steps, 4);
         assert_eq!(g.is_table_filled, false);
 
@@ -3149,7 +3262,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_max_flow() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(1, 2, 5);
         graph.add_edge(1, 4, 4);
         graph.add_edge(2, 3, 6);
@@ -3166,7 +3280,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_adjacency_list_weighted_graph_max_flow_panic() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(1, 2, 5);
         graph.add_edge(1, 4, 4);
         graph.add_edge(2, 3, 6);
@@ -3181,7 +3296,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_minimum_cut() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(1, 2, 5);
         graph.add_edge(1, 4, 4);
         graph.add_edge(2, 3, 6);
@@ -3200,7 +3316,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_adjacency_list_weighted_graph_minimum_cut_panic() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(1, 2, 5);
         graph.add_edge(1, 4, 4);
         graph.add_edge(2, 3, 6);
@@ -3215,7 +3332,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_edge_disjoint_paths() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(1, 2, 10);
         graph.add_edge(1, 4, 10);
         graph.add_edge(2, 4, 10);
@@ -3235,7 +3353,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_adjacency_list_weighted_graph_edge_disjoint_paths_panic() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(1, 2, 1);
         graph.add_edge(1, 4, 1);
         graph.add_edge(2, 4, 1);
@@ -3251,7 +3370,8 @@ mod tests {
 
     #[test]
     fn test_adjacency_list_weighted_graph_node_disjoint_paths() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_directed();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_directed();
         graph.add_edge(1, 2, 10);
         graph.add_edge(1, 4, 10);
         graph.add_edge(2, 4, 10);
@@ -3270,7 +3390,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_adjacency_list_weighted_graph_node_disjoint_paths_panic() {
-        let mut graph: AdjacencyListWightedGraph<i32, i32> = AdjacencyListWightedGraph::new_undirected();
+        let mut graph: AdjacencyListWightedGraph<i32, i32> =
+            AdjacencyListWightedGraph::new_undirected();
         graph.add_edge(1, 2, 10);
         graph.add_edge(1, 4, 10);
         graph.add_edge(2, 4, 10);

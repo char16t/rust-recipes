@@ -1,4 +1,7 @@
-pub fn binary_search<T>(array: &[T], x: T) -> (bool, usize) where T: PartialOrd {
+pub fn binary_search<T>(array: &[T], x: T) -> (bool, usize)
+where
+    T: PartialOrd,
+{
     let n: usize = array.len();
     let mut k: usize = 0;
     let mut b: usize = n / 2;
@@ -8,9 +11,12 @@ pub fn binary_search<T>(array: &[T], x: T) -> (bool, usize) where T: PartialOrd 
         }
         b /= 2;
     }
-    if array.get(k) == Some(&x) { (true, k) } else { (false, 0) }
+    if array.get(k) == Some(&x) {
+        (true, k)
+    } else {
+        (false, 0)
+    }
 }
-
 
 #[cfg(test)]
 mod tests {

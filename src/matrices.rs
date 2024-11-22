@@ -1,6 +1,6 @@
+use std::ops::Add;
 use std::ops::Index;
 use std::ops::IndexMut;
-use std::ops::Add;
 use std::ops::Mul;
 use std::ops::Sub;
 
@@ -9,22 +9,24 @@ use std::ops::Sub;
 pub struct Matrix<T> {
     rows: usize,
     cols: usize,
-    data: Vec<T>
+    data: Vec<T>,
 }
 impl<T> Matrix<T>
 where
-    T: Default + Copy + Add<Output = T> + Mul<Output = T>
+    T: Default + Copy + Add<Output = T> + Mul<Output = T>,
 {
     pub fn new(rows: usize, cols: usize) -> Self {
         Self {
-            rows, cols, data: vec![T::default(); rows * cols]
+            rows,
+            cols,
+            data: vec![T::default(); rows * cols],
         }
     }
     pub fn new_vector(size: usize) -> Self {
         Self {
-            rows: size, 
-            cols: 1, 
-            data: vec![T::default(); size]
+            rows: size,
+            cols: 1,
+            data: vec![T::default(); size],
         }
     }
     pub fn from_vector(vec: &[T]) -> Self {
@@ -34,8 +36,8 @@ where
         }
         Self {
             rows: vec.len(),
-            cols: 1, 
-            data
+            cols: 1,
+            data,
         }
     }
     pub fn new_diag(size: usize, elem: T) -> Self {
@@ -44,9 +46,9 @@ where
             data[i * size + i] = elem;
         }
         Self {
-            rows: size, 
-            cols: size, 
-            data
+            rows: size,
+            cols: size,
+            data,
         }
     }
     pub fn transpose(&self) -> Self {
@@ -69,7 +71,7 @@ where
         let mut result: Matrix<T> = self.clone();
         let mut base: Matrix<T> = self.clone();
         let mut exp: usize = n - 1;
-    
+
         while exp > 0 {
             if exp % 2 == 1 {
                 result = result.clone() * base.clone();
@@ -77,7 +79,7 @@ where
             base = base.clone() * base;
             exp /= 2;
         }
-    
+
         result
     }
 }
@@ -100,7 +102,7 @@ impl<T> IndexMut<usize> for Matrix<T> {
 
 impl<T> Add for Matrix<T>
 where
-    T: Add<Output = T> + Clone
+    T: Add<Output = T> + Clone,
 {
     type Output = Matrix<T>;
 
@@ -109,21 +111,24 @@ where
             panic!("Matrix dimensions must match for addition");
         }
 
-        let data: Vec<T> = self.data.iter().zip(other.data.iter())
+        let data: Vec<T> = self
+            .data
+            .iter()
+            .zip(other.data.iter())
             .map(|(a, b)| a.clone() + b.clone())
             .collect();
 
         Matrix {
             rows: self.rows,
             cols: self.cols,
-            data
+            data,
         }
     }
 }
 
 impl<T> Sub for Matrix<T>
 where
-    T: Sub<Output = T> + Clone
+    T: Sub<Output = T> + Clone,
 {
     type Output = Matrix<T>;
 
@@ -132,14 +137,17 @@ where
             panic!("Matrix dimensions must match for substraction");
         }
 
-        let data: Vec<T> = self.data.iter().zip(other.data.iter())
+        let data: Vec<T> = self
+            .data
+            .iter()
+            .zip(other.data.iter())
             .map(|(a, b)| a.clone() - b.clone())
             .collect();
 
         Matrix {
             rows: self.rows,
             cols: self.cols,
-            data
+            data,
         }
     }
 }
@@ -197,7 +205,7 @@ where
 
 impl<T> std::fmt::Display for Matrix<T>
 where
-    T: std::fmt::Display
+    T: std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         for i in 0..self.rows {
@@ -235,9 +243,9 @@ pub fn fib(n: usize) -> u128 {
 
 pub fn linear_recurrent_sequence(coefficients: &[i128], initial: &[i128], n: usize) -> i128 {
     let k: usize = coefficients.len();
-    
+
     let mut m: Matrix<i128> = Matrix::new(k, k);
-    for i in 0..k-1 {
+    for i in 0..k - 1 {
         for j in 0..k {
             if i + 1 == j {
                 m[i][j] = 1;
@@ -259,13 +267,23 @@ pub fn linear_recurrent_sequence(coefficients: &[i128], initial: &[i128], n: usi
 
 /// Number of paths that start in A, end in B and consist of exactly N edges.
 /// Matrix is a adjacency matrix of the unweighted graph.
-pub fn number_of_paths_with_n_egdes(a: usize, b: usize, n: usize, adjacency_matrix: Matrix<usize>) -> usize {
+pub fn number_of_paths_with_n_egdes(
+    a: usize,
+    b: usize,
+    n: usize,
+    adjacency_matrix: Matrix<usize>,
+) -> usize {
     adjacency_matrix.pow(n)[a][b]
 }
 
 /// Shortest path length that start in A, end in B and consist of exactly N edges.
 /// Matrix is a adjacency matrix of the weighted graph.
-pub fn shortest_path_with_n_eges(a: usize, b: usize, n: usize, adjacency_matrix: Matrix<usize>) -> usize {
+pub fn shortest_path_with_n_eges(
+    a: usize,
+    b: usize,
+    n: usize,
+    adjacency_matrix: Matrix<usize>,
+) -> usize {
     fn mul(first: Matrix<usize>, other: Matrix<usize>) -> Matrix<usize> {
         if first.cols != first.rows {
             panic!("First matrix rows number must match with second matrix cols number for multiplication");
@@ -277,7 +295,8 @@ pub fn shortest_path_with_n_eges(a: usize, b: usize, n: usize, adjacency_matrix:
             for j in 0..other.cols {
                 for k in 0..first.cols {
                     let current: usize = result_data[i * other.cols + j];
-                    let next: usize= first.data[i * first.cols + k] * other.data[k * other.cols + j];
+                    let next: usize =
+                        first.data[i * first.cols + k] * other.data[k * other.cols + j];
                     if current == 0 {
                         result_data[i * other.cols + j] = next;
                     } else if next == 0 {
@@ -285,7 +304,7 @@ pub fn shortest_path_with_n_eges(a: usize, b: usize, n: usize, adjacency_matrix:
                     } else {
                         result_data[i * other.cols + j] = current.min(next);
                     }
-                    // result_data[i * other.cols + j] = 
+                    // result_data[i * other.cols + j] =
                     //     result_data[i * other.cols + j].min(first.data[i * first.cols + k] * other.data[k * other.cols + j]);
                 }
             }
@@ -308,24 +327,25 @@ pub fn shortest_path_with_n_eges(a: usize, b: usize, n: usize, adjacency_matrix:
         let mut result: Matrix<usize> = m.clone();
         let mut base: Matrix<usize> = m.clone();
         let mut exp: usize = n - 1;
-    
+
         while exp > 0 {
             if exp % 2 == 1 {
-                result = mul(result.clone(),  base.clone());
+                result = mul(result.clone(), base.clone());
             }
             base = mul(base.clone(), base);
             exp /= 2;
         }
-    
+
         result
     }
     pow(adjacency_matrix, n)[a][b]
 }
 
 pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
-
     fn swap_rows(system: &mut Matrix<f32>, a: usize, b: usize) {
-        if a == b { return; }
+        if a == b {
+            return;
+        }
         let length: usize = system.cols;
         for i in 0..length {
             let tmp: f32 = system[a][i];
@@ -338,7 +358,7 @@ pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
     for i in 0..system.rows {
         if system[i][i] == 0.0 {
             let mut swap_with: usize = i;
-            for l in i+1..system.rows {
+            for l in i + 1..system.rows {
                 if system[l][i] != 0f32 {
                     swap_with = l;
                     break;
@@ -346,7 +366,7 @@ pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
             }
             swap_rows(system, i, swap_with);
         }
-        for j in i+1..system.rows {
+        for j in i + 1..system.rows {
             let factor = system[j][i] / system[i][i];
             for k in i..system.cols {
                 system[j][k] -= factor * system[i][k];
@@ -358,7 +378,7 @@ pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
     for i in (1..system.rows).rev() {
         if system[i][i] == 0f32 {
             let mut swap_with: usize = i;
-            for l in (1..i+1).rev() {
+            for l in (1..i + 1).rev() {
                 if system[l][i] != 0f32 {
                     swap_with = l;
                     break;
@@ -366,7 +386,7 @@ pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
             }
             swap_rows(system, i, swap_with);
         }
-        for j in (1..i+1).rev() {
+        for j in (1..i + 1).rev() {
             let factor = system[j - 1][i] as f32 / system[i][i] as f32;
             for k in (0..system.cols).rev() {
                 system[j - 1][k] -= factor * system[i][k] as f32;
@@ -380,8 +400,7 @@ pub fn gaussian_elimination(system: &mut Matrix<f32>) -> Option<Vec<f32>> {
     for i in 0..n {
         if system[i][i] == 0f32 {
             return None;
-        }
-        else {
+        } else {
             system[i][n] /= system[i][i] as f32;
             system[i][i] = 1f32;
             solutions.push(system[i][n])
@@ -466,7 +485,7 @@ mod tests {
 
     #[test]
     fn test_matrix_transpose() {
-        // 1 2 3 
+        // 1 2 3
         // 4 5 6
         let mut m: Matrix<usize> = Matrix::new(2, 3);
         m[0][0] = 1;
@@ -475,7 +494,7 @@ mod tests {
         m[1][0] = 4;
         m[1][1] = 5;
         m[1][2] = 6;
-        
+
         // 1 4
         // 2 5
         // 3 6
@@ -621,8 +640,10 @@ mod tests {
     #[test]
     fn test_matrix_display() {
         let mut a: Matrix<i32> = Matrix::new(2, 2);
-        a[0][0] = 1; a[0][1] = 2;
-        a[1][0] = 3; a[1][1] = 4;
+        a[0][0] = 1;
+        a[0][1] = 2;
+        a[1][0] = 3;
+        a[1][1] = 4;
         let expected_output: &str = "1 2 \n3 4 \n";
         let actual_output: String = format!("{}", a);
         assert_eq!(expected_output, actual_output);
@@ -650,25 +671,25 @@ mod tests {
         a[1][0] = 1;
         a[1][1] = 4;
 
-        let b: Matrix<i32> = a.pow(3);      
+        let b: Matrix<i32> = a.pow(3);
         assert_eq!(b[0][0], 48);
         assert_eq!(b[0][1], 165);
         assert_eq!(b[1][0], 33);
         assert_eq!(b[1][1], 114);
 
-        let c: Matrix<i32> = a.pow(5);      
+        let c: Matrix<i32> = a.pow(5);
         assert_eq!(c[0][0], 1422);
         assert_eq!(c[0][1], 4905);
         assert_eq!(c[1][0], 981);
         assert_eq!(c[1][1], 3384);
 
-        let d: Matrix<i32> = a.pow(4);      
+        let d: Matrix<i32> = a.pow(4);
         assert_eq!(d[0][0], 261);
         assert_eq!(d[0][1], 900);
         assert_eq!(d[1][0], 180);
         assert_eq!(d[1][1], 621);
 
-        let e: Matrix<i32> = a.pow(1);      
+        let e: Matrix<i32> = a.pow(1);
         assert_eq!(e[0][0], 2);
         assert_eq!(e[0][1], 5);
         assert_eq!(e[1][0], 1);
@@ -698,12 +719,42 @@ mod tests {
     #[test]
     fn test_number_of_paths_with_n_egdes() {
         let mut m: Matrix<usize> = Matrix::new(6, 6);
-        m[0][0] = 0; m[0][1] = 0; m[0][2] = 0; m[0][3] = 1; m[0][4] = 0; m[0][5] = 0;
-        m[1][0] = 1; m[1][1] = 0; m[1][2] = 0; m[1][3] = 0; m[1][4] = 1; m[1][5] = 1;
-        m[2][0] = 0; m[2][1] = 1; m[2][2] = 0; m[2][3] = 0; m[2][4] = 0; m[2][5] = 0;
-        m[3][0] = 0; m[3][1] = 1; m[3][2] = 0; m[3][3] = 0; m[3][4] = 0; m[3][5] = 0;
-        m[4][0] = 0; m[4][1] = 0; m[4][2] = 0; m[4][3] = 0; m[4][4] = 0; m[4][5] = 0;
-        m[5][0] = 0; m[5][1] = 0; m[5][2] = 1; m[5][3] = 0; m[5][4] = 1; m[5][5] = 0;
+        m[0][0] = 0;
+        m[0][1] = 0;
+        m[0][2] = 0;
+        m[0][3] = 1;
+        m[0][4] = 0;
+        m[0][5] = 0;
+        m[1][0] = 1;
+        m[1][1] = 0;
+        m[1][2] = 0;
+        m[1][3] = 0;
+        m[1][4] = 1;
+        m[1][5] = 1;
+        m[2][0] = 0;
+        m[2][1] = 1;
+        m[2][2] = 0;
+        m[2][3] = 0;
+        m[2][4] = 0;
+        m[2][5] = 0;
+        m[3][0] = 0;
+        m[3][1] = 1;
+        m[3][2] = 0;
+        m[3][3] = 0;
+        m[3][4] = 0;
+        m[3][5] = 0;
+        m[4][0] = 0;
+        m[4][1] = 0;
+        m[4][2] = 0;
+        m[4][3] = 0;
+        m[4][4] = 0;
+        m[4][5] = 0;
+        m[5][0] = 0;
+        m[5][1] = 0;
+        m[5][2] = 1;
+        m[5][3] = 0;
+        m[5][4] = 1;
+        m[5][5] = 0;
 
         let r: usize = number_of_paths_with_n_egdes(1, 4, 4, m);
         assert_eq!(r, 2);
@@ -712,12 +763,42 @@ mod tests {
     #[test]
     fn test_shortest_path_with_n_eges() {
         let mut m: Matrix<usize> = Matrix::new(6, 6);
-        m[0][0] = 0; m[0][1] = 0; m[0][2] = 0; m[0][3] = 4; m[0][4] = 0; m[0][5] = 0;
-        m[1][0] = 2; m[1][1] = 0; m[1][2] = 0; m[1][3] = 0; m[1][4] = 1; m[1][5] = 2;
-        m[2][0] = 0; m[2][1] = 4; m[2][2] = 0; m[2][3] = 0; m[2][4] = 0; m[2][5] = 0;
-        m[3][0] = 0; m[3][1] = 1; m[3][2] = 0; m[3][3] = 0; m[3][4] = 0; m[3][5] = 0;
-        m[4][0] = 0; m[4][1] = 0; m[4][2] = 0; m[4][3] = 0; m[4][4] = 0; m[4][5] = 0;
-        m[5][0] = 0; m[5][1] = 0; m[5][2] = 3; m[5][3] = 0; m[5][4] = 2; m[5][5] = 0;
+        m[0][0] = 0;
+        m[0][1] = 0;
+        m[0][2] = 0;
+        m[0][3] = 4;
+        m[0][4] = 0;
+        m[0][5] = 0;
+        m[1][0] = 2;
+        m[1][1] = 0;
+        m[1][2] = 0;
+        m[1][3] = 0;
+        m[1][4] = 1;
+        m[1][5] = 2;
+        m[2][0] = 0;
+        m[2][1] = 4;
+        m[2][2] = 0;
+        m[2][3] = 0;
+        m[2][4] = 0;
+        m[2][5] = 0;
+        m[3][0] = 0;
+        m[3][1] = 1;
+        m[3][2] = 0;
+        m[3][3] = 0;
+        m[3][4] = 0;
+        m[3][5] = 0;
+        m[4][0] = 0;
+        m[4][1] = 0;
+        m[4][2] = 0;
+        m[4][3] = 0;
+        m[4][4] = 0;
+        m[4][5] = 0;
+        m[5][0] = 0;
+        m[5][1] = 0;
+        m[5][2] = 3;
+        m[5][3] = 0;
+        m[5][4] = 2;
+        m[5][5] = 0;
 
         let r: usize = shortest_path_with_n_eges(1, 4, 4, m);
         assert_eq!(r, 8);
@@ -726,15 +807,28 @@ mod tests {
     #[test]
     fn test_gaussian_elimination() {
         let mut m: Matrix<f32> = Matrix::new(3, 4);
-        m[0][0] = 2.0; m[0][1] = 4.0; m[0][2] = 1.0; m[0][3] = 16.0;
-        m[1][0] = 1.0; m[1][1] = 2.0; m[1][2] = 5.0; m[1][3] = 17.0;
-        m[2][0] = 3.0; m[2][1] = 1.0; m[2][2] = 1.0; m[2][3] = 8.0;
+        m[0][0] = 2.0;
+        m[0][1] = 4.0;
+        m[0][2] = 1.0;
+        m[0][3] = 16.0;
+        m[1][0] = 1.0;
+        m[1][1] = 2.0;
+        m[1][2] = 5.0;
+        m[1][3] = 17.0;
+        m[2][0] = 3.0;
+        m[2][1] = 1.0;
+        m[2][2] = 1.0;
+        m[2][3] = 8.0;
         let solution: Option<Vec<f32>> = gaussian_elimination(&mut m);
         assert_eq!(solution, Some(vec![1.0, 3.0, 2.0]));
 
         let mut m: Matrix<f32> = Matrix::new(2, 3);
-        m[0][0] = 1.0; m[0][1] = 1.0; m[0][2] = 2.0;
-        m[1][0] = 2.0; m[1][1] = 2.0; m[1][2] = 4.0;
+        m[0][0] = 1.0;
+        m[0][1] = 1.0;
+        m[0][2] = 2.0;
+        m[1][0] = 2.0;
+        m[1][1] = 2.0;
+        m[1][2] = 4.0;
         let solution: Option<Vec<f32>> = gaussian_elimination(&mut m);
         assert_eq!(solution, None);
     }

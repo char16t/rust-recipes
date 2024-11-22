@@ -2,10 +2,10 @@ use std::collections::HashSet;
 
 pub fn nim_sum<T>(elements: &[T]) -> T
 where
-    T: Default + Copy + std::ops::BitXor<Output = T>
+    T: Default + Copy + std::ops::BitXor<Output = T>,
 {
     if elements.len() == 0 {
-        return T::default()
+        return T::default();
     }
     let mut result: T = elements[0];
     for i in 1..elements.len() {
@@ -14,9 +14,9 @@ where
     result
 }
 
-pub fn is_nim_game_over<T>(elements: &[T]) -> bool 
-where 
-    T: Default + std::cmp::PartialEq
+pub fn is_nim_game_over<T>(elements: &[T]) -> bool
+where
+    T: Default + std::cmp::PartialEq,
 {
     for i in 0..elements.len() {
         if elements[i] != T::default() {
@@ -41,8 +41,7 @@ pub fn nim_move(elements: &[usize]) -> (usize, usize) {
             }
         }
         return (elem_index, n_removed);
-    }
-    else {
+    } else {
         for i in 0..elements.len() {
             if elements[i] != 0 {
                 return (i, 1);
@@ -56,7 +55,6 @@ pub fn nim_move(elements: &[usize]) -> (usize, usize) {
 pub fn misere_nim_move(elements: &[usize]) -> (usize, usize) {
     let mut elem_index: usize = 0;
     let mut n_removed: usize = 0;
-
 
     let mut nim_sum: usize = 0;
     let mut n_heaps_with_size_equals_1: usize = 0;
@@ -98,8 +96,7 @@ pub fn misere_nim_move(elements: &[usize]) -> (usize, usize) {
             }
         }
         return (elem_index, n_removed);
-    }
-    else {
+    } else {
         for i in 0..elements.len() {
             if elements[i] != 0 {
                 return (i, 1);
@@ -118,7 +115,7 @@ pub fn mex(states: &[usize]) -> usize {
     while grundy_numbers.contains(&mex) {
         mex += 1;
     }
-    return mex
+    return mex;
 }
 
 pub fn is_losing_state(grundy_number: usize) -> bool {
@@ -137,11 +134,9 @@ pub fn grundy_number(n: usize) -> usize {
     let mut used_nums: HashSet<usize> = HashSet::new();
     for i in 1..n {
         if n - i != i && !used_nums.contains(&i) {
-            grundy_numbers.push(
-                nim_sum(&vec![grundy_number(i), grundy_number(n-i)])
-            );
+            grundy_numbers.push(nim_sum(&vec![grundy_number(i), grundy_number(n - i)]));
             used_nums.insert(i);
-            used_nums.insert(n-i);
+            used_nums.insert(n - i);
         }
     }
     return mex(&grundy_numbers);
@@ -149,13 +144,12 @@ pub fn grundy_number(n: usize) -> usize {
 
 /// Return (A, B, C). It means "Split A-th heap into B and C"
 pub fn grundy_game_move(heaps: &[usize]) -> (usize, usize, usize) {
-    
     let mut heap_with_more_than_1_element: usize = 0;
     let mut heap_with_more_than_1_element_exists: bool = false;
-    
+
     for heap_index in 0..heaps.len() {
         let n: usize = heaps[heap_index];
-        
+
         if n > 1 {
             heap_with_more_than_1_element = heap_index;
             heap_with_more_than_1_element_exists = true;
@@ -164,17 +158,21 @@ pub fn grundy_game_move(heaps: &[usize]) -> (usize, usize, usize) {
         let mut used_nums: HashSet<usize> = HashSet::new();
         for i in 1..n {
             if n - i != i && !used_nums.contains(&i) {
-                if nim_sum(&vec![grundy_number(i), grundy_number(n-i)]) == 0 {
-                    return (heap_index, i, n-i);
+                if nim_sum(&vec![grundy_number(i), grundy_number(n - i)]) == 0 {
+                    return (heap_index, i, n - i);
                 }
                 used_nums.insert(i);
-                used_nums.insert(n-i);
+                used_nums.insert(n - i);
             }
         }
     }
 
     if heap_with_more_than_1_element_exists {
-        return (heap_with_more_than_1_element, 1, heaps[heap_with_more_than_1_element] - 1);
+        return (
+            heap_with_more_than_1_element,
+            1,
+            heaps[heap_with_more_than_1_element] - 1,
+        );
     }
     panic!("Unable to make move when heaps not exists, {:?}", heaps);
 }
@@ -239,7 +237,7 @@ mod tests {
         let mut player: bool = true;
         let mut elements: Vec<usize> = vec![3, 4, 5];
         while !is_nim_game_over(&elements) {
-            let p: &str = if player { "COMPUTER" } else { "HUMAN" }; 
+            let p: &str = if player { "COMPUTER" } else { "HUMAN" };
             let m: (usize, usize) = nim_move(&elements);
             println!("[{}] Take {} element from {}-th heap", p, m.1, m.0);
             elements[m.0] -= m.1;
@@ -255,7 +253,7 @@ mod tests {
         let mut player: bool = true;
         let mut elements: Vec<usize> = vec![3, 4, 5];
         while !is_nim_game_over(&elements) {
-            let p: &str = if player { "COMPUTER" } else { "HUMAN" }; 
+            let p: &str = if player { "COMPUTER" } else { "HUMAN" };
             let m: (usize, usize) = misere_nim_move(&elements);
             println!("[{}] Take {} element from {}-th heap", p, m.1, m.0);
             elements[m.0] -= m.1;
@@ -306,7 +304,6 @@ mod tests {
         grundy_game_move(&vec![]);
     }
 
-
     #[test]
     fn test_is_grundy_game_over() {
         assert_eq!(is_grundy_game_over(&vec![]), true);
@@ -319,17 +316,20 @@ mod tests {
     #[test]
     fn test_grundy_game_integration() {
         let mut player: bool = true;
-        
+
         let mut heaps: Vec<usize> = vec![8];
         while !is_grundy_game_over(&heaps) {
             let p: &str = if player { "COMPUTER" } else { "HUMAN" };
             println!("[{}] Elements: {:?}", p, heaps);
-            
+
             let (heap_index, size_a, size_b) = grundy_game_move(&heaps);
             heaps[heap_index] = size_a;
             heaps.push(size_b);
 
-            println!("[{}] Split: {}-th heap into {} and {}", p, heap_index, size_a, size_b);
+            println!(
+                "[{}] Split: {}-th heap into {} and {}",
+                p, heap_index, size_a, size_b
+            );
             println!("[{}] Elements: {:?}", p, heaps);
             player = !player;
         }

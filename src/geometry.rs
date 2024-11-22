@@ -1,4 +1,7 @@
-use crate::{combinatorics, numbers::{approx_equal, pow}};
+use crate::{
+    combinatorics,
+    numbers::{approx_equal, pow},
+};
 
 /// Approximates the sine of an angle using the Taylor series expansion
 pub fn sin<T: Into<f64> + Copy>(x: T) -> f64 {
@@ -6,7 +9,8 @@ pub fn sin<T: Into<f64> + Copy>(x: T) -> f64 {
     let mut result: f64 = 0.0;
     for n in 0..16 {
         let sign: f64 = if n % 2 == 0 { 1.0 } else { -1.0 };
-        let term = sign * x.powi(2 * n + 1) / combinatorics::factorial_i128((2 * n + 1).into()) as f64;
+        let term =
+            sign * x.powi(2 * n + 1) / combinatorics::factorial_i128((2 * n + 1).into()) as f64;
         result += term;
     }
     result
@@ -34,12 +38,12 @@ pub fn exp<T: From<f64> + Copy>(x: f64) -> T {
 #[derive(Clone, Copy)]
 pub struct Complex<T> {
     real: T,
-    imaginary: T
+    imaginary: T,
 }
 impl<T> Complex<T>
-where 
+where
     f64: From<T>,
-    T: Copy + std::convert::From<f64> + std::ops::Mul<Output = T> + std::ops::Neg<Output = T>
+    T: Copy + std::convert::From<f64> + std::ops::Mul<Output = T> + std::ops::Neg<Output = T>,
 {
     pub fn new(real: T, imaginary: T) -> Self {
         Self { real, imaginary }
@@ -47,7 +51,7 @@ where
     pub fn from_polar(r: T, theta: T) -> Self {
         Self {
             real: r * cos(theta).into(),
-            imaginary: r * sin(theta).into()
+            imaginary: r * sin(theta).into(),
         }
     }
     pub fn re(&self) -> T {
@@ -65,12 +69,15 @@ where
     }
     /// Complex conjugate
     pub fn conj(&self) -> Complex<T> {
-        Self { real: self.real, imaginary: -self.imaginary } 
+        Self {
+            real: self.real,
+            imaginary: -self.imaginary,
+        }
     }
 }
 impl<T> std::ops::Neg for Complex<T>
 where
-    T: std::ops::Neg<Output = T>
+    T: std::ops::Neg<Output = T>,
 {
     type Output = Complex<T>;
 
@@ -84,7 +91,7 @@ where
 
 impl<T> std::ops::Add for Complex<T>
 where
-    T: std::ops::Add<Output = T>
+    T: std::ops::Add<Output = T>,
 {
     type Output = Complex<T>;
 
@@ -98,7 +105,7 @@ where
 
 impl<T> std::ops::AddAssign for Complex<T>
 where
-    T: Copy + std::ops::Add<Output = T>
+    T: Copy + std::ops::Add<Output = T>,
 {
     fn add_assign(&mut self, other: Complex<T>) {
         self.real = self.real + other.real;
@@ -108,7 +115,7 @@ where
 
 impl<T> std::ops::Sub for Complex<T>
 where
-    T: std::ops::Sub<Output = T>
+    T: std::ops::Sub<Output = T>,
 {
     type Output = Complex<T>;
 
@@ -122,7 +129,7 @@ where
 
 impl<T> std::ops::SubAssign for Complex<T>
 where
-    T: Copy + std::ops::Sub<Output = T>
+    T: Copy + std::ops::Sub<Output = T>,
 {
     fn sub_assign(&mut self, other: Complex<T>) {
         self.real = self.real - other.real;
@@ -131,8 +138,8 @@ where
 }
 
 impl<T> std::ops::Mul for Complex<T>
-where 
-    T: Copy + std::ops::Mul<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
+where
+    T: Copy + std::ops::Mul<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T>,
 {
     type Output = Complex<T>;
 
@@ -149,27 +156,32 @@ where
 
 impl<T> std::ops::MulAssign for Complex<T>
 where
-    T: Copy + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + std::ops::Mul<Output = T>
+    T: Copy + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + std::ops::Mul<Output = T>,
 {
     fn mul_assign(&mut self, other: Self) {
         let new_real: T = self.real * other.real - self.imaginary * other.imaginary;
         let new_imaginary: T = self.real * other.imaginary + self.imaginary * other.real;
-        
+
         self.real = new_real;
         self.imaginary = new_imaginary;
     }
 }
 
 impl<T> std::ops::Div for Complex<T>
-where 
-    T: Copy + std::ops::Mul<Output = T> + std::ops::Div<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
+where
+    T: Copy
+        + std::ops::Mul<Output = T>
+        + std::ops::Div<Output = T>
+        + std::ops::Add<Output = T>
+        + std::ops::Sub<Output = T>,
 {
     type Output = Complex<T>;
 
     fn div(self, other: Complex<T>) -> Complex<T> {
         let denominator: T = other.real * other.real + other.imaginary * other.imaginary;
         let new_real: T = (self.real * other.real + self.imaginary * other.imaginary) / denominator;
-        let new_imaginary: T = (self.imaginary * other.real - self.real * other.imaginary) / denominator;
+        let new_imaginary: T =
+            (self.imaginary * other.real - self.real * other.imaginary) / denominator;
 
         Complex {
             real: new_real,
@@ -180,12 +192,17 @@ where
 
 impl<T> std::ops::DivAssign for Complex<T>
 where
-    T: Copy + std::ops::Mul<Output = T> + std::ops::Div<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
-{   
+    T: Copy
+        + std::ops::Mul<Output = T>
+        + std::ops::Div<Output = T>
+        + std::ops::Add<Output = T>
+        + std::ops::Sub<Output = T>,
+{
     fn div_assign(&mut self, other: Complex<T>) {
         let denominator: T = other.real * other.real + other.imaginary * other.imaginary;
         let new_real: T = (self.real * other.real + self.imaginary * other.imaginary) / denominator;
-        let new_imaginary: T = (self.imaginary * other.real - self.real * other.imaginary) / denominator;
+        let new_imaginary: T =
+            (self.imaginary * other.real - self.real * other.imaginary) / denominator;
 
         self.real = new_real;
         self.imaginary = new_imaginary;
@@ -193,8 +210,8 @@ where
 }
 
 impl<T> std::fmt::Display for Complex<T>
-where 
-    T: std::fmt::Display
+where
+    T: std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{} + {}i", self.real, self.imaginary)
@@ -202,11 +219,15 @@ where
 }
 
 impl<T> std::fmt::Debug for Complex<T>
-where 
-    T: std::fmt::Debug
+where
+    T: std::fmt::Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Complex {{ real: {:?}, imaginary: {:?} }}", self.real, self.imaginary)
+        write!(
+            f,
+            "Complex {{ real: {:?}, imaginary: {:?} }}",
+            self.real, self.imaginary
+        )
     }
 }
 
@@ -228,7 +249,11 @@ pub fn point_position_relative_line(s1: (f64, f64), s2: (f64, f64), p: (f64, f64
     let b: Complex<f64> = cp - cs2;
 
     let r: f64 = cross_product((a.real, a.imaginary), (b.real, b.imaginary));
-    if approx_equal(r, 0.0, 0.00001) { 0.0 } else { r.signum() } 
+    if approx_equal(r, 0.0, 0.00001) {
+        0.0
+    } else {
+        r.signum()
+    }
 }
 
 pub fn distance_from_point_to_line(s1: (f64, f64), s2: (f64, f64), p: (f64, f64)) -> f64 {
@@ -240,9 +265,9 @@ pub fn distance_from_point_to_line(s1: (f64, f64), s2: (f64, f64), p: (f64, f64)
     let b: Complex<f64> = cs2 - cp;
     let product: f64 = cross_product((a.real, a.imaginary), (b.real, b.imaginary));
 
-    let dist_s1_s2: f64 = f64::sqrt(pow(s2.0-s1.0, 2) + pow(s2.1-s1.1, 2));
+    let dist_s1_s2: f64 = f64::sqrt(pow(s2.0 - s1.0, 2) + pow(s2.1 - s1.1, 2));
 
-    (product / dist_s1_s2).abs() 
+    (product / dist_s1_s2).abs()
 }
 
 #[cfg(test)]
@@ -252,27 +277,79 @@ mod tests {
 
     #[test]
     fn test_sin() {
-        assert!(numbers::approx_equal(sin(std::f64::consts::PI), 0.0, 0.0000001));
-        assert!(numbers::approx_equal(sin(std::f64::consts::PI / 2.0), 1.0, 0.0000001));
-        assert!(numbers::approx_equal(sin(std::f64::consts::PI / 4.0), 0.70710678119, 0.0000001));
-        assert!(numbers::approx_equal(sin(std::f64::consts::PI * 2.0), 0.0, 0.0000001));
+        assert!(numbers::approx_equal(
+            sin(std::f64::consts::PI),
+            0.0,
+            0.0000001
+        ));
+        assert!(numbers::approx_equal(
+            sin(std::f64::consts::PI / 2.0),
+            1.0,
+            0.0000001
+        ));
+        assert!(numbers::approx_equal(
+            sin(std::f64::consts::PI / 4.0),
+            0.70710678119,
+            0.0000001
+        ));
+        assert!(numbers::approx_equal(
+            sin(std::f64::consts::PI * 2.0),
+            0.0,
+            0.0000001
+        ));
     }
 
     #[test]
     fn test_cos() {
-        assert!(numbers::approx_equal(cos(std::f64::consts::PI), -1.0, 0.0000001));
-        assert!(numbers::approx_equal(cos(std::f64::consts::PI / 2.0), 0.0, 0.0000001));
-        assert!(numbers::approx_equal(cos(std::f64::consts::PI / 4.0), 0.70710678119, 0.0000001));
-        assert!(numbers::approx_equal(cos(std::f64::consts::PI * 2.0), 1.0, 0.0000001));
+        assert!(numbers::approx_equal(
+            cos(std::f64::consts::PI),
+            -1.0,
+            0.0000001
+        ));
+        assert!(numbers::approx_equal(
+            cos(std::f64::consts::PI / 2.0),
+            0.0,
+            0.0000001
+        ));
+        assert!(numbers::approx_equal(
+            cos(std::f64::consts::PI / 4.0),
+            0.70710678119,
+            0.0000001
+        ));
+        assert!(numbers::approx_equal(
+            cos(std::f64::consts::PI * 2.0),
+            1.0,
+            0.0000001
+        ));
     }
 
     #[test]
     fn test_exp() {
-        assert!(numbers::approx_equal(exp::<f64>(1.0), 2.71828182846, 0.000000000001));
-        assert!(numbers::approx_equal(exp::<f64>(2.0), 7.38905609893065, 0.000000000001));
-        assert!(numbers::approx_equal(exp::<f64>(2.5), 12.182493960703473, 0.000000000001));
-        assert!(numbers::approx_equal(exp::<f64>(5.0), 148.4131591025766, 0.000000000001));
-        assert!(numbers::approx_equal(exp::<f64>(-5.0), 0.006737946999085467, 0.000000000001));
+        assert!(numbers::approx_equal(
+            exp::<f64>(1.0),
+            2.71828182846,
+            0.000000000001
+        ));
+        assert!(numbers::approx_equal(
+            exp::<f64>(2.0),
+            7.38905609893065,
+            0.000000000001
+        ));
+        assert!(numbers::approx_equal(
+            exp::<f64>(2.5),
+            12.182493960703473,
+            0.000000000001
+        ));
+        assert!(numbers::approx_equal(
+            exp::<f64>(5.0),
+            148.4131591025766,
+            0.000000000001
+        ));
+        assert!(numbers::approx_equal(
+            exp::<f64>(-5.0),
+            0.006737946999085467,
+            0.000000000001
+        ));
         assert!(numbers::approx_equal(exp::<f64>(0.0), 1.0, 0.000000000001));
     }
 
@@ -304,7 +381,7 @@ mod tests {
     #[test]
     fn test_polar() {
         let c: Complex<f64> = Complex::from_polar(10.0, std::f64::consts::PI / 2.0);
-        
+
         assert!(numbers::approx_equal(c.real, 0.0, 0.0000001));
         assert!(numbers::approx_equal(c.imaginary, 10.0, 0.0000001));
     }
@@ -398,7 +475,10 @@ mod tests {
     #[test]
     fn test_debug() {
         let complex_number: Complex<f64> = Complex::new(1.5f64, 2.5f64);
-        assert_eq!(format!("{:?}", complex_number), "Complex { real: 1.5, imaginary: 2.5 }");
+        assert_eq!(
+            format!("{:?}", complex_number),
+            "Complex { real: 1.5, imaginary: 2.5 }"
+        );
     }
 
     #[test]

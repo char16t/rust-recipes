@@ -6,8 +6,10 @@ pub struct Xoshiro256 {
 impl Xoshiro256 {
     pub fn new() -> Self {
         match get_random_seed() {
-            Ok(seed) => Self { s: convert_to_u64_array(seed) },
-            Err(err) => panic!("Unable to read entropy from /dev/urandom: {}", err)
+            Ok(seed) => Self {
+                s: convert_to_u64_array(seed),
+            },
+            Err(err) => panic!("Unable to read entropy from /dev/urandom: {}", err),
         }
     }
     pub fn from_seed(seed: [u64; 4]) -> Self {
@@ -16,15 +18,15 @@ impl Xoshiro256 {
     pub fn rand(&mut self) -> u64 {
         let result: u64 = rol64(self.s[1].wrapping_mul(5), 7).wrapping_mul(9);
         let t: u64 = self.s[1] << 17;
-    
+
         self.s[2] ^= self.s[0];
         self.s[3] ^= self.s[1];
         self.s[1] ^= self.s[2];
         self.s[0] ^= self.s[3];
-    
+
         self.s[2] ^= t;
         self.s[3] = rol64(self.s[3], 45);
-    
+
         result
     }
     pub fn rand_float(&mut self) -> f64 {
@@ -41,11 +43,10 @@ impl Xoshiro256 {
         let mut i: usize = a.len() - 1;
         while i > 0 {
             let j: usize = (self.rand() as usize) % (i + 1);
-            a.swap(i,j);
-            i-=1;
+            a.swap(i, j);
+            i -= 1;
         }
     }
-    
 }
 fn get_random_seed() -> Result<[u8; 32]> {
     let mut file: std::fs::File = std::fs::File::open("/dev/urandom")?;
@@ -98,7 +99,10 @@ mod tests {
     #[test]
     fn test_xoshiro256_rand_float() {
         let mut rand: Xoshiro256 = Xoshiro256::from_seed([
-            3778227730677486, 3778227799677486, 3778227799977486, 9978227730677486
+            3778227730677486,
+            3778227799677486,
+            3778227799977486,
+            9978227730677486,
         ]);
         let r: f64 = rand.rand_float();
         assert_eq!(r, 0.1797524831039718);
@@ -108,17 +112,21 @@ mod tests {
     #[allow(unused_must_use)]
     fn test_xoshiro256_dieharder() {
         use std::fs::File;
-        use std::io::{Write, Result};
+        use std::io::{Result, Write};
         fn prepare_file() -> Result<()> {
             let mut rand: Xoshiro256 = Xoshiro256::new();
             let mut file: File = File::create("randomnumbers.input")?;
-        
+
             // Write header to the file
-            writeln!(file, "# seed = {} {} {} {}", rand.s[0], rand.s[1], rand.s[2], rand.s[3])?;
+            writeln!(
+                file,
+                "# seed = {} {} {} {}",
+                rand.s[0], rand.s[1], rand.s[2], rand.s[3]
+            )?;
             writeln!(file, "type: d")?;
             writeln!(file, "count: 10000")?;
             writeln!(file, "numbit: 64")?;
-        
+
             // Append numbers on each new line
             for _ in 0..10_000 {
                 writeln!(file, "{}", rand.rand())?;

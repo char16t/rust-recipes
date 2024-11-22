@@ -2,18 +2,26 @@ use std::collections::{HashMap, HashSet, VecDeque};
 
 #[repr(transparent)]
 pub struct AdjacencyListTree<T> {
-    adjacency_list: HashMap<T, Vec<T>>
+    adjacency_list: HashMap<T, Vec<T>>,
 }
 impl<T> AdjacencyListTree<T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     pub fn new() -> Self {
-        Self { adjacency_list: HashMap::new() }
+        Self {
+            adjacency_list: HashMap::new(),
+        }
     }
     pub fn add_child(&mut self, parent: T, child: T) {
-        self.adjacency_list.entry(parent).or_insert(Vec::new()).push(child);
-        self.adjacency_list.entry(child).or_insert(Vec::new()).push(parent);
+        self.adjacency_list
+            .entry(parent)
+            .or_insert(Vec::new())
+            .push(child);
+        self.adjacency_list
+            .entry(child)
+            .or_insert(Vec::new())
+            .push(parent);
     }
     pub fn iter_dfs(&self, start_node: T) -> AdjacencyListTreeDfsIterator<T> {
         AdjacencyListTreeDfsIterator::new(&self.adjacency_list, start_node)
@@ -41,7 +49,7 @@ where
                 }
             }
 
-            return distances[w]
+            return distances[w];
         }
         0
     }
@@ -51,11 +59,11 @@ where
         let mut distances: HashMap<T, usize> = HashMap::new();
         let mut visited: HashSet<T> = HashSet::new();
         let mut queue: VecDeque<T> = VecDeque::new();
-    
+
         queue.push_back(*start);
         visited.insert(*start);
         distances.insert(*start, 0);
-    
+
         while let Some(node) = queue.pop_front() {
             for &neighbor in self.adjacency_list.get(&node).unwrap_or(&vec![]) {
                 if !visited.contains(&neighbor) {
@@ -65,7 +73,7 @@ where
                 }
             }
         }
-    
+
         distances
     }
 }
@@ -73,11 +81,11 @@ where
 pub struct AdjacencyListTreeDfsIterator<'a, T> {
     adjacency_list: &'a HashMap<T, Vec<T>>,
     stack: VecDeque<T>,
-    visited: HashSet<T>
+    visited: HashSet<T>,
 }
 impl<'a, T> AdjacencyListTreeDfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
         let mut stack: VecDeque<T> = VecDeque::new();
@@ -88,13 +96,13 @@ where
         AdjacencyListTreeDfsIterator {
             adjacency_list,
             stack,
-            visited
+            visited,
         }
     }
 }
 impl<'a, T> Iterator for AdjacencyListTreeDfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     type Item = T;
 
@@ -119,7 +127,7 @@ pub struct AdjacencyListTreeBfsIterator<'a, T> {
 }
 impl<'a, T> AdjacencyListTreeBfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     fn new(adjacency_list: &'a HashMap<T, Vec<T>>, start_node: T) -> Self {
         let mut queue: VecDeque<T> = VecDeque::new();
@@ -136,7 +144,7 @@ where
 }
 impl<'a, T> Iterator for AdjacencyListTreeBfsIterator<'a, T>
 where
-    T: Copy + Eq + std::hash::Hash
+    T: Copy + Eq + std::hash::Hash,
 {
     type Item = T;
 
@@ -157,14 +165,17 @@ where
 /// Adjacency List Tree with support for switching to N ancestors
 pub struct AdjacencyListTree2<T> {
     tree: AdjacencyListTree<T>,
-    ancestors: AncestorGraph<T>
+    ancestors: AncestorGraph<T>,
 }
 impl<T> AdjacencyListTree2<T>
 where
-    T: Default + Copy + Eq + std::hash::Hash
+    T: Default + Copy + Eq + std::hash::Hash,
 {
     pub fn new() -> Self {
-        Self { tree: AdjacencyListTree::new(), ancestors: AncestorGraph::new() }
+        Self {
+            tree: AdjacencyListTree::new(),
+            ancestors: AncestorGraph::new(),
+        }
     }
     pub fn add_child(&mut self, parent: T, child: T) {
         self.tree.add_child(parent, child);
@@ -212,11 +223,11 @@ where
             }
             node_a = match node_a {
                 Some(a) => self.ancestor(a, depth),
-                None => None
+                None => None,
             };
             node_b = match node_b {
                 Some(b) => self.ancestor(b, depth),
-                None => None
+                None => None,
             };
             depth += 1;
         }
@@ -260,11 +271,11 @@ where
 
             node_a = match node_a {
                 Some(a) => self.ancestor(a, depth),
-                None => None
+                None => None,
             };
             node_b = match node_b {
                 Some(b) => self.ancestor(b, depth),
-                None => None
+                None => None,
             };
             depth += 1;
         }
@@ -282,23 +293,23 @@ where
         }
         lca_depth -= 1;
 
-        a_depth + b_depth - 2*lca_depth
+        a_depth + b_depth - 2 * lca_depth
     }
 }
 
 /// Successor Graph adoption for trees
 pub struct AncestorGraph<T> {
     data: HashMap<T, Vec<Option<T>>>,
-    is_table_filled: bool
+    is_table_filled: bool,
 }
 impl<T> AncestorGraph<T>
 where
-    T: Default + Copy + Eq + std::hash::Hash
+    T: Default + Copy + Eq + std::hash::Hash,
 {
     pub fn new() -> Self {
         Self {
             data: HashMap::new(),
-            is_table_filled: false
+            is_table_filled: false,
         }
     }
     pub fn insert(&mut self, source: T, successor: T) {
@@ -318,13 +329,14 @@ where
 
         let mut current_steps: usize = steps;
         let mut current_node: Option<T> = Some(node);
-    
+
         while current_steps > 0 {
-            let power_of_two: usize = (current_steps & !(current_steps - 1)).trailing_zeros() as usize;
-            
+            let power_of_two: usize =
+                (current_steps & !(current_steps - 1)).trailing_zeros() as usize;
+
             current_node = match current_node {
                 Some(n) => self.data.get(&n).and_then(|vec| vec[power_of_two]),
-                None => None
+                None => None,
             };
 
             current_steps -= 1 << power_of_two;
@@ -347,10 +359,12 @@ where
             }
             for (&key, &opt_successor) in transformed_map.iter() {
                 let mut node: Option<T> = opt_successor;
-                for _ in 0..(1 << i)-1 {
+                for _ in 0..(1 << i) - 1 {
                     node = match node {
-                        Some(x) => transformed_map.get(&x).and_then(|inner_option| inner_option.clone()),
-                        None => None 
+                        Some(x) => transformed_map
+                            .get(&x)
+                            .and_then(|inner_option| inner_option.clone()),
+                        None => None,
                     };
                 }
                 if let Some(e) = self.data.get_mut(&key) {
@@ -365,12 +379,12 @@ where
     fn find_max_power_of_two_not_exceeding(&self, m: usize) -> usize {
         let mut n: usize = 0;
         let mut power_of_two: usize = 1;
-    
+
         while power_of_two * 2 <= m {
             power_of_two *= 2;
             n += 1;
         }
-    
+
         n
     }
 
@@ -385,15 +399,15 @@ where
         }
 
         let mut max_depth: usize = 0;
-        
+
         for node in adjacency_list.keys() {
             let mut visited: HashSet<T> = HashSet::new();
             if !visited.contains(node) {
                 let mut stack: Vec<(T, usize)> = vec![(*node, 1)];
-    
+
                 while let Some((current_node, depth)) = stack.pop() {
                     visited.insert(current_node);
-    
+
                     if let Some(neighbors) = adjacency_list.get(&current_node) {
                         for neighbor in neighbors {
                             if !visited.contains(neighbor) {
@@ -401,7 +415,7 @@ where
                             }
                         }
                     }
-    
+
                     max_depth = max_depth.max(depth);
                 }
             }
@@ -417,18 +431,30 @@ pub struct KeyValueTree<K, V> {
 impl<K, V> KeyValueTree<K, V>
 where
     K: Copy + Eq + std::hash::Hash,
-    V: Default + Copy
+    V: Default + Copy,
 {
     pub fn new() -> Self {
-        Self { adjacency_list: HashMap::new() }
+        Self {
+            adjacency_list: HashMap::new(),
+        }
     }
     pub fn add_root(&mut self, parent: K, parent_value: V) {
-        self.adjacency_list.entry(parent).or_insert((parent_value, Vec::new())).0 = parent_value;
+        self.adjacency_list
+            .entry(parent)
+            .or_insert((parent_value, Vec::new()))
+            .0 = parent_value;
     }
     pub fn add_child(&mut self, parent: K, child: K, child_value: V) {
-        self.adjacency_list.entry(parent).or_insert((V::default(), Vec::new())).1.push(child);
+        self.adjacency_list
+            .entry(parent)
+            .or_insert((V::default(), Vec::new()))
+            .1
+            .push(child);
 
-        let c: &mut (V, Vec<K>) = self.adjacency_list.entry(child).or_insert((child_value, Vec::new()));
+        let c: &mut (V, Vec<K>) = self
+            .adjacency_list
+            .entry(child)
+            .or_insert((child_value, Vec::new()));
         c.1.push(parent);
         c.0 = child_value;
     }
@@ -458,7 +484,7 @@ where
                 }
             }
 
-            return distances[w]
+            return distances[w];
         }
         0
     }
@@ -472,13 +498,21 @@ where
             if visited.contains(&node) {
                 if let Some(parent_node) = parent {
                     let sub_size: usize = *subtree_sizes.get(&node).unwrap_or(&1);
-                    subtree_sizes.entry(parent_node).and_modify(|x| *x += sub_size);
-
+                    subtree_sizes
+                        .entry(parent_node)
+                        .and_modify(|x| *x += sub_size);
                 }
             } else {
                 visited.insert(node);
                 stack.push((node, parent));
-                for &neighbor in self.adjacency_list.get(&node).and_then(|x| Some(&x.1)).unwrap_or(&vec![]).iter().rev() {
+                for &neighbor in self
+                    .adjacency_list
+                    .get(&node)
+                    .and_then(|x| Some(&x.1))
+                    .unwrap_or(&vec![])
+                    .iter()
+                    .rev()
+                {
                     if !visited.contains(&neighbor) {
                         stack.push((neighbor, Some(node)));
                     }
@@ -486,7 +520,7 @@ where
                 subtree_sizes.insert(node, 1);
             }
         }
-    
+
         let mut result_key_ids: HashMap<K, usize> = HashMap::new();
         let mut result: Vec<(usize, V)> = Vec::new(); // i
         let mut stack: Vec<K> = Vec::new();
@@ -515,13 +549,18 @@ where
         let mut distances: HashMap<K, usize> = HashMap::new();
         let mut visited: HashSet<K> = HashSet::new();
         let mut queue: VecDeque<K> = VecDeque::new();
-    
+
         queue.push_back(*start);
         visited.insert(*start);
         distances.insert(*start, 0);
-    
+
         while let Some(node) = queue.pop_front() {
-            for &neighbor in self.adjacency_list.get(&node).and_then(|x| Some(&x.1)).unwrap_or(&vec![]) {
+            for &neighbor in self
+                .adjacency_list
+                .get(&node)
+                .and_then(|x| Some(&x.1))
+                .unwrap_or(&vec![])
+            {
                 if !visited.contains(&neighbor) {
                     visited.insert(neighbor);
                     distances.insert(neighbor, distances[&node] + 1);
@@ -529,7 +568,7 @@ where
                 }
             }
         }
-    
+
         distances
     }
 }
@@ -537,11 +576,11 @@ where
 pub struct KeyValueTreeDfsIterator<'a, K, V> {
     adjacency_list: &'a HashMap<K, (V, Vec<K>)>,
     stack: VecDeque<K>,
-    visited: HashSet<K>
+    visited: HashSet<K>,
 }
 impl<'a, K, V> KeyValueTreeDfsIterator<'a, K, V>
 where
-    K: Copy + Eq + std::hash::Hash
+    K: Copy + Eq + std::hash::Hash,
 {
     fn new(adjacency_list: &'a HashMap<K, (V, Vec<K>)>, start_node: K) -> Self {
         let mut stack: VecDeque<K> = VecDeque::new();
@@ -552,14 +591,14 @@ where
         KeyValueTreeDfsIterator {
             adjacency_list,
             stack,
-            visited
+            visited,
         }
     }
 }
 impl<'a, K, V> Iterator for KeyValueTreeDfsIterator<'a, K, V>
 where
     K: Copy + Eq + std::hash::Hash,
-    V: Copy
+    V: Copy,
 {
     type Item = (K, V);
 
@@ -586,7 +625,7 @@ pub struct KeyValueTreeBfsIterator<'a, K, V> {
 }
 impl<'a, K, V> KeyValueTreeBfsIterator<'a, K, V>
 where
-    K: Copy + Eq + std::hash::Hash
+    K: Copy + Eq + std::hash::Hash,
 {
     fn new(adjacency_list: &'a HashMap<K, (V, Vec<K>)>, start_node: K) -> Self {
         let mut queue: VecDeque<K> = VecDeque::new();
@@ -604,7 +643,7 @@ where
 impl<'a, K, V> Iterator for KeyValueTreeBfsIterator<'a, K, V>
 where
     K: Copy + Eq + std::hash::Hash,
-    V: Copy
+    V: Copy,
 {
     type Item = (K, V);
 
@@ -626,12 +665,15 @@ where
 
 pub struct Node<T> {
     value: T,
-    children: Vec<Node<T>>
+    children: Vec<Node<T>>,
 }
 
 impl<T> Node<T> {
     pub fn new(value: T) -> Self {
-        Self { value, children: Vec::new() }
+        Self {
+            value,
+            children: Vec::new(),
+        }
     }
     pub fn add_child(&mut self, child: Node<T>) {
         self.children.push(child);
@@ -644,7 +686,7 @@ impl<T> Node<T> {
     }
     pub fn euler_tour(&self) -> Vec<T>
     where
-        T: Copy
+        T: Copy,
     {
         let mut result: Vec<T> = Vec::new();
         self.eulerian_tree_traversal(&self, &mut result);
@@ -652,7 +694,7 @@ impl<T> Node<T> {
     }
     fn eulerian_tree_traversal(&self, root: &Node<T>, result: &mut Vec<T>)
     where
-        T: Copy
+        T: Copy,
     {
         result.push(root.value);
         for child in &root.children {
@@ -727,7 +769,10 @@ pub fn prufer_code_encode(adj_list: &mut Vec<Vec<usize>>) -> Vec<usize> {
 
         degree[min_leaf] -= 1;
         degree[neighbor] -= 1;
-        let index: usize = adj_list[neighbor].iter().position(|&x| x == min_leaf).unwrap();
+        let index: usize = adj_list[neighbor]
+            .iter()
+            .position(|&x| x == min_leaf)
+            .unwrap();
         adj_list[neighbor].remove(index);
     }
 
@@ -761,7 +806,6 @@ pub fn prufer_code_decode(prufer: &Vec<usize>) -> Vec<(usize, usize)> {
     tree
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -769,28 +813,52 @@ mod tests {
     #[test]
     fn test_adjacency_list_tree_dfs() {
         let mut tree: AdjacencyListTree<i32> = AdjacencyListTree::new();
-        tree.add_child(0, 1); tree.add_child(0, 2); tree.add_child(0, 3);
-        tree.add_child(1, 11); tree.add_child(1, 12); tree.add_child(1, 13);
-        tree.add_child(2, 21); tree.add_child(2, 22); tree.add_child(2, 23);
-        tree.add_child(3, 31); tree.add_child(3, 32); tree.add_child(3, 33);
-        tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(0, 3);
+        tree.add_child(1, 11);
+        tree.add_child(1, 12);
+        tree.add_child(1, 13);
+        tree.add_child(2, 21);
+        tree.add_child(2, 22);
+        tree.add_child(2, 23);
+        tree.add_child(3, 31);
+        tree.add_child(3, 32);
+        tree.add_child(3, 33);
+        tree.add_child(22, 221);
+        tree.add_child(22, 222);
+        tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_dfs(0).collect();
-        let expected: Vec<i32> = vec![0, 1, 11, 12, 13, 2, 21, 22, 221, 222, 223, 23, 3, 31, 32, 33];
+        let expected: Vec<i32> = vec![
+            0, 1, 11, 12, 13, 2, 21, 22, 221, 222, 223, 23, 3, 31, 32, 33,
+        ];
         assert_eq!(actual, expected);
     }
 
     #[test]
     fn test_adjacency_list_tree_bfs() {
         let mut tree: AdjacencyListTree<i32> = AdjacencyListTree::new();
-        tree.add_child(0, 1); tree.add_child(0, 2); tree.add_child(0, 3);
-        tree.add_child(1, 11); tree.add_child(1, 12); tree.add_child(1, 13);
-        tree.add_child(2, 21); tree.add_child(2, 22); tree.add_child(2, 23);
-        tree.add_child(3, 31); tree.add_child(3, 32); tree.add_child(3, 33);
-        tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(0, 3);
+        tree.add_child(1, 11);
+        tree.add_child(1, 12);
+        tree.add_child(1, 13);
+        tree.add_child(2, 21);
+        tree.add_child(2, 22);
+        tree.add_child(2, 23);
+        tree.add_child(3, 31);
+        tree.add_child(3, 32);
+        tree.add_child(3, 33);
+        tree.add_child(22, 221);
+        tree.add_child(22, 222);
+        tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_bfs(0).collect();
-        let expected: Vec<i32> = vec![0, 1, 2, 3, 11, 12, 13, 21, 22, 23, 31, 32, 33, 221, 222, 223];
+        let expected: Vec<i32> = vec![
+            0, 1, 2, 3, 11, 12, 13, 21, 22, 23, 31, 32, 33, 221, 222, 223,
+        ];
         assert_eq!(actual, expected);
     }
 
@@ -832,28 +900,52 @@ mod tests {
     #[test]
     fn test_adjacency_list_tree_2_dfs() {
         let mut tree: AdjacencyListTree2<i32> = AdjacencyListTree2::new();
-        tree.add_child(0, 1); tree.add_child(0, 2); tree.add_child(0, 3);
-        tree.add_child(1, 11); tree.add_child(1, 12); tree.add_child(1, 13);
-        tree.add_child(2, 21); tree.add_child(2, 22); tree.add_child(2, 23);
-        tree.add_child(3, 31); tree.add_child(3, 32); tree.add_child(3, 33);
-        tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(0, 3);
+        tree.add_child(1, 11);
+        tree.add_child(1, 12);
+        tree.add_child(1, 13);
+        tree.add_child(2, 21);
+        tree.add_child(2, 22);
+        tree.add_child(2, 23);
+        tree.add_child(3, 31);
+        tree.add_child(3, 32);
+        tree.add_child(3, 33);
+        tree.add_child(22, 221);
+        tree.add_child(22, 222);
+        tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_dfs(0).collect();
-        let expected: Vec<i32> = vec![0, 1, 11, 12, 13, 2, 21, 22, 221, 222, 223, 23, 3, 31, 32, 33];
+        let expected: Vec<i32> = vec![
+            0, 1, 11, 12, 13, 2, 21, 22, 221, 222, 223, 23, 3, 31, 32, 33,
+        ];
         assert_eq!(actual, expected);
     }
 
     #[test]
     fn test_adjacency_list_tree_2_bfs() {
         let mut tree: AdjacencyListTree2<i32> = AdjacencyListTree2::new();
-        tree.add_child(0, 1); tree.add_child(0, 2); tree.add_child(0, 3);
-        tree.add_child(1, 11); tree.add_child(1, 12); tree.add_child(1, 13);
-        tree.add_child(2, 21); tree.add_child(2, 22); tree.add_child(2, 23);
-        tree.add_child(3, 31); tree.add_child(3, 32); tree.add_child(3, 33);
-        tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(0, 3);
+        tree.add_child(1, 11);
+        tree.add_child(1, 12);
+        tree.add_child(1, 13);
+        tree.add_child(2, 21);
+        tree.add_child(2, 22);
+        tree.add_child(2, 23);
+        tree.add_child(3, 31);
+        tree.add_child(3, 32);
+        tree.add_child(3, 33);
+        tree.add_child(22, 221);
+        tree.add_child(22, 222);
+        tree.add_child(22, 223);
 
         let actual: Vec<i32> = tree.iter_bfs(0).collect();
-        let expected: Vec<i32> = vec![0, 1, 2, 3, 11, 12, 13, 21, 22, 23, 31, 32, 33, 221, 222, 223];
+        let expected: Vec<i32> = vec![
+            0, 1, 2, 3, 11, 12, 13, 21, 22, 23, 31, 32, 33, 221, 222, 223,
+        ];
         assert_eq!(actual, expected);
     }
 
@@ -896,12 +988,22 @@ mod tests {
     fn test_adjacency_list_tree_2_ancestors() {
         let mut tree: AdjacencyListTree2<i32> = AdjacencyListTree2::new();
 
-        tree.add_child(0, 1); tree.add_child(0, 2); tree.add_child(0, 3);
-        tree.add_child(1, 11); tree.add_child(1, 12); tree.add_child(1, 13);
-        tree.add_child(2, 21); tree.add_child(2, 22); tree.add_child(2, 23);
-        tree.add_child(3, 31); tree.add_child(3, 32); tree.add_child(3, 33);
-        tree.add_child(22, 221); tree.add_child(22, 222); tree.add_child(22, 223);
-        
+        tree.add_child(0, 1);
+        tree.add_child(0, 2);
+        tree.add_child(0, 3);
+        tree.add_child(1, 11);
+        tree.add_child(1, 12);
+        tree.add_child(1, 13);
+        tree.add_child(2, 21);
+        tree.add_child(2, 22);
+        tree.add_child(2, 23);
+        tree.add_child(3, 31);
+        tree.add_child(3, 32);
+        tree.add_child(3, 33);
+        tree.add_child(22, 221);
+        tree.add_child(22, 222);
+        tree.add_child(22, 223);
+
         assert_eq!(tree.ancestor(0, 0), Some(0));
         assert_eq!(tree.ancestor(0, 1), None);
 
@@ -924,9 +1026,18 @@ mod tests {
         assert_eq!(tree.ancestors.data[&31], vec![Some(3), Some(0), None, None]);
         assert_eq!(tree.ancestors.data[&32], vec![Some(3), Some(0), None, None]);
         assert_eq!(tree.ancestors.data[&33], vec![Some(3), Some(0), None, None]);
-        assert_eq!(tree.ancestors.data[&221], vec![Some(22), Some(2), None, None]);
-        assert_eq!(tree.ancestors.data[&222], vec![Some(22), Some(2), None, None]);
-        assert_eq!(tree.ancestors.data[&223], vec![Some(22), Some(2), None, None]);
+        assert_eq!(
+            tree.ancestors.data[&221],
+            vec![Some(22), Some(2), None, None]
+        );
+        assert_eq!(
+            tree.ancestors.data[&222],
+            vec![Some(22), Some(2), None, None]
+        );
+        assert_eq!(
+            tree.ancestors.data[&223],
+            vec![Some(22), Some(2), None, None]
+        );
     }
 
     #[test]
@@ -1038,14 +1149,14 @@ mod tests {
         let child11: Node<i32> = Node::new(4);
         let child12: Node<i32> = Node::new(5);
         let child21: Node<i32> = Node::new(6);
-    
+
         child1.add_child(child11);
         child1.add_child(child12);
         child2.add_child(child21);
-    
+
         root.add_child(child1);
         root.add_child(child2);
-    
+
         let actual: Vec<&i32> = root.dfs_iter().collect();
         let expected: Vec<&i32> = vec![&1, &2, &4, &5, &3, &6];
         assert_eq!(actual, expected);
@@ -1059,14 +1170,14 @@ mod tests {
         let child11: Node<i32> = Node::new(4);
         let child12: Node<i32> = Node::new(5);
         let child21: Node<i32> = Node::new(6);
-    
+
         child1.add_child(child11);
         child1.add_child(child12);
         child2.add_child(child21);
-    
+
         root.add_child(child1);
         root.add_child(child2);
-    
+
         let actual: Vec<&i32> = root.bfs_iter().collect();
         let expected: Vec<&i32> = vec![&1, &2, &3, &4, &5, &6];
         assert_eq!(actual, expected);
@@ -1074,7 +1185,6 @@ mod tests {
 
     #[test]
     fn test_node_euler() {
-
         let mut n1: Node<i32> = Node::new(1);
         let mut n2: Node<i32> = Node::new(2);
         let n3: Node<i32> = Node::new(3);
@@ -1083,7 +1193,7 @@ mod tests {
         let mut n6: Node<i32> = Node::new(6);
         let n7: Node<i32> = Node::new(7);
         let n8: Node<i32> = Node::new(8);
-        
+
         n6.add_child(n8);
 
         n2.add_child(n5);
@@ -1093,7 +1203,6 @@ mod tests {
         n1.add_child(n2);
         n1.add_child(n3);
         n1.add_child(n4);
-
 
         let actual: Vec<i32> = n1.euler_tour();
         let expected: Vec<i32> = vec![1, 2, 5, 2, 6, 8, 6, 2, 1, 3, 1, 4, 7, 4, 1];
@@ -1113,7 +1222,20 @@ mod tests {
         tree.add_child(4, 9, 1);
 
         let res: Vec<(i32, usize)> = tree.iter_bfs(1).collect();
-        assert_eq!(res, vec![(1, 2), (2, 3), (3, 5), (4, 3), (5, 1), (6, 4), (7, 4), (8, 3), (9, 1)]);
+        assert_eq!(
+            res,
+            vec![
+                (1, 2),
+                (2, 3),
+                (3, 5),
+                (4, 3),
+                (5, 1),
+                (6, 4),
+                (7, 4),
+                (8, 3),
+                (9, 1)
+            ]
+        );
     }
 
     #[test]
@@ -1130,7 +1252,20 @@ mod tests {
         tree.add_child(4, 9, 1);
 
         let res: Vec<(i32, usize)> = tree.iter_dfs(1).collect();
-        assert_eq!(res, vec![(1, 2), (2, 3), (6, 4), (3, 5), (4, 3), (7, 4), (8, 3), (9, 1), (5, 1)]);
+        assert_eq!(
+            res,
+            vec![
+                (1, 2),
+                (2, 3),
+                (6, 4),
+                (3, 5),
+                (4, 3),
+                (7, 4),
+                (8, 3),
+                (9, 1),
+                (5, 1)
+            ]
+        );
     }
 
     #[test]
@@ -1181,10 +1316,10 @@ mod tests {
         tree.add_child(4, 8, 3);
         tree.add_child(4, 9, 1);
 
-        let b:(HashMap<i32, usize>, Vec<(usize, usize)>) = tree.dfs_with_subtree_sizes(1);
+        let b: (HashMap<i32, usize>, Vec<(usize, usize)>) = tree.dfs_with_subtree_sizes(1);
         let values_in_nodes: Vec<usize> = b.1.iter().map(|&(_, values)| values).collect();
         let segment_tree: Vec<usize> = crate::ranges::build_segment_tree_sum(&values_in_nodes);
-        
+
         let q: i32 = 4;
         let left: usize = b.0[&q];
         let right: usize = left + b.1[left].0 - 1;
@@ -1198,17 +1333,23 @@ mod tests {
         let mut adj_list: Vec<Vec<usize>> = vec![vec![1], vec![0, 2, 3], vec![1], vec![1]];
         assert_eq!(prufer_code_encode(&mut adj_list), vec![1, 1]);
 
-        let mut adj_list: Vec<Vec<usize>> = vec![vec![3], vec![3, 4], vec![3], vec![0, 1, 2], vec![1]];
+        let mut adj_list: Vec<Vec<usize>> =
+            vec![vec![3], vec![3, 4], vec![3], vec![0, 1, 2], vec![1]];
         assert_eq!(prufer_code_encode(&mut adj_list), vec![3, 3, 1]);
     }
 
     #[test]
     fn test_prufer_code_decode() {
         let mut prufer: Vec<usize> = vec![1, 1];
-        assert_eq!(prufer_code_decode(&mut prufer), vec![(1, 0), (1, 2), (1, 3)]);
-
+        assert_eq!(
+            prufer_code_decode(&mut prufer),
+            vec![(1, 0), (1, 2), (1, 3)]
+        );
 
         let mut prufer: Vec<usize> = vec![3, 3, 1];
-        assert_eq!(prufer_code_decode(&mut prufer), vec![(3, 0), (3, 2), (1, 4), (1, 3)]);
+        assert_eq!(
+            prufer_code_decode(&mut prufer),
+            vec![(3, 0), (3, 2), (1, 4), (1, 3)]
+        );
     }
 }

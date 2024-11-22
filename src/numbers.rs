@@ -117,8 +117,18 @@ pub fn modpow(x: usize, n: usize, m: usize) -> usize {
 /// x^n
 pub fn pow<T1, T2>(x: T1, n: T2) -> T1
 where
-    T1: Copy + PartialEq + std::ops::Mul<Output = T1> + std::ops::Div<Output = T1> + std::ops::Rem<Output = T1> + From<u8>,
-    T2: Copy + PartialEq + std::ops::Mul<Output = T2> + std::ops::Div<Output = T2> + std::ops::Rem<Output = T2> + From<u8>,
+    T1: Copy
+        + PartialEq
+        + std::ops::Mul<Output = T1>
+        + std::ops::Div<Output = T1>
+        + std::ops::Rem<Output = T1>
+        + From<u8>,
+    T2: Copy
+        + PartialEq
+        + std::ops::Mul<Output = T2>
+        + std::ops::Div<Output = T2>
+        + std::ops::Rem<Output = T2>
+        + From<u8>,
 {
     let mut result: T1 = T1::from(1);
     let mut base: T1 = x;
@@ -269,7 +279,7 @@ mod tests {
 
     #[test]
     fn test_gcd_extended() {
-        assert_eq!(gcd_extended(30, 12), (1, -2,  6));
+        assert_eq!(gcd_extended(30, 12), (1, -2, 6));
     }
 
     #[test]
@@ -324,7 +334,7 @@ mod tests {
         // 5x + 2y = 11
         let solution: Option<(i32, i32)> = diophantine_equation(5, 2, 11);
         assert_eq!(solution, Some((11, -22)));
-        assert_eq!(11, 5*11 + 2*(-22));
+        assert_eq!(11, 5 * 11 + 2 * (-22));
 
         let mut x = 11;
         let mut y = -22;
@@ -333,15 +343,14 @@ mod tests {
         for i in 0..10 {
             x += i * 2 / gcd;
             y -= i * 5 / gcd;
-            assert_eq!(11, 5*x + 2*y);
+            assert_eq!(11, 5 * x + 2 * y);
         }
 
         for i in 0..10 {
             x -= i * 2 / gcd;
             y += i * 5 / gcd;
-            assert_eq!(11, 5*x + 2*y);
+            assert_eq!(11, 5 * x + 2 * y);
         }
-
 
         // a^n + b^n = c^n, a,b,c=3,4,5, n > 2
         // 3^3*x + 4^3*y = 5^3
@@ -361,7 +370,6 @@ mod tests {
         // 53 + 5 * 7 * 3 + 5 * 7 * 3
         // ...
 
-        
         // None because gcd(9, 3) != 1
         let residues: Vec<usize> = vec![3, 4, 2];
         let modulii: Vec<usize> = vec![5, 9, 3];
