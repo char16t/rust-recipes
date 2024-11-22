@@ -8,17 +8,20 @@ pub struct ThreadPool {
     sender: Option<mpsc::Sender<Job>>,
 }
 
+type Sender = mpsc::Sender<Box<dyn FnOnce() + Send>>;
+type Receiver = mpsc::Receiver<Box<dyn FnOnce() + Send>>;
+type Channel = (
+    Sender,
+    Receiver,
+);
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
         assert!(size > 0);
 
-        let (sender, receiver): (
-            mpsc::Sender<Box<dyn FnOnce() + Send>>,
-            mpsc::Receiver<Box<dyn FnOnce() + Send>>,
-        ) = mpsc::channel();
-        let receiver: Arc<Mutex<mpsc::Receiver<Box<dyn FnOnce() + Send>>>> =
+        let (sender, receiver): Channel = mpsc::channel();
+        let receiver: Arc<Mutex<Receiver>> =
             Arc::new(Mutex::new(receiver));
 
         let mut workers: Vec<Worker> = Vec::with_capacity(size);
