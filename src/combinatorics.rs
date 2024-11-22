@@ -294,10 +294,10 @@ mod tests {
 
     #[test]
     fn test_multinomial_coefficient() {
-        let r: usize = multinomial_coefficient(3, &vec![2, 0, 1]);
+        let r: usize = multinomial_coefficient(3, &[2, 0, 1]);
         assert_eq!(r, 3);
 
-        let r: usize = multinomial_coefficient(3, &vec![1, 1, 1]);
+        let r: usize = multinomial_coefficient(3, &[1, 1, 1]);
         assert_eq!(r, 6);
     }
 
@@ -309,10 +309,10 @@ mod tests {
 
     #[test]
     fn test_combinations() {
-        let r: Vec<Vec<char>> = combinations(&vec!['A', 'B', 'C'], 2);
+        let r: Vec<Vec<char>> = combinations(&['A', 'B', 'C'], 2);
         assert_eq!(r, vec![vec!['B', 'C'], vec!['A', 'C'], vec!['A', 'B']]);
 
-        let r: Vec<Vec<i16>> = combinations(&vec![1, 2, 3, 4, 5, 6], 3);
+        let r: Vec<Vec<i16>> = combinations(&[1, 2, 3, 4, 5, 6], 3);
         assert_eq!(
             r,
             vec![
@@ -339,13 +339,13 @@ mod tests {
             ]
         );
 
-        let r: Vec<Vec<char>> = combinations(&vec!['A', 'B', 'C'], 3);
+        let r: Vec<Vec<char>> = combinations(&['A', 'B', 'C'], 3);
         assert_eq!(r, vec![vec!['A', 'B', 'C']]);
     }
 
     #[test]
     fn test_combinations_with_repetitions() {
-        let r: Vec<Vec<char>> = combinations_with_repetitions(&vec!['A', 'B', 'C'], 2);
+        let r: Vec<Vec<char>> = combinations_with_repetitions(&['A', 'B', 'C'], 2);
         assert_eq!(
             r,
             vec![
@@ -361,7 +361,7 @@ mod tests {
 
     #[test]
     fn test_placements() {
-        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 2);
+        let r: Vec<Vec<char>> = placements(&['A', 'B', 'C'], 2);
         assert_eq!(
             r,
             vec![
@@ -374,7 +374,7 @@ mod tests {
             ]
         );
 
-        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 3);
+        let r: Vec<Vec<char>> = placements(&['A', 'B', 'C'], 3);
         assert_eq!(
             r,
             vec![
@@ -390,7 +390,7 @@ mod tests {
 
     #[test]
     fn test_placements_with_repetitions() {
-        let r: Vec<Vec<char>> = placements_with_repetitions(&vec!['A', 'B', 'C'], 2);
+        let r: Vec<Vec<char>> = placements_with_repetitions(&['A', 'B', 'C'], 2);
         assert_eq!(
             r,
             vec![
@@ -409,7 +409,7 @@ mod tests {
 
     #[test]
     fn test_permutations() {
-        let p: Vec<Vec<char>> = permutations(&vec!['A', 'B', 'C']);
+        let p: Vec<Vec<char>> = permutations(&['A', 'B', 'C']);
         assert_eq!(
             p,
             vec![
@@ -425,7 +425,7 @@ mod tests {
 
     #[test]
     fn test_permutations_with_repetitions() {
-        let p: Vec<Vec<char>> = permutations_with_repetitions(&vec!['A', 'B', 'C']);
+        let p: Vec<Vec<char>> = permutations_with_repetitions(&['A', 'B', 'C']);
         assert_eq!(
             p,
             vec![
@@ -465,25 +465,25 @@ mod tests {
         let a: HashSet<i32> = HashSet::from_iter(vec![4]);
         let b: HashSet<i32> = HashSet::from_iter(vec![2]);
         let c: HashSet<i32> = HashSet::from_iter(vec![3]);
-        let r = inclusion_exclusion(&vec![a, b, c]);
+        let r = inclusion_exclusion(&[a, b, c]);
         assert_eq!(r, 0);
 
         let a: HashSet<i32> = HashSet::from_iter(vec![1, 4]);
         let b: HashSet<i32> = HashSet::from_iter(vec![1, 2]);
         let c: HashSet<i32> = HashSet::from_iter(vec![1, 3]);
-        let r = inclusion_exclusion(&vec![a, b, c]);
+        let r = inclusion_exclusion(&[a, b, c]);
         assert_eq!(r, 1);
 
         let a: HashSet<i32> = HashSet::from_iter(vec![2, 7]);
         let b: HashSet<i32> = HashSet::from_iter(vec![2, 3]);
         let c: HashSet<i32> = HashSet::from_iter(vec![3, 4]);
-        let r = inclusion_exclusion(&vec![a, b, c]);
+        let r = inclusion_exclusion(&[a, b, c]);
         assert_eq!(r, 0);
 
         let a: HashSet<i32> = HashSet::from_iter(vec![1, 2, 3]);
         let b: HashSet<i32> = HashSet::from_iter(vec![2, 3, 4]);
         let c: HashSet<i32> = HashSet::from_iter(vec![3, 4, 5]);
-        let r = inclusion_exclusion(&vec![a, b, c]);
+        let r = inclusion_exclusion(&[a, b, c]);
         assert_eq!(r, 1);
     }
 
@@ -504,21 +504,21 @@ mod tests {
         let n: usize = 5;
         let k: usize = 3;
         let r: usize = count_combinations(n, k);
-        let comb: Vec<Vec<i32>> = combinations(&vec![1, 2, 3, 4, 5], 3);
+        let comb: Vec<Vec<i32>> = combinations(&[1, 2, 3, 4, 5], 3);
         assert_eq!(r, 10);
         assert_eq!(r, comb.len());
 
         let n: usize = 3;
         let k: usize = 3;
         let r: usize = count_combinations(n, k);
-        let comb: Vec<Vec<i32>> = combinations(&vec![1, 2, 3], 3);
+        let comb: Vec<Vec<i32>> = combinations(&[1, 2, 3], 3);
         assert_eq!(r, 1);
         assert_eq!(r, comb.len());
 
         let n: usize = 3;
         let k: usize = 5;
         let r: usize = count_combinations(n, k);
-        let comb: Vec<Vec<i32>> = combinations(&vec![1, 2, 3], 5);
+        let comb: Vec<Vec<i32>> = combinations(&[1, 2, 3], 5);
         assert_eq!(r, 0);
         assert_eq!(r, comb.len());
     }
@@ -528,32 +528,32 @@ mod tests {
         let n: usize = 5;
         let k: usize = 3;
         let r: usize = count_combinations_with_repetitions(n, k);
-        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&vec![1, 2, 3, 4, 5], 3);
+        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&[1, 2, 3, 4, 5], 3);
         assert_eq!(r, 35);
         assert_eq!(r, combinations.len());
 
         let n: usize = 3;
         let k: usize = 3;
         let r: usize = count_combinations_with_repetitions(n, k);
-        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&vec![1, 2, 3], 3);
+        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&[1, 2, 3], 3);
         assert_eq!(r, combinations.len());
         assert_eq!(r, 10);
 
         let n: usize = 3;
         let k: usize = 5;
         let r: usize = count_combinations_with_repetitions(n, k);
-        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&vec![1, 2, 3], 5);
+        let combinations: Vec<Vec<i32>> = combinations_with_repetitions(&[1, 2, 3], 5);
         assert_eq!(r, combinations.len());
     }
 
     #[test]
     fn test_count_placements() {
-        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 2);
+        let r: Vec<Vec<char>> = placements(&['A', 'B', 'C'], 2);
         let c: usize = count_placements(3, 2);
         assert_eq!(c, 6);
         assert_eq!(c, r.len());
 
-        let r: Vec<Vec<char>> = placements(&vec!['A', 'B', 'C'], 3);
+        let r: Vec<Vec<char>> = placements(&['A', 'B', 'C'], 3);
         let c: usize = count_placements(3, 3);
         assert_eq!(c, 6);
         assert_eq!(c, r.len());
@@ -561,12 +561,12 @@ mod tests {
 
     #[test]
     fn test_count_placements_with_repetitions() {
-        let r: Vec<Vec<char>> = placements_with_repetitions(&vec!['A', 'B', 'C'], 2);
+        let r: Vec<Vec<char>> = placements_with_repetitions(&['A', 'B', 'C'], 2);
         let c: usize = count_placements_with_repetitions(3, 2);
         assert_eq!(c, 9);
         assert_eq!(c, r.len());
 
-        let r: Vec<Vec<char>> = placements_with_repetitions(&vec!['A', 'B', 'C'], 3);
+        let r: Vec<Vec<char>> = placements_with_repetitions(&['A', 'B', 'C'], 3);
         let c: usize = count_placements_with_repetitions(3, 3);
         assert_eq!(c, 27);
         assert_eq!(c, r.len());
@@ -575,7 +575,7 @@ mod tests {
     #[test]
     fn test_count_permutations() {
         let c: usize = count_permutations(3);
-        let p: Vec<Vec<char>> = permutations(&vec!['A', 'B', 'C']);
+        let p: Vec<Vec<char>> = permutations(&['A', 'B', 'C']);
         assert_eq!(c, 6);
         assert_eq!(c, p.len());
     }
@@ -583,7 +583,7 @@ mod tests {
     #[test]
     fn test_count_permutations_with_repetitions() {
         let c: usize = count_permutations_with_repetitions(3);
-        let p: Vec<Vec<char>> = permutations_with_repetitions(&vec!['A', 'B', 'C']);
+        let p: Vec<Vec<char>> = permutations_with_repetitions(&['A', 'B', 'C']);
         assert_eq!(c, 27);
         assert_eq!(c, p.len());
     }

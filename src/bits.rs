@@ -177,18 +177,18 @@ mod tests {
 
     #[test]
     fn test_is_bit_set() {
-        assert_eq!(is_bit_set(0b0001, 0), true);
-        assert_eq!(is_bit_set(0b0001, 1), false);
+        assert!(is_bit_set(0b0001, 0));
+        assert!(!is_bit_set(0b0001, 1));
     }
 
     #[test]
     fn test_is_power_of_two() {
-        assert_eq!(is_power_of_two(0b0000), true);
-        assert_eq!(is_power_of_two(0b0001), true);
-        assert_eq!(is_power_of_two(0b0010), true);
-        assert_eq!(is_power_of_two(0b0100), true);
-        assert_eq!(is_power_of_two(0b0110), false);
-        assert_eq!(is_power_of_two(0b0101), false);
+        assert!(is_power_of_two(0b0000));
+        assert!(is_power_of_two(0b0001));
+        assert!(is_power_of_two(0b0010));
+        assert!(is_power_of_two(0b0100));
+        assert!(!is_power_of_two(0b0110));
+        assert!(!is_power_of_two(0b0101));
     }
 
     #[test]
@@ -220,8 +220,8 @@ mod tests {
 
     #[test]
     fn test_is_bit_set_in_matrix() {
-        assert_eq!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 0), true);
-        assert_eq!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 1), false);
+        assert!(is_bit_set_in_matrix(0b0001, 2, 2, 0, 0));
+        assert!(!is_bit_set_in_matrix(0b0001, 2, 2, 0, 1));
     }
 
     #[test]
@@ -250,16 +250,16 @@ mod tests {
 
     #[test]
     fn test_sets_is_subset() {
-        assert_eq!(sets_is_subset(0b10101, 0b01010), false);
-        assert_eq!(sets_is_subset(0b11111, 0b11010), false);
+        assert!(!sets_is_subset(0b10101, 0b01010));
+        assert!(!sets_is_subset(0b11111, 0b11010));
 
-        assert_eq!(sets_is_subset(0b00010, 0b11111), true);
+        assert!(sets_is_subset(0b00010, 0b11111));
     }
 
     #[test]
     fn test_sets_is_superset() {
-        assert_eq!(sets_is_superset(0b11111, 0b11010), true);
-        assert_eq!(sets_is_superset(0b00010, 0b11111), false);
+        assert!(sets_is_superset(0b11111, 0b11010));
+        assert!(!sets_is_superset(0b00010, 0b11111));
     }
 
     #[test]
@@ -287,8 +287,8 @@ mod tests {
     fn test_long_arithmetic_set_bit() {
         let mut a: LongArithmetic = LongArithmetic::new();
         a.set_bit(65);
-        assert_eq!(a.is_bit_set(65), true);
-        assert_eq!(a.is_bit_set(128), false);
+        assert!(a.is_bit_set(65));
+        assert!(!a.is_bit_set(128));
     }
 
     #[test]
@@ -296,20 +296,20 @@ mod tests {
         let mut a: LongArithmetic = LongArithmetic::new();
         a.set_bit(65);
         a.unset_bit(65);
-        assert_eq!(a.is_bit_set(65), false);
+        assert!(!a.is_bit_set(65));
 
         a.unset_bit(256);
-        assert_eq!(a.is_bit_set(256), false);
+        assert!(!a.is_bit_set(256));
     }
 
     #[test]
     fn test_long_arithmetic_toggle_bit() {
         let mut a: LongArithmetic = LongArithmetic::new();
         a.toggle_bit(65);
-        assert_eq!(a.is_bit_set(65), true);
+        assert!(a.is_bit_set(65));
         a.toggle_bit(65);
-        assert_eq!(a.is_bit_set(65), false);
+        assert!(!a.is_bit_set(65));
         a.toggle_bit(65);
-        assert_eq!(a.is_bit_set(65), true);
+        assert!(a.is_bit_set(65));
     }
 }

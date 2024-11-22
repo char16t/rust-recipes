@@ -126,7 +126,7 @@ mod tests {
 
         for (value, &count) in &count_map {
             let expected_count: usize =
-                (n as f64 * random_variable.distribution[&value]).round() as usize;
+                (n as f64 * random_variable.distribution[value]).round() as usize;
             // println!("Value: {}, Expected Count: {}, Actual Count: {}", value, expected_count, count);
 
             let count_difference: usize = expected_count.abs_diff(count);
@@ -134,7 +134,7 @@ mod tests {
         }
 
         let mean_absolute_percentage_error: f64 =
-            mean_absolute_percentage_error_sum as f64 / random_variable.distribution.len() as f64;
+            mean_absolute_percentage_error_sum / random_variable.distribution.len() as f64;
         // println!("MAPE is {}", mean_absolute_percentage_error);
 
         assert!(

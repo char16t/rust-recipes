@@ -1848,7 +1848,7 @@ mod tests {
         graph.add_edge(0, 2);
         graph.add_edge(1, 3);
         graph.add_edge(2, 3);
-        assert_eq!(graph.is_connected(), true);
+        assert!(graph.is_connected());
 
         let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
         graph.add_vertex(0);
@@ -1856,17 +1856,17 @@ mod tests {
         graph.add_vertex(2);
         graph.add_edge(0, 1);
         graph.add_edge(0, 2);
-        assert_eq!(graph.is_connected(), true);
+        assert!(graph.is_connected());
 
         let mut graph: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
         graph.add_vertex(0);
         graph.add_vertex(1);
         graph.add_vertex(2);
         graph.add_edge(0, 1);
-        assert_eq!(graph.is_connected(), false);
+        assert!(!graph.is_connected());
 
         let empty: AdjacencyListGraph<i32> = AdjacencyListGraph::new_undirected();
-        assert_eq!(empty.is_connected(), true);
+        assert!(empty.is_connected());
     }
 
     #[test]
@@ -1932,7 +1932,7 @@ mod tests {
         graph.add_edge(0, 1);
         graph.add_edge(1, 0);
         let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
-        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.0);
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1));
         assert_eq!(has_cycle.2, 2);
 
@@ -1941,7 +1941,7 @@ mod tests {
         graph.add_edge(2, 0);
         graph.add_edge(1, 2);
         let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
-        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.0);
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1) || has_cycle.1 == Some(2));
         assert_eq!(has_cycle.2, 3);
 
@@ -1958,7 +1958,7 @@ mod tests {
         graph.add_edge(5, 6);
         graph.add_edge(5, 7);
         let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
-        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.0);
         assert!(has_cycle.1 == Some(4) || has_cycle.1 == Some(5) || has_cycle.1 == Some(6));
         assert_eq!(has_cycle.2, 3);
     }
@@ -2104,7 +2104,7 @@ mod tests {
         graph.add_edge(0, 2, 0.1);
         graph.add_edge(1, 3, 0.1);
         graph.add_edge(2, 3, 0.1);
-        assert_eq!(graph.is_connected(), true);
+        assert!(graph.is_connected());
 
         let mut graph: AdjacencyListWightedGraph<i32, f64> =
             AdjacencyListWightedGraph::new_undirected();
@@ -2113,7 +2113,7 @@ mod tests {
         graph.add_vertex(2);
         graph.add_edge(0, 1, 0.1);
         graph.add_edge(0, 2, 0.1);
-        assert_eq!(graph.is_connected(), true);
+        assert!(graph.is_connected());
 
         let mut graph: AdjacencyListWightedGraph<i32, f64> =
             AdjacencyListWightedGraph::new_undirected();
@@ -2121,11 +2121,11 @@ mod tests {
         graph.add_vertex(1);
         graph.add_vertex(2);
         graph.add_edge(0, 1, 0.1);
-        assert_eq!(graph.is_connected(), false);
+        assert!(!graph.is_connected());
 
         let empty: AdjacencyListWightedGraph<i32, f64> =
             AdjacencyListWightedGraph::new_undirected();
-        assert_eq!(empty.is_connected(), true);
+        assert!(empty.is_connected());
     }
 
     #[test]
@@ -2211,7 +2211,7 @@ mod tests {
         graph.add_edge(0, 1, 100);
         graph.add_edge(1, 0, 100);
         let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
-        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.0);
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1));
         assert_eq!(has_cycle.2, 2);
 
@@ -2221,7 +2221,7 @@ mod tests {
         graph.add_edge(2, 0, 100);
         graph.add_edge(1, 2, 100);
         let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
-        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.0);
         assert!(has_cycle.1 == Some(0) || has_cycle.1 == Some(1) || has_cycle.1 == Some(2));
         assert_eq!(has_cycle.2, 3);
 
@@ -2239,7 +2239,7 @@ mod tests {
         graph.add_edge(5, 6, 100);
         graph.add_edge(5, 7, 100);
         let has_cycle: (bool, Option<i32>, usize) = graph.has_cycle();
-        assert_eq!(has_cycle.0, true);
+        assert!(has_cycle.0);
         assert!(has_cycle.1 == Some(4) || has_cycle.1 == Some(5) || has_cycle.1 == Some(6));
         assert_eq!(has_cycle.2, 3);
     }
@@ -2545,17 +2545,17 @@ mod tests {
         g.add_edge(32, 16);
         g.add_edge(16, 32);
 
-        assert_eq!(g.check_edge(256, 128), true);
-        assert_eq!(g.check_edge(128, 256), true);
+        assert!(g.check_edge(256, 128));
+        assert!(g.check_edge(128, 256));
 
-        assert_eq!(g.check_edge(128, 64), true);
-        assert_eq!(g.check_edge(64, 128), true);
+        assert!(g.check_edge(128, 64));
+        assert!(g.check_edge(64, 128));
 
-        assert_eq!(g.check_edge(64, 32), true);
-        assert_eq!(g.check_edge(32, 64), true);
+        assert!(g.check_edge(64, 32));
+        assert!(g.check_edge(32, 64));
 
-        assert_eq!(g.check_edge(32, 16), true);
-        assert_eq!(g.check_edge(16, 32), true);
+        assert!(g.check_edge(32, 16));
+        assert!(g.check_edge(16, 32));
     }
 
     #[test]
@@ -2567,17 +2567,17 @@ mod tests {
         g.add_edge(32, 16);
         g.add_edge(16, 32);
 
-        assert_eq!(g.check_edge(256, 128), true);
-        assert_eq!(g.check_edge(128, 256), false);
+        assert!(g.check_edge(256, 128));
+        assert!(!g.check_edge(128, 256));
 
-        assert_eq!(g.check_edge(128, 64), true);
-        assert_eq!(g.check_edge(64, 128), false);
+        assert!(g.check_edge(128, 64));
+        assert!(!g.check_edge(64, 128));
 
-        assert_eq!(g.check_edge(64, 32), true);
-        assert_eq!(g.check_edge(32, 64), false);
+        assert!(g.check_edge(64, 32));
+        assert!(!g.check_edge(32, 64));
 
-        assert_eq!(g.check_edge(32, 16), true);
-        assert_eq!(g.check_edge(16, 32), true);
+        assert!(g.check_edge(32, 16));
+        assert!(g.check_edge(16, 32));
     }
 
     #[test]
@@ -3063,7 +3063,7 @@ mod tests {
         g.insert(8, 2);
 
         assert_eq!(g.steps, 4);
-        assert_eq!(g.is_table_filled, false);
+        assert!(!g.is_table_filled);
         assert_eq!(
             g.data,
             vec![
@@ -3073,7 +3073,7 @@ mod tests {
         );
 
         assert_eq!(g.find_successor(0, 0), 0);
-        assert_eq!(g.is_table_filled, true);
+        assert!(g.is_table_filled);
         assert_eq!(
             g.data,
             vec![
@@ -3121,7 +3121,7 @@ mod tests {
         g.insert(8, 2);
 
         assert_eq!(g.steps, 4);
-        assert_eq!(g.is_table_filled, false);
+        assert!(!g.is_table_filled);
 
         assert_eq!(g.find_successor(0, 0), 0);
         assert_eq!(g.find_successor(0, 1), 2);
@@ -3130,7 +3130,7 @@ mod tests {
         assert_eq!(g.find_successor(0, 8), 6);
         assert_eq!(g.find_successor(3, 11), 4);
 
-        assert_eq!(g.is_table_filled, true);
+        assert!(g.is_table_filled);
         assert_eq!(g.data[&0], vec![2, 6, 2, 6]);
         assert_eq!(g.data[&1], vec![4, 1, 1, 1]);
         assert_eq!(g.data[&2], vec![6, 0, 6, 0]);
@@ -3152,10 +3152,10 @@ mod tests {
         twosat.add_disjunction(2, false, 3, false);
         twosat.add_disjunction(1, true, 4, true);
         let solution: HashMap<isize, bool> = twosat.solve().unwrap();
-        assert_eq!(solution[&1], false);
-        assert_eq!(solution[&2], false);
-        assert_eq!(solution[&3], true);
-        assert_eq!(solution[&4], true);
+        assert!(!solution[&1]);
+        assert!(!solution[&2]);
+        assert!(solution[&3]);
+        assert!(solution[&4]);
 
         let rr: Option<HashMap<isize, bool>> = twosat.solve();
         println!("{:?}", rr);

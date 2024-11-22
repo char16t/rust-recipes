@@ -87,7 +87,7 @@ mod tests {
     fn test_xoshiro256_rand_range() {
         let mut rand: Xoshiro256 = Xoshiro256::new();
         let r: u64 = rand.rand_range(1, 10);
-        assert!(1 <= r && r <= 10);
+        assert!((1..=10).contains(&r));
     }
 
     #[test]

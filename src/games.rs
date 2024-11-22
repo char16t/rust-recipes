@@ -200,11 +200,11 @@ mod tests {
 
     #[test]
     fn test_is_nim_game_over() {
-        assert_eq!(is_nim_game_over::<i32>(&[]), true);
-        assert_eq!(is_nim_game_over(&[10, 3]), false);
-        assert_eq!(is_nim_game_over(&[0, 3, 0]), false);
-        assert_eq!(is_nim_game_over(&[0, 0]), true);
-        assert_eq!(is_nim_game_over(&[0]), true);
+        assert!(is_nim_game_over::<i32>(&[]));
+        assert!(!is_nim_game_over(&[10, 3]));
+        assert!(!is_nim_game_over(&[0, 3, 0]));
+        assert!(is_nim_game_over(&[0, 0]));
+        assert!(is_nim_game_over(&[0]));
     }
 
     #[test]
@@ -245,7 +245,7 @@ mod tests {
             player = !player;
         }
         assert_eq!(elements, vec![0, 0, 0]);
-        assert_eq!(player, false);
+        assert!(!player);
     }
 
     #[test]
@@ -261,7 +261,7 @@ mod tests {
             player = !player;
         }
         assert_eq!(elements, vec![0, 0, 0]);
-        assert_eq!(player, true);
+        assert!(player);
     }
 
     #[test]
@@ -271,14 +271,14 @@ mod tests {
 
     #[test]
     fn test_is_losing_state() {
-        assert_eq!(is_losing_state(0), true);
-        assert_eq!(is_losing_state(5), false);
+        assert!(is_losing_state(0));
+        assert!(!is_losing_state(5));
     }
 
     #[test]
     fn test_is_winning_state() {
-        assert_eq!(is_winning_state(0), false);
-        assert_eq!(is_winning_state(5), true);
+        assert!(!is_winning_state(0));
+        assert!(is_winning_state(5));
     }
 
     #[test]
@@ -306,11 +306,11 @@ mod tests {
 
     #[test]
     fn test_is_grundy_game_over() {
-        assert_eq!(is_grundy_game_over(&[]), true);
-        assert_eq!(is_grundy_game_over(&[10, 3]), false);
-        assert_eq!(is_grundy_game_over(&[1, 3, 1]), false);
-        assert_eq!(is_grundy_game_over(&[1, 1]), true);
-        assert_eq!(is_grundy_game_over(&[1]), true);
+        assert!(is_grundy_game_over(&[]));
+        assert!(!is_grundy_game_over(&[10, 3]));
+        assert!(!is_grundy_game_over(&[1, 3, 1]));
+        assert!(is_grundy_game_over(&[1, 1]));
+        assert!(is_grundy_game_over(&[1]));
     }
 
     #[test]
@@ -335,6 +335,6 @@ mod tests {
         }
 
         assert_eq!(heaps, vec![1, 1, 1, 1, 1, 1, 1, 1]);
-        assert_eq!(player, false);
+        assert!(!player);
     }
 }

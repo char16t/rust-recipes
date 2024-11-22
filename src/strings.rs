@@ -526,7 +526,7 @@ mod tests {
         ];
         let mut synonyms: HashMap<&str, Vec<String>> = HashMap::new();
         for &item in list.iter() {
-            let vector: &mut Vec<String> = synonyms.entry(item).or_insert(Vec::new());
+            let vector: &mut Vec<String> = synonyms.entry(item).or_default();
             vector.push(String::from(item));
 
             let mut rus: Vec<char> = Vec::new();
@@ -672,7 +672,7 @@ mod tests {
         ];
         let mut synonyms: HashMap<&str, Vec<String>> = HashMap::new();
         for &item in list.iter() {
-            let vector: &mut Vec<String> = synonyms.entry(item).or_insert(Vec::new());
+            let vector: &mut Vec<String> = synonyms.entry(item).or_default();
             vector.push(String::from(item));
 
             let mut rus: Vec<char> = Vec::new();

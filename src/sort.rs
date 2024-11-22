@@ -26,7 +26,7 @@ mod tests {
     fn test_binary_search_1() {
         let a: Vec<i32> = vec![3, 4, 5, 6, 10, 12, 48, 56];
         let (success, position): (bool, usize) = binary_search(&a, 4);
-        assert_eq!(success, true);
+        assert!(success);
         assert_eq!(position, 1);
     }
 
@@ -34,7 +34,7 @@ mod tests {
     fn test_binary_search_2() {
         let a: Vec<i32> = vec![3, 4, 5, 6, 10, 12, 48, 56];
         let (success, position): (bool, usize) = binary_search(&a, 8);
-        assert_eq!(success, false);
+        assert!(!success);
         assert_eq!(position, 0);
     }
 }
