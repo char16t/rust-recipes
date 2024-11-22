@@ -45,7 +45,7 @@ where
         self.size -= 1;
         self.swap(0, self.size);
         self.min_heapify();
-        return Some(peak);
+        Some(peak)
     }
 
     #[inline(always)]
@@ -69,12 +69,10 @@ where
                 } else {
                     right_position
                 }
+            } else if right_position < size {
+                right_position
             } else {
-                if right_position < size {
-                    right_position
-                } else {
-                    left_position
-                }
+                left_position
             };
             self.swap(current_position, swap_position);
             current_position = swap_position;
@@ -115,9 +113,9 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let buffer: T = self.data[first];
-        self.data[first] = self.data[second];
-        self.data[second] = buffer;
+        let first = first;
+        let second = second;
+        self.data.swap(first, second);
     }
 }
 
@@ -171,7 +169,7 @@ where
         self.size -= 1;
         self.swap(0, self.size);
         self.min_heapify();
-        return Some(peak);
+        Some(peak)
     }
 
     #[inline(always)]
@@ -196,12 +194,10 @@ where
                 } else {
                     right_position
                 }
+            } else if right_position < size {
+                right_position
             } else {
-                if right_position < size {
-                    right_position
-                } else {
-                    left_position
-                }
+                left_position
             };
             self.swap(current_position, swap_position);
             current_position = swap_position;
@@ -242,9 +238,9 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let buffer: (T, W) = self.data[first];
-        self.data[first] = self.data[second];
-        self.data[second] = buffer;
+        let first = first;
+        let second = second;
+        self.data.swap(first, second);
     }
 }
 
@@ -295,7 +291,7 @@ where
         self.size -= 1;
         self.swap(0, self.size);
         self.max_heapify();
-        return Some(peak);
+        Some(peak)
     }
 
     #[inline(always)]
@@ -319,12 +315,10 @@ where
                 } else {
                     right_position
                 }
+            } else if right_position < size {
+                right_position
             } else {
-                if right_position < size {
-                    right_position
-                } else {
-                    left_position
-                }
+                left_position
             };
             self.swap(current_position, swap_position);
             current_position = swap_position;
@@ -365,9 +359,9 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let buffer: T = self.data[first];
-        self.data[first] = self.data[second];
-        self.data[second] = buffer;
+        let first = first;
+        let second = second;
+        self.data.swap(first, second);
     }
 }
 
@@ -420,7 +414,7 @@ where
         self.size -= 1;
         self.swap(0, self.size);
         self.max_heapify();
-        return Some(peak);
+        Some(peak)
     }
 
     #[inline(always)]
@@ -445,12 +439,10 @@ where
                 } else {
                     right_position
                 }
+            } else if right_position < size {
+                right_position
             } else {
-                if right_position < size {
-                    right_position
-                } else {
-                    left_position
-                }
+                left_position
             };
             self.swap(current_position, swap_position);
             current_position = swap_position;
@@ -491,9 +483,9 @@ where
 
     #[inline(always)]
     fn swap(&mut self, first: usize, second: usize) {
-        let buffer: (T, W) = self.data[first];
-        self.data[first] = self.data[second];
-        self.data[second] = buffer;
+        let first = first;
+        let second = second;
+        self.data.swap(first, second);
     }
 }
 
