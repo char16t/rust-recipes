@@ -42,8 +42,8 @@ pub fn nim_move(elements: &[usize]) -> (usize, usize) {
         }
         (elem_index, n_removed)
     } else {
-        for i in 0..elements.len() {
-            if elements[i] != 0 {
+        for (i, &element) in elements.iter().enumerate() {
+            if element != 0 {
                 return (i, 1);
             }
         }
