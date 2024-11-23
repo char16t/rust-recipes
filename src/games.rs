@@ -8,8 +8,8 @@ where
         return T::default();
     }
     let mut result: T = elements[0];
-    for i in 1..elements.len() {
-        result = result ^ elements[i];
+    for &element in elements.iter().skip(1) {
+        result = result ^ element;
     }
     result
 }

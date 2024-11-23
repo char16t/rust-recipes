@@ -1,6 +1,7 @@
 use crate::geometry::Complex;
 use std::f64::consts::PI;
 
+#[allow(clippy::needless_range_loop)]
 pub fn fast_fourier_transform(a: Vec<Complex<f64>>, d: i32) -> Vec<Complex<f64>> {
     let n: usize = a.len();
     let mut r: Vec<Complex<f64>> = vec![Complex::new(0.0, 0.0); n];
