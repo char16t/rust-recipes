@@ -1774,10 +1774,7 @@ impl TwoSatSolver {
                     return None;
                 }
                 used.insert(e.abs());
-                solution.entry(e.abs()).or_insert_with(|| {
-                    
-                    *e >= 0
-                });
+                solution.entry(e.abs()).or_insert_with(|| *e >= 0);
             }
         }
         Some(solution)
