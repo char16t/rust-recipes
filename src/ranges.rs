@@ -397,6 +397,7 @@ where
     sum
 }
 
+#[allow(clippy::manual_memcpy)]
 pub fn build_segment_tree_sum<T>(arr: &[T]) -> Vec<T>
 where
     T: Default + Copy + std::ops::Add<Output = T>,
@@ -458,6 +459,7 @@ where
     T: Default + Copy + std::ops::Add<Output = T>,
     F: Fn(T, T) -> T,
 {
+    #[allow(clippy::manual_memcpy)]
     pub fn new(arr: &[T], operation: F) -> SegmentTree<T, F> {
         let n: usize = arr.len();
         let mut tree: Vec<T> = vec![T::default(); 2 * n];
