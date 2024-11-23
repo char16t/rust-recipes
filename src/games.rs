@@ -18,8 +18,8 @@ pub fn is_nim_game_over<T>(elements: &[T]) -> bool
 where
     T: Default + std::cmp::PartialEq,
 {
-    for i in 0..elements.len() {
-        if elements[i] != T::default() {
+    for element in elements {
+        if *element != T::default() {
             return false;
         }
     }
@@ -60,15 +60,15 @@ pub fn misere_nim_move(elements: &[usize]) -> (usize, usize) {
     let mut n_heaps_with_size_equals_1: usize = 0;
     let mut n_heaps_with_size_more_than_1: usize = 0;
     let mut heap_with_size_more_than_1: usize = 0;
-    for i in 0..elements.len() {
-        if elements[i] == 1 {
+    for (i, &element) in elements.iter().enumerate() {
+        if element == 1 {
             n_heaps_with_size_equals_1 += 1;
         }
-        if elements[i] > 1 {
+        if element > 1 {
             n_heaps_with_size_more_than_1 += 1;
             heap_with_size_more_than_1 = i;
         }
-        nim_sum ^= elements[i];
+        nim_sum ^= element;
     }
 
     if n_heaps_with_size_more_than_1 == 1 {
@@ -97,8 +97,8 @@ pub fn misere_nim_move(elements: &[usize]) -> (usize, usize) {
         }
         (elem_index, n_removed)
     } else {
-        for i in 0..elements.len() {
-            if elements[i] != 0 {
+        for (i, &element) in elements.iter().enumerate() {
+            if element != 0 {
                 return (i, 1);
             }
         }
@@ -147,8 +147,8 @@ pub fn grundy_game_move(heaps: &[usize]) -> (usize, usize, usize) {
     let mut heap_with_more_than_1_element: usize = 0;
     let mut heap_with_more_than_1_element_exists: bool = false;
 
-    for heap_index in 0..heaps.len() {
-        let n: usize = heaps[heap_index];
+    for (heap_index, &heap) in heaps.iter().enumerate() {
+        let n: usize = heap;
 
         if n > 1 {
             heap_with_more_than_1_element = heap_index;
@@ -178,8 +178,8 @@ pub fn grundy_game_move(heaps: &[usize]) -> (usize, usize, usize) {
 }
 
 pub fn is_grundy_game_over(elements: &[usize]) -> bool {
-    for i in 0..elements.len() {
-        if elements[i] != 1 {
+    for &element in elements {
+        if element != 1 {
             return false;
         }
     }
