@@ -5,6 +5,8 @@ use std::cmp;
 pub struct PrefixSumArray<T> {
     prefix_sum: Vec<T>,
 }
+
+#[allow(clippy::len_without_is_empty)]
 impl<T> PrefixSumArray<T>
 where
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy,
@@ -45,6 +47,8 @@ pub struct PrefixSumArray2D<T> {
     rows: usize,
     cols: usize,
 }
+
+#[allow(clippy::len_without_is_empty)]
 impl<T> PrefixSumArray2D<T>
 where
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy,
@@ -143,6 +147,8 @@ pub struct PrefixSumArray3D<T> {
     cols: usize,
     depth: usize,
 }
+
+#[allow(clippy::len_without_is_empty)]
 impl<T> PrefixSumArray3D<T>
 where
     T: Default + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Copy,
@@ -306,6 +312,8 @@ pub struct SparseTable<T> {
     sparse_table: Vec<T>,
     length: usize,
 }
+
+#[allow(clippy::len_without_is_empty)]
 impl<T> SparseTable<T>
 where
     T: Default + Copy + Ord,
