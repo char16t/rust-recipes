@@ -29,6 +29,7 @@ where
             data: vec![T::default(); size],
         }
     }
+    #[allow(clippy::manual_memcpy)]
     pub fn from_vector(vec: &[T]) -> Self {
         let mut data: Vec<T> = vec![T::default(); vec.len()];
         for i in 0..vec.len() {
