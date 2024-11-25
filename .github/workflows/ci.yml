@@ -29,11 +29,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # - name: Install clippy
-      #   run: rustup component add clippy
+      - name: Install Rust components
+        run: |
+          rustup component add clippy
+          rustup component add rustfmt
 
       # - name: Run clippy
       #   run: make lint
+
+      - name: Verify the source code is formatted
+        run: make check-format
 
       - name: Run tests
         run: make test
