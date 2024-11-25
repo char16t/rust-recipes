@@ -380,7 +380,7 @@ where
     fn next(&mut self) -> Option<T> {
         // add next connected component
         if self.stack.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.stack.push_front(node);
                     self.visited.insert(node);
@@ -435,7 +435,7 @@ where
     fn next(&mut self) -> Option<T> {
         // add next connected component
         if self.queue.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.queue.push_back(node);
                     self.visited.insert(node);
@@ -1115,7 +1115,7 @@ where
     fn next(&mut self) -> Option<(T, W)> {
         // add next connected component
         if self.stack.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.stack.push_front((node, W::default()));
                     self.visited.insert(node);
@@ -1172,7 +1172,7 @@ where
     fn next(&mut self) -> Option<(T, W)> {
         // add next connected component
         if self.queue.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.queue.push_back((node, W::default()));
                     self.visited.insert(node);
@@ -1229,7 +1229,7 @@ where
     fn next(&mut self) -> Option<(T, W)> {
         // add next connected component
         if self.stack.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.stack.push_front((node, W::default()));
                     self.visited.insert(node);
@@ -1288,7 +1288,7 @@ where
     fn next(&mut self) -> Option<(T, W)> {
         // add next connected component
         if self.queue.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.queue.push_back((node, W::default()));
                     self.visited.insert(node);
@@ -1347,7 +1347,7 @@ where
     fn next(&mut self) -> Option<(T, W)> {
         // add next connected component
         if self.stack.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.stack.push_front((node, W::default()));
                     self.visited.insert(node);
@@ -1406,7 +1406,7 @@ where
     fn next(&mut self) -> Option<(T, W)> {
         // add next connected component
         if self.queue.is_empty() {
-            for (&node, _) in self.adjacency_list {
+            for &node in self.adjacency_list.keys() {
                 if !self.visited.contains(&node) {
                     self.queue.push_back((node, W::default()));
                     self.visited.insert(node);
