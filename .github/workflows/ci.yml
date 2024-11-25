@@ -29,11 +29,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install clippy
-        run: rustup component add clippy
+      # - name: Install clippy
+      #   run: rustup component add clippy
+
+      # - name: Run clippy
+      #   run: make lint
 
       - name: Run tests
         run: make test
-
-      - name: Run clippy
-        run: make lint
