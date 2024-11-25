@@ -1,6 +1,6 @@
 _This document is [available in English](/README.md)_
 
-# Рецепты Rust 🍳
+# Рецепты Rust 🍳 [![Build and Test](https://github.com/char16t/rust-recipes/actions/workflows/ci.yml/badge.svg)](https://github.com/char16t/rust-recipes/actions/workflows/ci.yml)
 
 ## Мотивация
 

@@ -1,6 +1,6 @@
 _Этот документ [доступен на русском языке](/README.ru.md)_
 
-# Rust Recipes 🍳
+# Rust Recipes 🍳 [![Build and Test](https://github.com/char16t/rust-recipes/actions/workflows/ci.yml/badge.svg)](https://github.com/char16t/rust-recipes/actions/workflows/ci.yml)
 
 ## Motivation
 
