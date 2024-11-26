@@ -926,7 +926,6 @@ where
     }
 
     pub fn node_disjoint_paths(&self, start: T, end: T) -> Vec<Vec<T>> {
-        
         if !self.is_directed {
             panic!("Unable to find node-disjoint paths for undirected graph.")
         }
