@@ -309,8 +309,9 @@ where
 
         const IN: u8 = 0;
         const OUT: u8 = 1;
+        type InOutAdjacencyLists<T> = HashMap<(T, u8), Vec<((T, u8), i8)>>;
 
-        let mut adj: HashMap<(T, u8), Vec<((T, u8), i8)>> = HashMap::new();
+        let mut adj: InOutAdjacencyLists<T> = HashMap::new();
         for (&node, neighbors) in self.adjacency_list.iter() {
             for &neighbor in neighbors {
                 adj.entry((node, OUT))
@@ -600,6 +601,7 @@ where
     }
 
     // Floyd’s cycle finding algorithm (two pointers)
+    #[allow(clippy::while_let_loop)]
     pub fn has_cycle(&self) -> (bool, Option<T>, usize) {
         if !self.is_directed {
             panic!("Unable to detect cycles in undirected graph")
@@ -855,8 +857,7 @@ where
             panic!("Unable to calculate max flow for undirected graph.")
         }
 
-        let result: (Option<W>, HashMap<T, Vec<(T, W)>>, Vec<Vec<(T, Option<W>)>>) =
-            max_flow_internal(&self.adjacency_list, start, end);
+        let result: Flow<T, W> = max_flow_internal(&self.adjacency_list, start, end);
         result.0
     }
 
@@ -925,14 +926,16 @@ where
     }
 
     pub fn node_disjoint_paths(&self, start: T, end: T) -> Vec<Vec<T>> {
+        
         if !self.is_directed {
             panic!("Unable to find node-disjoint paths for undirected graph.")
         }
 
         const IN: u8 = 0;
         const OUT: u8 = 1;
+        type InOutAdjacencyLists<T> = HashMap<(T, u8), Vec<((T, u8), i8)>>;
 
-        let mut adj: HashMap<(T, u8), Vec<((T, u8), i8)>> = HashMap::new();
+        let mut adj: InOutAdjacencyLists<T> = HashMap::new();
         for (&node, neighbors) in self.adjacency_list.iter() {
             for &(neighbor, _) in neighbors {
                 adj.entry((node, OUT))
@@ -969,16 +972,18 @@ where
     }
 }
 
+type Flow<T1, W1> = (
+    Option<W1>,
+    HashMap<T1, Vec<(T1, W1)>>,
+    Vec<Vec<(T1, Option<W1>)>>,
+);
+
 /// Max flow. Ford–Fulkerson algorithm
 fn max_flow_internal<T1, W1>(
     adjacency_list: &HashMap<T1, Vec<(T1, W1)>>,
     start: T1,
     end: T1,
-) -> (
-    Option<W1>,
-    HashMap<T1, Vec<(T1, W1)>>,
-    Vec<Vec<(T1, Option<W1>)>>,
-)
+) -> Flow<T1, W1>
 where
     T1: Default + Copy + Eq + std::hash::Hash,
     W1: Copy + Default + std::ops::Add<Output = W1> + std::cmp::Ord + std::ops::Sub<Output = W1>,
