@@ -113,6 +113,7 @@ where
     }
 
     // Floyd’s cycle finding algorithm (two pointers)
+    #[allow(clippy::while_let_loop)]
     pub fn has_cycle(&self) -> (bool, Option<T>, usize) {
         if !self.is_directed {
             panic!("Unable to detect cycles in undirected graph")
