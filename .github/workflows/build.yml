@@ -77,5 +77,18 @@ jobs:
       - name: Install grcov
         run: cargo install grcov
 
-      - name: Run clippy
+      - name: Check codecov
         run: make check-codecov
+
+      - name: Upload badge to GitHub Pages
+        run: |
+          mkdir -p gh-pages/badges
+          cp target/coverage/html/badges/* gh-pages/badges/
+          cd gh-pages
+          git init
+          git add .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update badge"
+          git remote add origin https://github.com/${{ github.repository }}.git
+          git push --force --set-upstream origin master:gh-pages
