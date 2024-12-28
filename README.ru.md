@@ -165,6 +165,8 @@ _This document is [available in English](/README.md)_
    * Двоичная max-куча
  * Конкурентность (`concurrency.rs`)
    * Thread pool
+ * Тексты (`texts.rs`)
+   * TF-IDF
 
 ## Сборка и тестирование
 

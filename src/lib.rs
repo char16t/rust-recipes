@@ -17,4 +17,5 @@ pub mod ranges;
 pub mod sequences;
 pub mod sort;
 pub mod strings;
+pub mod texts;
 pub mod trees;

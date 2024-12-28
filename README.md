@@ -165,6 +165,8 @@ Use this repository to look up an implementation of an algorithm, understand it 
    * Binary max-heap
  * Concurrency (`concurrency.rs`)
    * Thread pool
+ * Texts (`texts.rs`)
+   * TF-IDF
 
 ## Build and test
 
