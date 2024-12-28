@@ -1,6 +1,6 @@
 _This document is [available in English](/README.md)_
 
-# Рецепты Rust 🍳 [![build](https://github.com/char16t/rust-recipes/actions/workflows/build.yml/badge.svg)](https://github.com/char16t/rust-recipes/actions/workflows/build.yml)
+# Рецепты Rust 🍳 [![build](https://github.com/char16t/rust-recipes/actions/workflows/build.yml/badge.svg)](https://github.com/char16t/rust-recipes/actions/workflows/build.yml) ![coverage](https://char16t.github.io/rust-recipes/badges/flat.svg)
 
 ## Мотивация
 
