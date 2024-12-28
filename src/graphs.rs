@@ -373,7 +373,7 @@ where
     }
 }
 
-impl<'a, T> Iterator for AdjacencyListGraphDfsIterator<'a, T>
+impl<T> Iterator for AdjacencyListGraphDfsIterator<'_, T>
 where
     T: Copy + Eq + std::hash::Hash,
 {
@@ -428,7 +428,7 @@ where
     }
 }
 
-impl<'a, T> Iterator for AdjacencyListGraphBfsIterator<'a, T>
+impl<T> Iterator for AdjacencyListGraphBfsIterator<'_, T>
 where
     T: Copy + Eq + std::hash::Hash,
 {
@@ -1110,7 +1110,7 @@ where
     }
 }
 
-impl<'a, T, W> Iterator for AdjacencyListWightedGraphDfsIterator<'a, T, W>
+impl<T, W> Iterator for AdjacencyListWightedGraphDfsIterator<'_, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
     W: Copy + Default,
@@ -1167,7 +1167,7 @@ where
     }
 }
 
-impl<'a, T, W> Iterator for AdjacencyListWightedGraphBfsIterator<'a, T, W>
+impl<T, W> Iterator for AdjacencyListWightedGraphBfsIterator<'_, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
     W: Copy + Default,
@@ -1224,7 +1224,7 @@ where
     }
 }
 
-impl<'a, T, W> Iterator for AdjacencyListWightedGraphAscDfsIterator<'a, T, W>
+impl<T, W> Iterator for AdjacencyListWightedGraphAscDfsIterator<'_, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
     W: Copy + Default + Ord,
@@ -1283,7 +1283,7 @@ where
     }
 }
 
-impl<'a, T, W> Iterator for AdjacencyListWightedGraphAscBfsIterator<'a, T, W>
+impl<T, W> Iterator for AdjacencyListWightedGraphAscBfsIterator<'_, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
     W: Copy + Default + Ord,
@@ -1342,7 +1342,7 @@ where
     }
 }
 
-impl<'a, T, W> Iterator for AdjacencyListWightedGraphDescDfsIterator<'a, T, W>
+impl<T, W> Iterator for AdjacencyListWightedGraphDescDfsIterator<'_, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
     W: Copy + Default + Ord,
@@ -1401,7 +1401,7 @@ where
     }
 }
 
-impl<'a, T, W> Iterator for AdjacencyListWightedGraphDescBfsIterator<'a, T, W>
+impl<T, W> Iterator for AdjacencyListWightedGraphDescBfsIterator<'_, T, W>
 where
     T: Copy + Eq + std::hash::Hash,
     W: Copy + Default + Ord,

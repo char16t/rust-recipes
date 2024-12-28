@@ -99,7 +99,7 @@ where
         }
     }
 }
-impl<'a, T> Iterator for AdjacencyListTreeDfsIterator<'a, T>
+impl<T> Iterator for AdjacencyListTreeDfsIterator<'_, T>
 where
     T: Copy + Eq + std::hash::Hash,
 {
@@ -141,7 +141,7 @@ where
         }
     }
 }
-impl<'a, T> Iterator for AdjacencyListTreeBfsIterator<'a, T>
+impl<T> Iterator for AdjacencyListTreeBfsIterator<'_, T>
 where
     T: Copy + Eq + std::hash::Hash,
 {
@@ -602,7 +602,7 @@ where
         }
     }
 }
-impl<'a, K, V> Iterator for KeyValueTreeDfsIterator<'a, K, V>
+impl<K, V> Iterator for KeyValueTreeDfsIterator<'_, K, V>
 where
     K: Copy + Eq + std::hash::Hash,
     V: Copy,
@@ -647,7 +647,7 @@ where
         }
     }
 }
-impl<'a, K, V> Iterator for KeyValueTreeBfsIterator<'a, K, V>
+impl<K, V> Iterator for KeyValueTreeBfsIterator<'_, K, V>
 where
     K: Copy + Eq + std::hash::Hash,
     V: Copy,
