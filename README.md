@@ -1,6 +1,6 @@
 _Этот документ [доступен на русском языке](/README.ru.md)_
 
-# Rust Recipes 🍳 [![build](https://github.com/char16t/rust-recipes/actions/workflows/build.yml/badge.svg)](https://github.com/char16t/rust-recipes/actions/workflows/build.yml) ![coverage](https://char16t.github.io/rust-recipes/badges/flat.svg)
+# Rust Recipes [![build](https://github.com/char16t/rust-recipes/actions/workflows/build.yml/badge.svg)](https://github.com/char16t/rust-recipes/actions/workflows/build.yml) ![coverage](https://char16t.github.io/rust-recipes/badges/flat.svg)
 
 ## Motivation
 
