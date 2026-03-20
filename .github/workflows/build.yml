@@ -78,7 +78,7 @@ jobs:
         run: rustup component add llvm-tools
 
       - name: Install grcov
-        run: cargo install grcov
+        run: cargo install grcov --version 0.10.6
 
       - name: Check codecov
         run: make check-codecov
