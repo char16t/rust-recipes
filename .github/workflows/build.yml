@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     container:
-      image: rust:1.83
+      image: rust:1.88
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -78,7 +78,7 @@ jobs:
         run: rustup component add llvm-tools
 
       - name: Install grcov
-        run: cargo install grcov --version 0.10.6
+        run: cargo install grcov
 
       - name: Check codecov
         run: make check-codecov
